@@ -19,6 +19,8 @@ interface Props extends CardState {
   size?: 'sm' | 'md' | 'lg';
   /** Which game's artwork: the same drawings the prototype uses */
   art?: 'sudoku' | 'tangram';
+  /** Render as a button: the whole card is the tap target, as in the design */
+  button?: boolean;
   /** Number the five pieces of information for the anatomy figure */
   marks?: boolean;
   class?: string;
@@ -35,16 +37,15 @@ const {
   size = 'md',
   marks = false,
   art = 'sudoku',
+  button = false,
   class: cls,
+  ...rest
 } = Astro.props;
+const Tag = button ? 'button' : 'div';
 const k = (n: number) => (marks ? n : undefined);
 ---
 
-<div class:list={['pc', `pc-${size}`, cls]} data-action={action} data-bar={bar ? '' : undefined} style={`--prog:${progress}`}>
-  <span class="pc-timer" data-k={k(5)} hidden={!timer}>
-    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9" /><path d="M12 7v5l3 2" /></svg>
-    <span class="pc-timer-t">{timer}</span>
-  </span>
+<Tag class:list={['pc', `pc-${size}`, cls]} type={button ? 'button' : undefined} data-action={action} data-bar={bar ? '' : undefined} style={`--prog:${progress}`} {...rest}>
   <span class="pc-thumb" aria-hidden="true">
     {art === 'tangram' ? (
       <svg viewBox="0 0 38 38"><path d="M2 2h34L19 19z" fill="#3a8dff" /><path d="M2 2v34l17-17z" fill="#7cc0ff" /><path d="M36 2v17l-8.5-8.5z" fill="#bfe0ff" /><path d="M19 19l8.5 8.5L19 36 10.5 27.5z" fill="#9fd0ff" /><path d="M2 36h17l-8.5-8.5z" fill="#1f6fe5" /><path d="M36 19v17H19z" fill="#5aa8ff" /></svg>
@@ -56,6 +57,10 @@ const k = (n: number) => (marks ? n : undefined);
     <span class="pc-title">
       <span class="pc-name"><span class="pc-mode" data-k={k(2)}>{mode}</span><span class="pc-game" data-k={k(1)}>{game}</span></span>
       <span class="pc-tag" data-k={k(3)} hidden={!tag}>{tag}</span>
+      <span class="pc-timer" data-k={k(5)} hidden={!timer}>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9" /><path d="M12 7v5l3 2" /></svg>
+        <span class="pc-timer-t">{timer}</span>
+      </span>
     </span>
     <span class="pc-sub" data-k={k(4)}>{sub}</span>
     <span class="pc-bar" aria-hidden="true"><i></i></span>
@@ -66,7 +71,7 @@ const k = (n: number) => (marks ? n : undefined);
     <svg class="pc-i pc-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5" pathLength="1" /></svg>
     <svg class="pc-i pc-clock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9" /><path d="M12 12V7" /><path class="pc-hand" d="M12 12l3.2 2" /></svg>
   </span>
-</div>
+</Tag>
 
 <style is:global>
   .pc {
@@ -91,6 +96,21 @@ const k = (n: number) => (marks ? n : undefined);
     color: var(--pc-ink);
     font-family: var(--font-ui);
     text-align: left;
+  }
+  button.pc {
+    width: 100%;
+    border: 0;
+    font-size: inherit;
+    cursor: pointer;
+    transition: transform 180ms var(--pc-ease);
+  }
+  button.pc:active {
+    transform: scale(0.98);
+  }
+  button.pc:focus-visible {
+    outline: 2px solid var(--pc-blue);
+    outline-offset: 2px;
+    border-radius: 16px;
   }
   .pc-thumb {
     width: var(--pc-thumb);
@@ -171,18 +191,22 @@ const k = (n: number) => (marks ? n : undefined);
     background: linear-gradient(90deg, #7cc0ff, #3a8dff);
     transition: width 900ms var(--pc-ease);
   }
+  /* Time left on an event: a quiet pill in the title row, beside the difficulty tag */
   .pc-timer {
-    position: absolute;
-    top: -9px;
-    right: 12px;
+    flex: none;
     display: inline-flex;
     align-items: center;
-    gap: 4px;
-    padding: 4px 8px 4px 6px;
+    gap: 3px;
+    padding: 3px 7px 3px 5px;
     border-radius: 999px;
-    background: var(--pc-ink);
-    color: #fff;
+    background: #eef2f8;
+    color: var(--pc-ink-2);
     font: 600 0.6875rem/1 var(--font-ui);
+    white-space: nowrap;
+  }
+  .pc-timer svg {
+    width: 1em;
+    height: 1em;
   }
 
   /* The action: play, play with a progress ring, complete, or waiting */
@@ -300,6 +324,10 @@ const k = (n: number) => (marks ? n : undefined);
     font-size: 0.5625rem;
     padding: 3px 6px;
   }
+  .pc-sm .pc-timer {
+    padding: 3px 6px 3px 4px;
+    font-size: 0.625rem;
+  }
   .pc-lg {
     --pc-thumb: 72px;
     --pc-act: 56px;
@@ -327,10 +355,8 @@ const k = (n: number) => (marks ? n : undefined);
     margin-top: 8px;
   }
   .pc-lg .pc-timer {
-    top: -11px;
-    right: 20px;
-    padding: 5px 10px 5px 8px;
-    font-size: 0.8125rem;
+    padding: 4px 9px 4px 7px;
+    font-size: 0.75rem;
   }
 
   /* Anatomy: numbered parts, one lit at a time */
@@ -340,10 +366,6 @@ const k = (n: number) => (marks ? n : undefined);
     outline: 2px solid transparent;
     outline-offset: 2px;
     transition: outline-color 240ms var(--pc-ease), opacity 240ms var(--pc-ease);
-  }
-  .pc .pc-timer[data-k] {
-    position: absolute;
-    border-radius: 999px;
   }
   .pc [data-k]::after {
     content: attr(data-k);
@@ -362,15 +384,19 @@ const k = (n: number) => (marks ? n : undefined);
     text-transform: none;
     transition: transform 320ms var(--pc-ease), background-color 240ms var(--pc-ease);
   }
-  .pc .pc-tag[data-k]::after,
   .pc .pc-sub[data-k]::after {
     top: calc(50% - 10px);
     left: auto;
     right: -30px;
   }
+  /* Pills carry their number on their own corner, so it holds wherever the row wraps */
+  .pc .pc-tag[data-k]::after,
   .pc .pc-timer[data-k]::after {
-    top: calc(50% - 10px);
-    left: -28px;
+    top: -12px;
+    left: auto;
+    right: -12px;
+    width: 18px;
+    height: 18px;
   }
   .pc [data-k].on {
     outline-color: var(--pc-blue);
@@ -398,13 +424,6 @@ const k = (n: number) => (marks ? n : undefined);
     }
     .pc-lg .pc-sub {
       font-size: 0.875rem;
-    }
-    .pc-lg .pc-timer {
-      right: 14px;
-    }
-    .pc .pc-timer[data-k]::after {
-      top: -25px;
-      left: calc(50% - 10px);
     }
   }
   @media (prefers-reduced-motion: reduce) {
