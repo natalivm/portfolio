@@ -4,3 +4,11 @@ dist/
 .DS_Store
 .impeccable/review/
 .impeccable/config.local.json
+
+# Claude Code: share the skills, agents and commands; keep local settings out
+.claude/*
+!.claude/skills/
+!.claude/agents/
+!.claude/commands/
+# impeccable downloads its engine binary here on first run
+.claude/skills/impeccable/scripts/bin/
