@@ -32,9 +32,7 @@ export const site = {
   availability: 'Available for new projects',
   socials: [
     { label: 'LinkedIn', href: 'https://www.linkedin.com/in/natka/' },
-    { label: 'Instagram', href: 'https://www.instagram.com/' },
-    { label: 'Dribbble', href: 'https://dribbble.com/' },
-  ],
+    { label: 'Instagram', href: 'https://www.instagram.com/' },  ],
   /** Shows a thin banner saying the projects are sample content. */
   showSampleNotice: true,
 };
