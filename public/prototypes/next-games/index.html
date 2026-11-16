@@ -307,7 +307,9 @@
   .sheet-head h2 { margin: 0; display: grid; font: inherit; letter-spacing: .04em; text-transform: uppercase; }
   .sheet-head h2 span { grid-area: 1 / 1; }
   .sheet-head .count { font-weight: 400; font-variant-numeric: tabular-nums; }
-  #titleOpen, .count { opacity: 0; }
+  .sheet-head h2 span, .count { transition: opacity 200ms ease-out; }
+  #titleOpen, .count, .sheet.opened #titleClosed { opacity: 0; }
+  .sheet.opened #titleOpen, .sheet.opened .count { opacity: 1; }
 
   .list {
     flex: 1;
@@ -332,9 +334,10 @@
     border-radius: 22px;
     overflow: hidden;
     isolation: isolate;
-    transition: height 320ms var(--ease-out), margin 320ms var(--ease-out), box-shadow 240ms;
+    transition: box-shadow 240ms;
   }
-  .row.gone { height: 0; margin-bottom: 0; pointer-events: none; transition: height 320ms var(--ease-out), margin 320ms var(--ease-out), opacity 200ms; }
+  /* A removed row's height is driven frame by frame, in step with the sheet */
+  .row.gone { pointer-events: none; }
   .row.lift { z-index: 2; box-shadow: 0 1px 3px rgba(11,26,48,.14); }
   .delete {
     position: absolute; top: 0; right: 0; bottom: 0;
@@ -377,10 +380,11 @@
     padding: 3px 8px; border-radius: 999px;
     font: 600 11px/1 var(--font); letter-spacing: .03em; text-transform: uppercase;
     background: var(--blue-soft); color: var(--blue-deep);
+    transition: background-color 300ms;
   }
   .row.hero .tag { background: #fff; }
   .sub { font-size: 13px; line-height: 1.25; color: var(--ink-2); font-variant-numeric: tabular-nums; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .bar { height: 6px; border-radius: 3px; background: var(--sky-2); overflow: hidden; margin-top: 5px; }
+  .bar { height: 6px; border-radius: 3px; background: var(--sky-2); overflow: hidden; margin-top: 5px; transition: background-color 300ms; }
   .row.hero .bar { background: #d3e6ff; }
   .bar i { display: block; height: 100%; width: 0; border-radius: 3px; background: linear-gradient(90deg, #7cc0ff, var(--blue)); transition: width 900ms cubic-bezier(.2,.8,.2,1); }
   .play {
@@ -686,10 +690,11 @@
     if (phone.matches && !embed) S = 1;
     else S = clamp(Math.min((innerHeight - (embed ? 0 : 64)) / 874, (innerWidth - (embed ? 0 : 32)) / 415), 0.4, 1);
     root.style.setProperty('--s', S);
+    measure();
   }
 
   // ---------- Spring ----------
-  function spring(from, to, v0, onFrame, onDone, k = 420, c = 38) {
+  function spring(from, to, v0, onFrame, onDone, k = 340, c = 34) {
     if (reduce) { onFrame(to); onDone && onDone(); return () => {}; }
     let x = from, v = v0, last = performance.now(), id;
     const step = (now) => {
@@ -717,18 +722,27 @@
   // only when that is taller than the screen does it stop at the top and scroll.
   const ROW = 88, GAP = 10, FOOT = 16 + 52 + 16;
   let games = [], y = 0, stop = () => {}, expanded = false;
-  const rows = () => [...list.querySelectorAll('.row:not(.gone)')];
-  const H = () => sheet.offsetHeight;
-  const TAB = () => tabbar.offsetHeight;
-  const collapsedY = () => (games.length ? H() - (grab.offsetHeight + ROW + 14 + TAB()) : H());
+  // Sizes are measured once per layout and the row list once per change, so a frame of
+  // animation only writes styles and never forces layout.
+  let M = { H: 0, grab: 0, tab: 0 }, rowCache = null, closing = 0;
+  const measure = () => { M = { H: sheet.offsetHeight, grab: grab.offsetHeight, tab: tabbar.offsetHeight }; };
+  const rows = () => rowCache || (rowCache = [...list.querySelectorAll('.row:not(.gone)')]);
+  const H = () => M.H;
+  const TAB = () => M.tab;
+  const restY = () => H() - (M.grab + ROW + 14 + TAB()); // one card showing
+  const collapsedY = () => (games.length ? restY() : H());
   const expandedY = () => {
     const n = games.length;
     if (n <= 1) return collapsedY();
-    return Math.max(0, H() - (grab.offsetHeight + n * ROW + (n - 1) * GAP + FOOT + TAB()));
+    return Math.max(0, H() - (M.grab + n * ROW + (n - 1) * GAP + FOOT + TAB()));
   };
+  // How open the sheet is, 0 to 1. `span` remembers the last open travel, so the dim and the
+  // titles still fade smoothly when the last-but-one game is removed and there is nothing to open.
+  let span = 1;
   const progress = () => {
-    const a = collapsedY(), b = expandedY();
-    return a === b ? 0 : clamp((a - y) / (a - b), 0, 1.1);
+    const a = restY();
+    if (games.length > 1) span = Math.max(a - expandedY(), 1);
+    return clamp((a - y) / span, 0, 1.1);
   };
 
   function render(val) {
@@ -743,15 +757,18 @@
       r.style.opacity = t;
       r.style.transform = t === 1 ? '' : `translate3d(0, ${(1 - t) * 16}px, 0)`;
     });
-    // Find more games sits right under the last row, so it travels with the sheet
-    // and slips behind the tab bar on the way down
+    // Find more games sits right under the last row (a row that is closing still counts),
+    // so it travels with the sheet and slips behind the tab bar on the way down.
+    // When the list is taller than the screen it stays pinned above the tab bar instead.
+    const n = games.length;
+    const under = M.grab + n * ROW + Math.max(n - 1, 0) * GAP + closing + 16;
     more.style.opacity = clamp((p - 0.25) / 0.4);
-    more.style.transform = `translate3d(0, ${-expandedY()}px, 0)`;
-    titleClosed.style.opacity = clamp(1 - p / 0.4);
-    titleOpen.style.opacity = count.style.opacity = clamp((p - 0.3) / 0.4);
+    more.style.transform = `translate3d(0, ${Math.min(0, under - (H() - TAB() - 68))}px, 0)`;
+    sheet.classList.toggle('opened', p > 0.5);
   }
 
-  function settle(open, v = 0) {
+  // `also(u)` runs alongside with u going 0 to 1 on the same curve as the sheet
+  function settle(open, v = 0, also) {
     stop();
     const n = games.length;
     expanded = open && n > 1;
@@ -766,7 +783,12 @@
     rows().forEach((r, i) => { r.inert = !expanded && i > 0; });
     if (!expanded) { closeRows(); list.scrollTop = 0; }
     list.classList.toggle('scrolls', expanded && to === 0 && list.scrollHeight > list.clientHeight + 1);
-    return new Promise((res) => { stop = spring(y, to, v, render, res); });
+    const from = y;
+    return new Promise((res) => {
+      if (!also) stop = spring(from, to, v, render, res);
+      else if (Math.abs(to - from) < 1) stop = spring(0, 100, 0, (u) => { also(clamp(u / 100)); render(to); }, res, 340, 37);
+      else stop = spring(from, to, v, (val) => { also(clamp((val - from) / (to - from))); render(val); }, res, 340, 37);
+    });
   }
 
   // ---------- Rows ----------
@@ -798,7 +820,7 @@
     rows().forEach((r, i) => r.classList.toggle('hero', i === 0));
     sheet.classList.toggle('single', n <= 1);
     grab.setAttribute('aria-label', n > 1 ? 'Show all recent games' : 'Continue playing');
-    count.textContent = n > 1 ? `${n} in progress` : '';
+    if (n > 1) count.textContent = `${n} in progress`; // left as it was while it fades out
     $('#hint').textContent = hintFor(n);
   }
 
@@ -815,6 +837,8 @@
     }
     games = ALL.slice(0, n);
     list.innerHTML = games.map(rowHTML).join('');
+    rowCache = null; closing = 0;
+    measure();
     rows().forEach(wireRow);
     sync();
     render(H());
@@ -828,6 +852,7 @@
     const card = row.firstElementChild;
     row._dx = x;
     card.style.transition = animate && !reduce ? 'transform 380ms cubic-bezier(.2,.9,.3,1.12), background-color 300ms, box-shadow 300ms' : '';
+    row.lastElementChild.style.transition = animate && !reduce ? 'opacity 260ms ease-out, transform 380ms cubic-bezier(.2,.9,.3,1.12)' : '';
     card.style.transform = x ? `translate3d(${x}px, 0, 0)` : '';
     row.style.setProperty('--rv', clamp(-x / REVEAL).toFixed(3));
   }
@@ -846,13 +871,37 @@
 
   function remove(row) {
     if (row.classList.contains('gone')) return;
+    const was = clamp(progress());
     games = games.filter((g) => g.id !== row.dataset.id);
     row.classList.add('gone');
-    row.style.opacity = '0';
     row.inert = true;
-    setTimeout(() => row.remove(), reduce ? 0 : 340);
+    rowCache = null;
+    // With one game left there is nothing to open: let the dim fade over the whole way down
+    if (games.length <= 1 && was > 0) span = Math.max((restY() - y) / was, 1);
     sync();
-    settle(expanded);
+    // The card leaves to the left while the row closes. The row and the sheet share one spring,
+    // so the rows below and Find more games hold still instead of bobbing.
+    const card = row.firstElementChild, h0 = row.offsetHeight, o0 = Number(row.style.opacity || 1);
+    if (!reduce) {
+      card.style.transition = 'transform 300ms cubic-bezier(.4, 0, .9, .5)';
+      card.style.transform = 'translate3d(-110%, 0, 0)';
+    }
+    let done = false;
+    settle(expanded, 0, (u) => {
+      closing = (h0 + GAP) * (1 - u);
+      row.style.height = `${h0 * (1 - u)}px`;
+      row.style.marginBottom = `${GAP * (1 - u)}px`;
+      row.style.opacity = o0 * clamp(1 - u * 1.6);
+      done = u === 1;
+    }).then(() => {
+      closing = 0;
+      if (done || reduce) return row.remove();
+      // Interrupted part-way (another drag or removal): close what is left quickly
+      row.style.transition = 'height 160ms ease-out, margin 160ms ease-out, opacity 120ms';
+      row.style.height = row.style.marginBottom = '0px';
+      row.style.opacity = '0';
+      setTimeout(() => row.remove(), 180);
+    });
   }
 
   // ---------- One pointer handler for the sheet ----------
@@ -935,6 +984,7 @@
   function moveToTop(row) {
     const before = new Map(rows().map((r) => [r, r.getBoundingClientRect().top]));
     list.prepend(row);
+    rowCache = null;
     games = [games.find((x) => x.id === row.dataset.id), ...games.filter((x) => x.id !== row.dataset.id)];
     sync();
     if (reduce) return;
