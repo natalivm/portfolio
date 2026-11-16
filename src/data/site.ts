@@ -1,4 +1,4 @@
-/** Your details. The name and what you do are real; the Instagram link is still a placeholder. */
+/** Your details: name, what you do, email and LinkedIn. */
 export const site = {
   name: 'Natalia Petrovska',
   initials: 'NP',
@@ -32,7 +32,6 @@ export const site = {
   availability: 'Available for new projects',
   socials: [
     { label: 'LinkedIn', href: 'https://www.linkedin.com/in/natka/' },
-    { label: 'Instagram', href: 'https://www.instagram.com/' },
   ],
   /** Shows a thin banner saying the projects are sample content. */
   showSampleNotice: true,
