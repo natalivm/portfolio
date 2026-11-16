@@ -284,9 +284,10 @@ const href = (x: Project) => (x.caseStudy ? `${base}/work/${x.slug}/` : `${base}
     border: 0;
     background: transparent;
   }
+  /* Never taller than the window: the prototype scales its phone to fit the frame */
   .proto-desktop {
     width: min(100%, 860px);
-    height: 940px;
+    height: clamp(600px, calc(100svh - 120px), 940px);
   }
   .proto-mobile {
     display: none !important;
