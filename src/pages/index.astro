@@ -84,7 +84,7 @@ const years = projects.map((p) => p.year);
 
   <section class="disciplines wrap" aria-labelledby="disc-title">
     <div class="section-head">
-      <h2 id="disc-title" class="h2">What I do</h2>
+      <h2 id="disc-title" class="h2">Work by discipline</h2>
       <p class="section-note">Pick one to see only that work.</p>
     </div>
     <ul class="disc-list" role="list">
@@ -103,23 +103,19 @@ const years = projects.map((p) => p.year);
 
   <section class="about wrap" id="about" aria-labelledby="about-title">
     <h2 id="about-title" class="h2">
-      About
-      <span class="quiet">Placeholder biography.</span>
+      {site.name}
+      <span class="quiet">{site.statement}</span>
     </h2>
     <div class="about-body">
-      <p>
-        Write a few sentences here about your background, the studios or teams you have worked with, and
-        what you care about in your work. Keep it short: the projects do most of the talking.
-      </p>
-      <p>
-        A second paragraph can cover how you like to work with clients, or what kind of projects you are
-        looking for next. Replace this text in <code>src/pages/index.astro</code>.
-      </p>
-      <dl class="facts">
-        <div><dt>Based in</dt><dd>{site.location}</dd></div>
-        <div><dt>Disciplines</dt><dd>{disciplines.join(', ')}</dd></div>
-        <div><dt>Projects online</dt><dd>{projects.length}</dd></div>
-      </dl>
+      <p class="help-lead">I can help you with</p>
+      <ul class="help" role="list">
+        {site.services.map((s) => (
+          <li>
+            <h3>{s.name}</h3>
+            <p>{s.text}</p>
+          </li>
+        ))}
+      </ul>
     </div>
   </section>
 
@@ -371,36 +367,47 @@ const years = projects.map((p) => p.year);
     grid-template-columns: 1fr 1.2fr;
     gap: 32px clamp(32px, 6vw, 96px);
   }
+  .about .quiet {
+    margin-top: 0.35em;
+    font-size: 0.5em;
+    line-height: 1.2;
+    letter-spacing: -0.02em;
+  }
   .about-body {
     display: grid;
-    gap: 18px;
-    max-width: 62ch;
-    font-size: 1.0625rem;
+    gap: 14px;
   }
-  .about-body code {
-    font-size: 0.9em;
-    padding: 1px 6px;
-    border-radius: 6px;
-    background: var(--surface-2);
-  }
-  .facts {
-    display: grid;
-    gap: 0;
-    margin: 12px 0 0;
-    border-top: 1px solid var(--line);
-  }
-  .facts div {
-    display: grid;
-    grid-template-columns: 10rem 1fr;
-    gap: 16px;
-    padding: 12px 0;
-    border-bottom: 1px solid var(--line);
-  }
-  .facts dt {
+  .help-lead {
     color: var(--ink-2);
   }
-  .facts dd {
+  /* What I can help with: a name and one sentence each, on hairline rules */
+  .help {
     margin: 0;
+    padding: 0;
+    list-style: none;
+    border-top: 1px solid var(--line);
+  }
+  .help li {
+    display: grid;
+    grid-template-columns: minmax(8.5rem, 0.7fr) minmax(0, 2fr);
+    align-items: baseline;
+    gap: 6px 24px;
+    padding: 18px 0;
+    border-bottom: 1px solid var(--line);
+  }
+  .help h3 {
+    font-size: clamp(1.125rem, 1.6vw, 1.375rem);
+    letter-spacing: -0.025em;
+    line-height: 1.15;
+  }
+  .help p {
+    max-width: 52ch;
+    font-size: 1.0625rem;
+  }
+  @media (max-width: 560px) {
+    .help li {
+      grid-template-columns: 1fr;
+    }
   }
 
   .contact {
@@ -484,10 +491,6 @@ const years = projects.map((p) => p.year);
     .disc-arrow {
       grid-column: 2;
       grid-row: 1;
-    }
-    .facts div {
-      grid-template-columns: 1fr;
-      gap: 2px;
     }
   }
 </style>

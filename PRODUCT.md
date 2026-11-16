@@ -21,7 +21,7 @@ A personal design portfolio for one designer whose body of work will grow to man
 
 ## Positioning
 
-Undecided: the owner's name, specialism and positioning have not been given yet. Placeholder copy stands in and must be replaced; it makes no claims.
+The owner is Natalia Petrovska. Her statement: art direction, full-scale art production, and an AI gen pipeline on demand. She helps with four things, described in her own words (lightly corrected for grammar) in the About section: art direction, AI production, UI/UX design and mentoring. Her work is for games studios. Still undecided and still placeholder: the home headline and introduction, location, email and social links.
 
 ## Operating Context
 
