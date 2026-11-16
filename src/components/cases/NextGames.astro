@@ -201,6 +201,7 @@ const rules = [
         <h3>Consistent information format</h3>
         <p>Keep one presentation of puzzle information across the game, to aid recognition and comprehension.</p>
         <div class="mini d-same">
+          <p class="cols" aria-hidden="true"><span>Art</span><span>Name, then one line of detail</span><span>Action</span></p>
           <PuzzleCard size="sm" mode="Classic" sub="Chapter 1 · Puzzle 15/30" action="progress" progress={0.4} />
           <PuzzleCard size="sm" mode="Daily" sub="November 24, 2023" action="done" />
         </div>
@@ -760,12 +761,12 @@ const rules = [
     padding: clamp(16px, 2vw, 24px) 0;
     border-top: 1px solid var(--line);
   }
-  .drivers h3 {
+  .drivers li > h3 {
     font-size: clamp(1.125rem, 1.6vw, 1.375rem);
     letter-spacing: -0.025em;
     line-height: 1.15;
   }
-  .drivers p {
+  .drivers li > p {
     max-width: 52ch;
     color: var(--ink-2);
   }
@@ -787,16 +788,26 @@ const rules = [
     font-size: 0.75rem;
     font-weight: 600;
   }
-  /* 1. every part outlined */
+  /* 1. every part outlined, with room between the outlines */
+  .d-all :global(.pc-title) {
+    gap: 12px;
+  }
+  .d-all :global(.pc-text) {
+    gap: 7px;
+  }
   .d-all :global(.pc-name),
   .d-all :global(.pc-tag),
   .d-all :global(.pc-sub),
   .d-all :global(.pc-act) {
-    outline: 1.5px dashed rgb(26 95 208 / 0.6);
-    outline-offset: 3px;
-    border-radius: 6px;
+    outline: 1px dashed rgb(26 95 208 / 0.7);
+    outline-offset: 2px;
+    border-radius: 5px;
+  }
+  .d-all :global(.pc-tag) {
+    border-radius: 999px;
   }
   .d-all :global(.pc-act) {
+    outline-offset: 3px;
     border-radius: 50%;
   }
   /* 3. how many of the five details are on the card */
@@ -824,24 +835,26 @@ const rules = [
   .meter-dots[data-on='4'] i:nth-child(-n + 4) {
     background: #1a5fd0;
   }
-  /* 4. two cards, one set of columns */
+  /* 4. two cards under one set of column labels */
   .d-same {
-    position: relative;
     gap: 8px;
   }
-  .d-same::before,
-  .d-same::after {
-    content: '';
-    position: absolute;
-    top: 8px;
-    bottom: 8px;
-    border-left: 1.5px dashed rgb(26 95 208 / 0.55);
+  .cols {
+    display: grid;
+    grid-template-columns: 40px minmax(0, 1fr) auto; /* the small card's own columns */
+    gap: 10px;
+    padding: 0 10px;
+    color: #45546c;
+    font-size: 0.75rem;
+    font-weight: 600;
+    white-space: nowrap;
   }
-  .d-same::before {
-    left: 80px; /* frame padding 20 + card padding 10 + thumb 40 + gap 10 */
+  .cols span:first-child {
+    text-align: center;
   }
-  .d-same::after {
-    right: 72px; /* frame padding 20 + card padding 10 + action 32 + gap 10 */
+  .cols span:nth-child(2) {
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
   /* 5. pinning a favourite */
   .pin-wrap {
@@ -1475,11 +1488,11 @@ const rules = [
       grid-template-columns: minmax(0, 1fr) minmax(300px, 0.8fr);
       row-gap: 8px;
     }
-    .drivers h3 {
+    .drivers li > h3 {
       grid-column: 1;
       align-self: end;
     }
-    .drivers p {
+    .drivers li > p {
       grid-column: 1;
       grid-row: 2;
       align-self: start;
@@ -1490,8 +1503,8 @@ const rules = [
     }
   }
   @media (max-width: 860px) {
-    .drivers h3,
-    .drivers p,
+    .drivers li > h3,
+    .drivers li > p,
     .mini {
       grid-column: auto;
       grid-row: auto;
