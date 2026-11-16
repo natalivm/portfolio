@@ -1,0 +1,159 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-11-16T00:00:00Z",
+  "title": "Design System: Portfolio",
+  "extensions": {
+    "colorMeta": {
+      "ground": { "role": "neutral", "displayName": "Cool Paper Ground", "canonical": "#f2f3f5", "tonalRamp": ["oklch(18% 0.006 260)", "oklch(30% 0.006 260)", "oklch(42% 0.007 260)", "oklch(55% 0.007 260)", "oklch(68% 0.006 260)", "oklch(80% 0.005 260)", "oklch(90% 0.004 260)", "oklch(96.5% 0.003 260)"] },
+      "surface": { "role": "neutral", "displayName": "Tile White", "canonical": "#ffffff", "tonalRamp": ["oklch(18% 0.004 260)", "oklch(30% 0.004 260)", "oklch(42% 0.004 260)", "oklch(55% 0.004 260)", "oklch(68% 0.003 260)", "oklch(80% 0.002 260)", "oklch(91% 0.001 260)", "oklch(100% 0 0)"] },
+      "surface-sunken": { "role": "neutral", "displayName": "Sunken Grey", "canonical": "#e8eaee", "tonalRamp": ["oklch(18% 0.007 260)", "oklch(30% 0.008 260)", "oklch(42% 0.009 260)", "oklch(55% 0.009 260)", "oklch(68% 0.008 260)", "oklch(80% 0.007 260)", "oklch(93.5% 0.005 260)", "oklch(97% 0.003 260)"] },
+      "ink": { "role": "neutral", "displayName": "Near-Black Ink", "canonical": "#16171a", "tonalRamp": ["oklch(20% 0.006 270)", "oklch(30% 0.007 270)", "oklch(42% 0.008 270)", "oklch(55% 0.009 270)", "oklch(66% 0.008 270)", "oklch(78% 0.006 270)", "oklch(88% 0.004 270)", "oklch(96% 0.002 270)"] },
+      "ink-secondary": { "role": "neutral", "displayName": "Secondary Grey", "canonical": "#5d6169", "tonalRamp": ["oklch(20% 0.008 265)", "oklch(32% 0.01 265)", "oklch(44% 0.012 265)", "oklch(50% 0.013 265)", "oklch(64% 0.011 265)", "oklch(77% 0.008 265)", "oklch(88% 0.005 265)", "oklch(96% 0.002 265)"] },
+      "ink-quiet": { "role": "neutral", "displayName": "Quiet Grey", "canonical": "#767a82", "tonalRamp": ["oklch(20% 0.008 265)", "oklch(32% 0.01 265)", "oklch(44% 0.012 265)", "oklch(58% 0.012 265)", "oklch(68% 0.01 265)", "oklch(79% 0.008 265)", "oklch(89% 0.005 265)", "oklch(96% 0.002 265)"] },
+      "hairline": { "role": "neutral", "displayName": "Hairline", "canonical": "#dcdfe4", "tonalRamp": ["oklch(20% 0.008 260)", "oklch(32% 0.009 260)", "oklch(44% 0.01 260)", "oklch(56% 0.01 260)", "oklch(70% 0.009 260)", "oklch(81% 0.008 260)", "oklch(90% 0.007 260)", "oklch(96% 0.003 260)"] },
+      "ultramarine": { "role": "primary", "displayName": "Signal Ultramarine", "canonical": "#3346d3", "tonalRamp": ["oklch(22% 0.1 270)", "oklch(32% 0.16 270)", "oklch(42% 0.2 270)", "oklch(48% 0.21 270)", "oklch(60% 0.17 270)", "oklch(74% 0.11 270)", "oklch(86% 0.055 270)", "oklch(93% 0.03 270)"] },
+      "ultramarine-ink": { "role": "primary", "displayName": "On-Ultramarine White", "canonical": "#ffffff", "tonalRamp": ["oklch(22% 0.1 270)", "oklch(32% 0.16 270)", "oklch(42% 0.2 270)", "oklch(48% 0.21 270)", "oklch(60% 0.17 270)", "oklch(74% 0.11 270)", "oklch(86% 0.055 270)", "oklch(100% 0 0)"] },
+      "ultramarine-wash": { "role": "primary", "displayName": "Ultramarine Wash", "canonical": "#e3e6fb", "tonalRamp": ["oklch(22% 0.1 270)", "oklch(32% 0.16 270)", "oklch(42% 0.2 270)", "oklch(48% 0.21 270)", "oklch(60% 0.17 270)", "oklch(74% 0.11 270)", "oklch(92.5% 0.03 270)", "oklch(97% 0.012 270)"] },
+      "control-ink": { "role": "neutral", "displayName": "Control Ink", "canonical": "#16171a", "tonalRamp": ["oklch(20% 0.006 270)", "oklch(28% 0.007 270)", "oklch(42% 0.008 270)", "oklch(55% 0.009 270)", "oklch(66% 0.008 270)", "oklch(78% 0.006 270)", "oklch(88% 0.004 270)", "oklch(96% 0.002 270)"] },
+      "control-ink-text": { "role": "neutral", "displayName": "Control Ink Text", "canonical": "#ffffff", "tonalRamp": ["oklch(18% 0.004 260)", "oklch(30% 0.004 260)", "oklch(42% 0.004 260)", "oklch(55% 0.004 260)", "oklch(68% 0.003 260)", "oklch(80% 0.002 260)", "oklch(91% 0.001 260)", "oklch(100% 0 0)"] },
+      "status-green": { "role": "tertiary", "displayName": "Availability Green", "canonical": "#1f9d55", "tonalRamp": ["oklch(25% 0.06 152)", "oklch(36% 0.09 152)", "oklch(48% 0.12 152)", "oklch(60% 0.15 152)", "oklch(70% 0.14 152)", "oklch(80% 0.1 152)", "oklch(89% 0.06 152)", "oklch(96% 0.025 152)"] }
+    },
+    "typographyMeta": {
+      "display": { "displayName": "Display", "purpose": "Page headlines; often two-tone (ink line, quiet-grey line). Pages tune the clamp, never the weight or tracking." },
+      "headline": { "displayName": "Headline", "purpose": "Section heads; two-tone when a second line is present." },
+      "title": { "displayName": "Title", "purpose": "Tile titles; steps up on large featured tiles." },
+      "body": { "displayName": "Body", "purpose": "Running text at 52-64ch; tabular numerals site-wide." },
+      "label": { "displayName": "Label", "purpose": "Pills, chips, switch labels, back links." },
+      "meta": { "displayName": "Meta", "purpose": "Tile discipline and year lines, pager direction, hints." }
+    },
+    "shadows": [
+      { "name": "tile", "value": "0 1px 2px rgb(22 23 26 / 0.05), 0 10px 28px -14px rgb(31 38 72 / 0.22)", "purpose": "Resting tiles, light pills, back link, pager cards, case-study hero frame." },
+      { "name": "lift", "value": "0 2px 4px rgb(22 23 26 / 0.06), 0 22px 44px -18px rgb(31 38 72 / 0.32)", "purpose": "Hover state of anything that rests on the tile shadow." },
+      { "name": "dialog", "value": "0 40px 100px -30px rgb(16 18 40 / 0.55)", "purpose": "Project lightbox; quick-jump uses 0 30px 80px -20px rgb(16 18 40 / 0.45)." }
+    ],
+    "motion": [
+      { "name": "ease-out", "value": "cubic-bezier(0.16, 1, 0.3, 1)", "purpose": "The single easing curve for every transition and view transition." },
+      { "name": "t-fast", "value": "180ms", "purpose": "Colour, border and small state changes; pill press." },
+      { "name": "t-med", "value": "360ms", "purpose": "Tile lift, switch knob, header border." },
+      { "name": "view-transition", "value": "420ms", "purpose": "Cross-document cover-to-hero morph and the headline count roll." },
+      { "name": "filter-reflow", "value": "200ms out / 320ms in, scale 0.94", "purpose": "Tiles leaving and entering when the filter changes." }
+    ],
+    "breakpoints": [
+      { "name": "sm", "value": "560px" },
+      { "name": "header-compact", "value": "720px" },
+      { "name": "md", "value": "860px" },
+      { "name": "lg", "value": "1180px" },
+      { "name": "max", "value": "1320px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Dark Pill",
+      "kind": "button",
+      "refersTo": "pill-dark",
+      "description": "Primary action; may end in an inverted circular arrow chip.",
+      "html": "<a class=\"ds-pill ds-pill-dark\" href=\"#\">See all 30 projects <span class=\"ds-arrow\"><svg width=\"14\" height=\"14\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.75\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M5 12h14M13 6l6 6-6 6\"/></svg></span></a>",
+      "css": ".ds-pill { display: inline-flex; align-items: center; gap: 0.6em; min-height: 44px; padding: 0 1.25rem; border-radius: var(--pill, 999px); border: 0; font-family: var(--font-ui); font-weight: 600; font-size: 0.95rem; text-decoration: none; cursor: pointer; transition: transform 180ms cubic-bezier(0.16,1,0.3,1), background-color 180ms cubic-bezier(0.16,1,0.3,1), box-shadow 180ms cubic-bezier(0.16,1,0.3,1); } .ds-pill:active { transform: scale(0.97); } .ds-pill:focus-visible { outline: 2px solid var(--accent, #3346d3); outline-offset: 3px; } .ds-pill-dark { background: var(--btn-bg, #16171a); color: var(--btn-ink, #fff); } .ds-pill-dark:hover { background: #2c2e33; } .ds-arrow { width: 1.75rem; height: 1.75rem; margin-right: -0.7rem; border-radius: 50%; display: grid; place-items: center; background: var(--btn-ink, #fff); color: var(--btn-bg, #16171a); }"
+    },
+    {
+      "name": "Light Pill",
+      "kind": "button",
+      "refersTo": "pill-light",
+      "description": "Secondary action on the tile shadow; lifts on hover.",
+      "html": "<button class=\"ds-pill-l\" type=\"button\">Copy email address</button>",
+      "css": ".ds-pill-l { display: inline-flex; align-items: center; min-height: 44px; padding: 0 1.25rem; border-radius: var(--pill, 999px); border: 0; background: var(--surface, #fff); color: var(--ink, #16171a); font-family: var(--font-ui); font-weight: 600; font-size: 0.95rem; cursor: pointer; box-shadow: var(--shadow-tile, 0 1px 2px rgb(22 23 26 / 0.05), 0 10px 28px -14px rgb(31 38 72 / 0.22)); transition: transform 180ms cubic-bezier(0.16,1,0.3,1), box-shadow 180ms cubic-bezier(0.16,1,0.3,1); } .ds-pill-l:hover { box-shadow: var(--shadow-lift, 0 2px 4px rgb(22 23 26 / 0.06), 0 22px 44px -18px rgb(31 38 72 / 0.32)); } .ds-pill-l:active { transform: scale(0.97); } .ds-pill-l:focus-visible { outline: 2px solid var(--accent, #3346d3); outline-offset: 3px; }"
+    },
+    {
+      "name": "Filter Chips",
+      "kind": "chip",
+      "refersTo": "chip",
+      "description": "Discipline filter with its count; the active chip takes ultramarine.",
+      "html": "<div class=\"ds-chips\"><button class=\"ds-chip\" type=\"button\" aria-pressed=\"true\">All <span class=\"ds-n\">30</span></button><button class=\"ds-chip\" type=\"button\" aria-pressed=\"false\">Branding <span class=\"ds-n\">10</span></button><button class=\"ds-chip\" type=\"button\" aria-pressed=\"false\">Packaging <span class=\"ds-n\">7</span></button></div>",
+      "css": ".ds-chips { display: flex; flex-wrap: wrap; gap: 8px; } .ds-chip { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 16px; border: 1px solid var(--line, #dcdfe4); border-radius: var(--pill, 999px); background: var(--surface, #fff); color: var(--ink, #16171a); font-family: var(--font-ui); font-weight: 600; font-size: 0.9375rem; font-variant-numeric: tabular-nums; cursor: pointer; transition: background-color 180ms cubic-bezier(0.16,1,0.3,1), border-color 180ms cubic-bezier(0.16,1,0.3,1), color 180ms cubic-bezier(0.16,1,0.3,1); } .ds-chip:hover { border-color: #bfc3cb; } .ds-chip:focus-visible { outline: 2px solid var(--accent, #3346d3); outline-offset: 3px; } .ds-n { color: var(--ink-2, #5d6169); font-weight: 500; } .ds-chip[aria-pressed='true'] { background: var(--accent, #3346d3); border-color: var(--accent, #3346d3); color: var(--accent-ink, #fff); } .ds-chip[aria-pressed='true'] .ds-n { color: #d9ddff; }"
+    },
+    {
+      "name": "Project Tile",
+      "kind": "card",
+      "refersTo": "tile",
+      "description": "White tile, 28px outer radius around a 20px cover frame; lifts on hover and reveals its depth tag.",
+      "html": "<a class=\"ds-tile\" href=\"#\"><div class=\"ds-frame\"><div class=\"ds-cover\"></div></div><div class=\"ds-text\"><h3 class=\"ds-title\">Harbor Tea Co.</h3><p class=\"ds-meta\"><span>Packaging · Branding</span><span>2026</span></p></div><span class=\"ds-kind\">Case study</span></a>",
+      "css": ".ds-tile { position: relative; display: flex; flex-direction: column; width: 280px; padding: 8px; border-radius: var(--radius-lg, 28px); background: var(--surface, #fff); box-shadow: var(--shadow-tile, 0 1px 2px rgb(22 23 26 / 0.05), 0 10px 28px -14px rgb(31 38 72 / 0.22)); color: var(--ink, #16171a); text-decoration: none; font-family: var(--font-ui); transition: transform 360ms cubic-bezier(0.16,1,0.3,1), box-shadow 360ms cubic-bezier(0.16,1,0.3,1); } .ds-frame { overflow: hidden; border-radius: var(--radius-md, 20px); background: var(--surface-2, #e8eaee); } .ds-cover { aspect-ratio: 4/3; background: var(--surface-2, #e8eaee); transition: transform 700ms cubic-bezier(0.16,1,0.3,1); } .ds-text { padding: 14px 12px 10px; } .ds-title { margin: 0; font-family: var(--font-display); font-size: 1.125rem; font-weight: 600; letter-spacing: -0.02em; line-height: 1.2; } .ds-meta { display: flex; justify-content: space-between; gap: 12px; margin: 4px 0 0; color: var(--ink-2, #5d6169); font-size: 0.875rem; font-variant-numeric: tabular-nums; } .ds-kind { position: absolute; top: 18px; left: 18px; padding: 4px 10px; border-radius: 999px; background: rgb(255 255 255 / 0.92); font-size: 0.75rem; font-weight: 600; opacity: 0; transform: translateY(-4px); transition: opacity 180ms cubic-bezier(0.16,1,0.3,1), transform 180ms cubic-bezier(0.16,1,0.3,1); } .ds-tile:hover { transform: translateY(-4px); box-shadow: var(--shadow-lift, 0 2px 4px rgb(22 23 26 / 0.06), 0 22px 44px -18px rgb(31 38 72 / 0.32)); } .ds-tile:hover .ds-cover { transform: scale(1.03); } .ds-tile:hover .ds-kind, .ds-tile:focus-visible .ds-kind { opacity: 1; transform: none; } .ds-tile:focus-visible { outline: 2px solid var(--accent, #3346d3); outline-offset: 4px; } .ds-tile:active { transform: scale(0.99); }"
+    },
+    {
+      "name": "Main Navigation",
+      "kind": "nav",
+      "refersTo": "count-badge",
+      "description": "Monogram, name and links at 500; the Work link carries the project count, ultramarine when current.",
+      "html": "<nav class=\"ds-nav\"><span class=\"ds-brand\"><span class=\"ds-mono\">YN</span>Your Name</span><a href=\"#\" aria-current=\"page\">Work <span class=\"ds-count\">30</span></a><a href=\"#\">About</a></nav>",
+      "css": ".ds-nav { display: flex; align-items: center; gap: 28px; font-family: var(--font-ui); } .ds-brand { display: inline-flex; align-items: center; gap: 10px; font-weight: 600; color: var(--ink, #16171a); } .ds-mono { width: 36px; height: 36px; border-radius: 50%; display: grid; place-items: center; background: var(--btn-bg, #16171a); color: var(--btn-ink, #fff); font-size: 0.8rem; font-weight: 600; } .ds-nav a { display: inline-flex; align-items: center; gap: 6px; min-height: 44px; color: var(--ink-2, #5d6169); text-decoration: none; font-weight: 500; transition: color 180ms cubic-bezier(0.16,1,0.3,1); } .ds-nav a:hover, .ds-nav a[aria-current='page'] { color: var(--ink, #16171a); } .ds-nav a:focus-visible { outline: 2px solid var(--accent, #3346d3); outline-offset: 3px; border-radius: 6px; } .ds-count { min-width: 1.6em; padding: 1px 7px; border-radius: 999px; background: var(--surface-2, #e8eaee); color: var(--ink, #16171a); font-size: 0.75rem; font-weight: 600; text-align: center; font-variant-numeric: tabular-nums; } .ds-nav a[aria-current='page'] .ds-count { background: var(--accent, #3346d3); color: var(--accent-ink, #fff); }"
+    },
+    {
+      "name": "Search Trigger",
+      "kind": "input",
+      "refersTo": "pill-light",
+      "description": "Hairline pill that opens the quick-jump palette, with a keyboard hint.",
+      "html": "<button class=\"ds-find\" type=\"button\"><svg width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.75\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M11 18a7 7 0 1 0 0-14 7 7 0 0 0 0 14zM20 20l-4.2-4.2\"/></svg>Find a project<kbd>⌘K</kbd></button>",
+      "css": ".ds-find { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 10px 0 14px; border: 1px solid var(--line, #dcdfe4); border-radius: 999px; background: var(--surface, #fff); color: var(--ink-2, #5d6169); font: 400 1rem var(--font-ui); cursor: pointer; transition: border-color 180ms cubic-bezier(0.16,1,0.3,1), color 180ms cubic-bezier(0.16,1,0.3,1); } .ds-find:hover { border-color: #c3c7ce; color: var(--ink, #16171a); } .ds-find:focus-visible { outline: 2px solid var(--accent, #3346d3); outline-offset: 3px; } .ds-find kbd { font: 600 0.72rem var(--font-ui); padding: 2px 7px; border-radius: 6px; background: var(--surface-2, #e8eaee); color: var(--ink-2, #5d6169); }"
+    },
+    {
+      "name": "Round Icon Button",
+      "kind": "button",
+      "refersTo": "round-button",
+      "description": "44px circle for previous, next and close; inverts to control ink on hover.",
+      "html": "<button class=\"ds-round\" type=\"button\" aria-label=\"Next project\"><svg width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.75\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M5 12h14M13 6l6 6-6 6\"/></svg></button>",
+      "css": ".ds-round { width: 44px; height: 44px; display: grid; place-items: center; border: 1px solid var(--line, #dcdfe4); border-radius: 50%; background: var(--surface, #fff); color: var(--ink, #16171a); cursor: pointer; transition: background-color 180ms cubic-bezier(0.16,1,0.3,1), color 180ms cubic-bezier(0.16,1,0.3,1); } .ds-round:hover { background: var(--btn-bg, #16171a); border-color: var(--btn-bg, #16171a); color: var(--btn-ink, #fff); } .ds-round:focus-visible { outline: 2px solid var(--accent, #3346d3); outline-offset: 3px; }"
+    },
+    {
+      "name": "Case Studies Switch",
+      "kind": "input",
+      "refersTo": "chip-active",
+      "description": "Pill track switch; checked fills ultramarine.",
+      "html": "<label class=\"ds-switch\"><input type=\"checkbox\" checked><span class=\"ds-track\" aria-hidden=\"true\"></span>Case studies only <span class=\"ds-sn\">8</span></label>",
+      "css": ".ds-switch { position: relative; display: inline-flex; align-items: center; gap: 10px; min-height: 44px; font-family: var(--font-ui); font-weight: 600; font-size: 0.9375rem; color: var(--ink, #16171a); cursor: pointer; } .ds-switch input { position: absolute; opacity: 0; width: 1px; height: 1px; } .ds-track { position: relative; width: 40px; height: 24px; border-radius: 999px; background: #c9ccd3; transition: background-color 180ms cubic-bezier(0.16,1,0.3,1); } .ds-track::after { content: ''; position: absolute; top: 3px; left: 3px; width: 18px; height: 18px; border-radius: 50%; background: #fff; box-shadow: 0 1px 3px rgb(0 0 0 / 0.2); transition: transform 360ms cubic-bezier(0.16,1,0.3,1); } .ds-switch input:checked + .ds-track { background: var(--accent, #3346d3); } .ds-switch input:checked + .ds-track::after { transform: translateX(16px); } .ds-switch input:focus-visible + .ds-track { outline: 2px solid var(--accent, #3346d3); outline-offset: 3px; } .ds-sn { color: var(--ink-2, #5d6169); font-weight: 500; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Contact Sheet",
+    "overview": "The whole body of work is laid out on one calm sheet: white tiles resting on a cool pale-grey ground, every project one step away, the count of projects always in view. The system borrows a quiet, Apple-adjacent register (system type, soft depth, generous radii, pill controls) and gives it one owned detail: two-tone headlines that set a statement in ink and finish it in a quieter grey, carried onto the live project count (\"30 projects newest first\", \"8 projects in Packaging\").\n\nDensity is moderate and even. Grids are uniform, tiles are identical in anatomy, and colour on the page comes almost entirely from the project imagery inside the tiles; the chrome around it stays neutral so the work leads. A single ultramarine is reserved for interactive state, and a single status green marks availability. Motion is short, exponential ease-out, and spatial: filtering reflows the grid through a view transition while the headline count rolls, and opening a case study morphs the tile cover into the case-study hero.\n\nThe confirmed rejections from the direction: no kickers or eyebrows above headings, no glass used as decoration, no gradient text.",
+    "keyCharacteristics": [
+      "Cool pale-grey ground, white tiles, near-black ink.",
+      "Generous radii (28px tiles, 20px image frames) and fully round pill controls.",
+      "Two-tone headlines: ink line, then a quieter grey line.",
+      "Tabular numerals wherever counts and years appear.",
+      "One ultramarine accent, for state only; one status green, for availability only.",
+      "Soft, diffuse, ink-tinted shadows; lift on hover.",
+      "Exponential ease-out motion through view transitions, all gated by reduced motion."
+    ],
+    "rules": [
+      { "name": "The State-Only Rule", "body": "Ultramarine appears only where something is selected, current, focused or checked. It is never a decorative fill, a link colour at rest, or a brand flourish. Primary actions are dark pills, not ultramarine.", "section": "colors" },
+      { "name": "The Status Is Green Rule", "body": "Availability is signalled with status green, never with the accent, so \"available\" never reads as \"selected\".", "section": "colors" },
+      { "name": "The Work Brings The Colour Rule", "body": "The chrome stays neutral; saturated colour on the page belongs to project imagery inside tile frames.", "section": "colors" },
+      { "name": "The Two-Tone Rule", "body": "A headline may carry a second, quieter line in `ink-quiet` (as a block line, or inline as the work-page suffix). The ink part states; the quiet part qualifies. Only at headline or display size, never on body text, because the quiet grey only meets AA as large text.", "section": "typography" },
+      { "name": "The Tabular Count Rule", "body": "Numerals are tabular site-wide (`font-variant-numeric: tabular-nums` on body). Counts are always visible: in the nav badge, every chip, the work headline, the \"view all\" tile and the case-study position.", "section": "typography" },
+      { "name": "The Three Weights Rule", "body": "400 for reading, 500 for navigation and secondary counts, 600 for headings and controls. Nothing heavier.", "section": "typography" },
+      { "name": "The Lift Rule", "body": "Elevation changes only in response to hover: a resting tile lifts 4px (pager cards 3px) and moves from Tile rest to Lift; the cover inside scales to 1.03. Press scales down slightly (0.97 for pills, 0.99 for tiles).", "section": "elevation" },
+      { "name": "The Functional Blur Rule", "body": "Backdrop blur exists only where content scrolls beneath chrome (the sticky header, 18px) or behind a modal (6px). It is never applied to tiles or cards as decoration.", "section": "elevation" }
+    ],
+    "dos": [
+      "Do keep the ground cool pale grey and put content on white tiles with 28px outer and 20px inner radii.",
+      "Do reserve ultramarine for selected, current, focused and checked states.",
+      "Do mark availability with status green only.",
+      "Do set headings at weight 600 with -0.03em tracking in the pinned Apple system stack with Inter fallback.",
+      "Do use the two-tone headline (ink, then quiet grey) at headline or display size only.",
+      "Do keep counts visible and tabular wherever the set of projects is described.",
+      "Do make every control at least 44px tall and fully round.",
+      "Do answer hover on tiles and cards with lift (translate up, deeper shadow); small round controls invert to control ink.",
+      "Do animate with the single ease-out curve between 180ms and 420ms, using transform, opacity and clip, and honour reduced motion."
+    ],
+    "donts": [
+      "Don't use ultramarine as a decorative fill, a resting link colour, or a primary-button colour.",
+      "Don't substitute another typeface or add weights beyond 400, 500 and 600.",
+      "Don't set body text or small labels in the quiet grey (#767a82); it only passes as large text.",
+      "Don't put kickers or eyebrow labels above headings.",
+      "Don't use glass or backdrop blur as decoration on tiles or cards.",
+      "Don't use gradient text.",
+      "Don't use hard-edged, zero-blur shadows; depth is soft, diffuse and ink-tinted.",
+      "Don't stretch covers between aspect ratios; crop them."
+    ]
+  }
+}
