@@ -38,7 +38,7 @@ export interface Project {
   featured?: boolean;
   cover?: string;
   coverAlt?: string;
-  /** Path under /public to an interactive prototype; shown on the case study page. */
+  /** Path under /public to an interactive prototype's HTML file (name the file: the dev server does not resolve a bare folder); shown on the case study page. */
   prototype?: string;
   art: Art;
   /** [ground, ink, accent] for the placeholder poster */
@@ -46,7 +46,7 @@ export interface Project {
 }
 
 const raw: Project[] = [
-  { slug: 'next-games', title: 'Next Games', client: 'Puzzle games app', year: 2023, disciplines: ['Digital', 'Motion'], art: 'grid', palette: ['#eaf3ff', '#0b1a30', '#3a8dff'], caseStudy: true, featured: true, role: 'Product designer', cover: '/covers/next-games.png', coverAlt: 'Phone showing the Home screen with the recent games sheet pulled up', prototype: '/prototypes/next-games/', summary: 'Puzzle cards on the Home screen: pick up the game you left, or pull the card up to see every game in progress.' },
+  { slug: 'next-games', title: 'Next Games', client: 'Puzzle games app', year: 2023, disciplines: ['Digital', 'Motion'], art: 'grid', palette: ['#eaf3ff', '#0b1a30', '#3a8dff'], caseStudy: true, featured: true, role: 'Product designer', cover: '/covers/next-games.png', coverAlt: 'Phone showing the Home screen with the recent games sheet pulled up', prototype: '/prototypes/next-games/index.html', summary: 'Puzzle cards on the Home screen: pick up the game you left, or pull the card up to see every game in progress.' },
   { slug: 'harbor-tea', title: 'Harbor Tea Co.', client: 'Harbor Tea Co.', year: 2026, disciplines: ['Packaging', 'Branding'], art: 'stack', palette: ['#0f3d3a', '#f3e6c8', '#e0763c'], caseStudy: true, featured: true, role: 'Brand and packaging lead', summary: 'Sample project. A tin system for a small-batch tea importer, where each blend gets its own harbour flag.' },
   { slug: 'lumen-clinic', title: 'Lumen Clinic', client: 'Lumen Clinic', year: 2025, disciplines: ['Branding', 'Digital'], art: 'sun', palette: ['#f2efe8', '#1b2a4a', '#f2a93b'], caseStudy: true, featured: true, role: 'Identity and web design', summary: 'Sample project. A calmer identity for a family clinic, built around morning light rather than medical blue.' },
   { slug: 'kiln-and-co', title: 'Kiln & Co.', client: 'Kiln & Co. Ceramics', year: 2024, disciplines: ['Packaging', 'Illustration'], art: 'arch', palette: ['#c8553d', '#fbeee0', '#2d3047'], caseStudy: true, featured: true, role: 'Packaging and illustration', summary: 'Sample project. Shipping boxes for a ceramics studio, printed with the outline of the piece inside.' },
