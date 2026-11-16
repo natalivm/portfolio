@@ -1,0 +1,144 @@
+---
+/**
+ * Project cover. Uses the real image when `project.cover` is set, otherwise
+ * draws a placeholder poster from the project's `art` + `palette`.
+ * `variant` shifts the composition so case-study galleries get several frames.
+ */
+import type { Project } from '../data/projects';
+
+interface Props {
+  project: Project;
+  variant?: number;
+  ratio?: '4/3' | '16/9' | '1/1';
+  eager?: boolean;
+  class?: string;
+}
+
+const { project: p, variant = 0, ratio = '4/3', eager = false, class: cls = '' } = Astro.props;
+const [bg, ink, accent] = p.palette;
+const W = 400;
+const H = ratio === '16/9' ? 225 : ratio === '1/1' ? 400 : 300;
+const v = variant;
+const words = p.title.split(/\s+/).map((w) => w.replace(/[^A-Za-z&0-9]/g, '')).filter(Boolean);
+const word = v === 0 ? words[0] : v === 1 ? String(p.year) : words[v % words.length] ?? words[0];
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+---
+
+{p.cover ? (
+  <img
+    class={`cover ${cls}`}
+    src={`${base}${p.cover}`}
+    alt={p.coverAlt ?? ''}
+    loading={eager ? 'eager' : 'lazy'}
+    decoding="async"
+    style={`aspect-ratio:${ratio}`}
+  />
+) : (
+  <svg
+    class={`cover ${cls}`}
+    viewBox={`0 0 ${W} ${H}`}
+    role="img"
+    aria-label={`Placeholder artwork for ${p.title}`}
+    style={`aspect-ratio:${ratio};background:${bg}`}
+    preserveAspectRatio="xMidYMid slice"
+  >
+    <rect width={W} height={H} fill={bg} />
+    {p.art === 'sun' && (
+      <g>
+        <circle cx={W * (0.62 - v * 0.12)} cy={H * (0.48 + v * 0.06)} r={H * (0.3 + v * 0.05)} fill={accent} />
+        <rect y={H * 0.68} width={W} height={H * 0.32} fill={ink} />
+        {[0, 1, 2, 3].map((i) => (
+          <rect x={W * 0.08} y={H * 0.74 + i * 12} width={W * (0.5 - i * 0.1)} height="3" fill={bg} opacity={0.7} />
+        ))}
+      </g>
+    )}
+    {p.art === 'grid' && (
+      <g>
+        {Array.from({ length: 8 }).map((_, r) =>
+          Array.from({ length: 11 }).map((_, c) => (
+            <circle
+              cx={28 + c * 34.5}
+              cy={H / 2 - 3.5 * 26 + r * 26}
+              r={(r * 11 + c + v * 7) % 17 === 3 ? 11 : 3.2}
+              fill={(r * 11 + c + v * 7) % 17 === 3 ? accent : ink}
+              opacity={(r * 11 + c + v * 7) % 17 === 3 ? 1 : 0.55}
+            />
+          )),
+        )}
+      </g>
+    )}
+    {p.art === 'type' && (
+      <g>
+        <text
+          x={-8 - v * 30}
+          y={H * 0.86}
+          font-family="-apple-system, BlinkMacSystemFont, Inter Variable, sans-serif"
+          font-weight="700"
+          font-size={H * 0.78}
+          letter-spacing="-12"
+          fill={ink}
+        >{word}</text>
+        <rect x={W * 0.06} y={H * 0.08} width={W * 0.22} height={H * 0.06} rx={H * 0.03} fill={accent} />
+      </g>
+    )}
+    {p.art === 'stack' && (
+      <g>
+        {[0, 1, 2].map((i) => (
+          <g transform={`translate(${W * 0.16 + i * W * 0.24 - v * 14}, ${H * 0.22 + (i % 2) * H * 0.08})`}>
+            <rect width={W * 0.2} height={H * 0.62} rx="10" fill={i === 1 ? accent : ink} />
+            <rect x={W * 0.03} y={H * 0.18} width={W * 0.14} height={H * 0.2} rx="4" fill={bg} />
+            <rect x={W * 0.05} y={H * 0.24} width={W * 0.1} height="3" fill={i === 1 ? accent : ink} />
+          </g>
+        ))}
+      </g>
+    )}
+    {p.art === 'waves' && (
+      <g fill="none" stroke-linecap="round">
+        {Array.from({ length: 7 }).map((_, i) => {
+          const y = H * 0.18 + i * (H * 0.11);
+          const a = 14 + ((i + v) % 3) * 6;
+          return (
+            <path
+              d={`M -10 ${y} C ${W * 0.2} ${y - a}, ${W * 0.3} ${y + a}, ${W * 0.5} ${y} S ${W * 0.8} ${y - a}, ${W + 10} ${y}`}
+              stroke={i === 3 ? accent : ink}
+              stroke-width={i === 3 ? 10 : 5}
+            />
+          );
+        })}
+      </g>
+    )}
+    {p.art === 'arch' && (
+      <g>
+        {[0, 1, 2].map((i) => {
+          const w = W * 0.22;
+          const x = W * 0.12 + i * W * 0.27 - v * 10;
+          const top = H * (0.22 + (i === 1 ? 0 : 0.1));
+          return (
+            <path
+              d={`M ${x} ${H} V ${top + w / 2} A ${w / 2} ${w / 2} 0 0 1 ${x + w} ${top + w / 2} V ${H} Z`}
+              fill={i === 1 ? accent : ink}
+            />
+          );
+        })}
+      </g>
+    )}
+    {p.art === 'label' && (
+      <g transform={`translate(${W / 2 - 50 + v * 40}, 0)`}>
+        <rect x="34" y={H * 0.08} width="32" height={H * 0.14} rx="6" fill={ink} />
+        <rect x="0" y={H * 0.2} width="100" height={H * 0.8} rx="26" fill={ink} />
+        <rect x="10" y={H * 0.42} width="80" height={H * 0.32} rx="6" fill={accent} />
+        <rect x="22" y={H * 0.5} width="56" height="4" fill={ink} />
+        <rect x="30" y={H * 0.56} width="40" height="3" fill={ink} opacity="0.6" />
+      </g>
+    )}
+  </svg>
+)}
+
+<style>
+  .cover {
+    display: block;
+    width: 100%;
+    height: auto;
+    object-fit: cover;
+  }
+</style>

@@ -1,0 +1,606 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import Tile from '../../components/Tile.astro';
+import Cover from '../../components/Cover.astro';
+import Icon from '../../components/Icon.astro';
+import { projects, caseStudies, disciplines, countBy, slugify } from '../../data/projects';
+
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+---
+
+<Layout title="Work" current="work" description={`All ${projects.length} projects, filterable by discipline.`}>
+  <section class="wrap head" aria-labelledby="work-title">
+    <h1 id="work-title" class="display">
+      <span data-count>{projects.length}</span>{' '}<span data-count-label>projects</span>{' '}<span class="suffix" data-count-suffix>newest first</span>
+    </h1>
+    <p class="visually-hidden" aria-live="polite" data-announce></p>
+
+    <div class="filters" role="group" aria-label="Filter projects">
+      <div class="chips" data-chips>
+        <button class="chip" type="button" data-d="" aria-pressed="true">
+          All <span class="n">{projects.length}</span>
+        </button>
+        {disciplines.map((d) => (
+          <button class="chip" type="button" data-d={slugify(d)} data-name={d} aria-pressed="false">
+            {d} <span class="n">{countBy(d)}</span>
+          </button>
+        ))}
+      </div>
+      <label class="switch">
+        <input type="checkbox" data-cs />
+        <span class="track" aria-hidden="true"></span>
+        Case studies only <span class="n">{caseStudies.length}</span>
+      </label>
+    </div>
+  </section>
+
+  <section class="wrap" aria-labelledby="grid-title">
+    <h2 id="grid-title" class="visually-hidden">Projects</h2>
+    <ul class="grid" role="list" data-grid>
+      {projects.map((p, i) => (
+        <li
+          data-slug={p.slug}
+          data-d={p.disciplines.map(slugify).join(' ')}
+          data-cs={p.caseStudy ? '1' : '0'}
+          style={`view-transition-name: tile-${p.slug}`}
+        >
+          <Tile project={p} eager={i < 8} />
+        </li>
+      ))}
+    </ul>
+    <div class="empty" hidden data-empty>
+      <p>No case studies in this discipline yet. The quick-view projects are still here.</p>
+      <button class="pill pill-light" type="button" data-clear-cs>Show all projects in this discipline</button>
+    </div>
+  </section>
+
+  <dialog class="lb" data-lb aria-labelledby="lb-title">
+    <div class="lb-inner">
+      <div class="lb-media" data-lb-media></div>
+      <div class="lb-side">
+        <h2 id="lb-title" class="lb-title" data-lb-title></h2>
+        <dl class="lb-meta">
+          <div><dt>Client</dt><dd data-lb-client></dd></div>
+          <div><dt>Year</dt><dd data-lb-year></dd></div>
+          <div><dt>Discipline</dt><dd data-lb-disc></dd></div>
+        </dl>
+        <p class="lb-summary" data-lb-summary></p>
+        <a class="pill pill-dark lb-case" data-lb-case hidden>
+          Read the case study <span class="arrow"><Icon name="arrow-right" size={14} /></span>
+        </a>
+        <div class="lb-nav">
+          <button class="round" type="button" data-lb-prev aria-label="Previous project"><Icon name="arrow-left" /></button>
+          <p class="lb-pos" data-lb-pos></p>
+          <button class="round" type="button" data-lb-next aria-label="Next project"><Icon name="arrow-right" /></button>
+        </div>
+      </div>
+      <button class="round lb-close" type="button" data-lb-close aria-label="Close"><Icon name="close" /></button>
+    </div>
+  </dialog>
+
+  {projects.map((p) => (
+    <template data-tpl={p.slug}>
+      <Cover project={p} variant={1} ratio="4/3" />
+    </template>
+  ))}
+  <script
+    type="application/json"
+    id="work-data"
+    set:html={JSON.stringify(
+      Object.fromEntries(
+        projects.map((p) => [
+          p.slug,
+          { t: p.title, c: p.client, y: p.year, d: p.disciplines.join(' · '), s: p.summary, cs: p.caseStudy, href: `${base}/work/${p.slug}/` },
+        ]),
+      ),
+    )}
+  />
+</Layout>
+
+<script>
+  type P = { t: string; c: string; y: number; d: string; s: string; cs: boolean; href: string };
+  const data: Record<string, P> = JSON.parse(document.getElementById('work-data')!.textContent || '{}');
+  const grid = document.querySelector<HTMLUListElement>('[data-grid]')!;
+  const items = [...grid.querySelectorAll<HTMLLIElement>('li[data-slug]')];
+  const chips = [...document.querySelectorAll<HTMLButtonElement>('.chip')];
+  const csBox = document.querySelector<HTMLInputElement>('[data-cs]')!;
+  const countEl = document.querySelector<HTMLElement>('[data-count]')!;
+  const countLabel = document.querySelector<HTMLElement>('[data-count-label]')!;
+  const countSuffix = document.querySelector<HTMLElement>('[data-count-suffix]')!;
+  const announce = document.querySelector<HTMLElement>('[data-announce]')!;
+  const empty = document.querySelector<HTMLElement>('[data-empty]')!;
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  const state = { d: '', cs: false };
+  let shown = items.length;
+
+  // ---- Count roll -------------------------------------------------------
+  let rollFrame = 0;
+  const roll = (to: number) => {
+    const from = Number(countEl.textContent) || 0;
+    cancelAnimationFrame(rollFrame);
+    if (reduce || from === to) {
+      countEl.textContent = String(to);
+      return;
+    }
+    const t0 = performance.now();
+    const dur = 420;
+    const step = (t: number) => {
+      const k = Math.min((t - t0) / dur, 1);
+      const e = 1 - Math.pow(1 - k, 4);
+      countEl.textContent = String(Math.round(from + (to - from) * e));
+      if (k < 1) rollFrame = requestAnimationFrame(step);
+    };
+    rollFrame = requestAnimationFrame(step);
+  };
+
+  // ---- URL + memory ------------------------------------------------------
+  const writeUrl = (slug?: string | null) => {
+    const u = new URL(location.href);
+    state.d ? u.searchParams.set('d', state.d) : u.searchParams.delete('d');
+    state.cs ? u.searchParams.set('cs', '1') : u.searchParams.delete('cs');
+    slug ? u.searchParams.set('p', slug) : u.searchParams.delete('p');
+    history.replaceState(history.state, '', u);
+    try {
+      const keep = new URL(u);
+      keep.searchParams.delete('p');
+      sessionStorage.setItem('last-work-url', keep.pathname + keep.search);
+    } catch {}
+    const here = u.pathname + u.search.replace(/[?&]p=[^&]*/, '').replace(/^&/, '?');
+    document.querySelectorAll<HTMLAnchorElement>('[data-work-link]').forEach((a) => (a.href = here));
+  };
+
+  // ---- Filtering -----------------------------------------------------------
+  const apply = (animate = true) => {
+    const match = items.map(
+      (li) => (!state.d || li.dataset.d!.split(' ').includes(state.d)) && (!state.cs || li.dataset.cs === '1'),
+    );
+    shown = match.filter(Boolean).length;
+    const run = () => {
+      items.forEach((li, n) => (li.hidden = !match[n]));
+      chips.forEach((c) => c.setAttribute('aria-pressed', String(c.dataset.d === state.d)));
+      csBox.checked = state.cs;
+      empty.hidden = shown > 0;
+    };
+    const vt = (document as any).startViewTransition;
+    if (animate && vt && !reduce) {
+      grid.classList.add('vt');
+      const t = vt.call(document, run);
+      t.finished.finally(() => grid.classList.remove('vt'));
+    } else run();
+
+    const name = chips.find((c) => c.dataset.d === state.d)?.dataset.name;
+    const noun = state.cs ? (shown === 1 ? 'case study' : 'case studies') : shown === 1 ? 'project' : 'projects';
+    countLabel.textContent = noun;
+    countSuffix.textContent = name ? `in ${name}` : 'newest first';
+    roll(shown);
+    announce.textContent = `${shown} ${noun}${name ? ` in ${name}` : ''} shown`;
+    writeUrl(open ? current : null);
+  };
+
+  chips.forEach((c) =>
+    c.addEventListener('click', () => {
+      state.d = c.dataset.d || '';
+      apply();
+    }),
+  );
+  csBox.addEventListener('change', () => {
+    state.cs = csBox.checked;
+    apply();
+  });
+  document.querySelector('[data-clear-cs]')!.addEventListener('click', () => {
+    state.cs = false;
+    apply();
+  });
+
+  // Arrow keys move between chips (one tab stop for the group feels heavy with 7 chips, so keep tab + arrows).
+  document.querySelector('[data-chips]')!.addEventListener('keydown', (e) => {
+    const ev = e as KeyboardEvent;
+    const i = chips.indexOf(document.activeElement as HTMLButtonElement);
+    if (i < 0) return;
+    if (ev.key === 'ArrowRight') chips[(i + 1) % chips.length].focus();
+    if (ev.key === 'ArrowLeft') chips[(i - 1 + chips.length) % chips.length].focus();
+  });
+
+  // ---- Lightbox ------------------------------------------------------------
+  const lb = document.querySelector<HTMLDialogElement>('[data-lb]')!;
+  const q = <T extends HTMLElement>(s: string) => lb.querySelector<T>(s)!;
+  let open = false;
+  let current: string | null = null;
+  let opener: HTMLElement | null = null;
+
+  const visible = () => items.filter((li) => !li.hidden).map((li) => li.dataset.slug!);
+
+  const fill = (slug: string) => {
+    const p = data[slug];
+    if (!p) return;
+    current = slug;
+    const list = visible();
+    const i = list.indexOf(slug);
+    q('[data-lb-pos]').textContent = i >= 0 ? `${i + 1} of ${list.length}` : '';
+    q('[data-lb-title]').textContent = p.t;
+    q('[data-lb-client]').textContent = p.c;
+    q('[data-lb-year]').textContent = String(p.y);
+    q('[data-lb-disc]').textContent = p.d;
+    q('[data-lb-summary]').textContent = p.s;
+    const cs = q<HTMLAnchorElement>('[data-lb-case]');
+    cs.hidden = !p.cs;
+    cs.href = p.href;
+    const tpl = document.querySelector<HTMLTemplateElement>(`template[data-tpl="${slug}"]`);
+    const media = q('[data-lb-media]');
+    media.replaceChildren(tpl ? tpl.content.cloneNode(true) : '');
+    writeUrl(slug);
+  };
+
+  const step = (dir: 1 | -1) => {
+    const list = visible();
+    if (!current || !list.length) return;
+    const i = list.indexOf(current);
+    const next = list[(i + dir + list.length) % list.length];
+    const swap = () => fill(next);
+    const vt = (document as any).startViewTransition;
+    vt && !reduce ? vt.call(document, swap) : swap();
+  };
+
+  const openLb = (slug: string, from?: HTMLElement | null) => {
+    if (!data[slug]) return;
+    opener = from ?? null;
+    fill(slug);
+    if (!lb.open) lb.showModal();
+    open = true;
+  };
+
+  lb.addEventListener('close', () => {
+    open = false;
+    current = null;
+    writeUrl(null);
+    opener?.focus();
+  });
+  lb.addEventListener('click', (e) => {
+    if (e.target === lb) lb.close();
+  });
+  q('[data-lb-close]').addEventListener('click', () => lb.close());
+  q('[data-lb-prev]').addEventListener('click', () => step(-1));
+  q('[data-lb-next]').addEventListener('click', () => step(1));
+  lb.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowRight') step(1);
+    if (e.key === 'ArrowLeft') step(-1);
+  });
+
+  grid.addEventListener('click', (e) => {
+    const a = (e.target as HTMLElement).closest<HTMLAnchorElement>('a[data-quick]');
+    if (!a || e.metaKey || e.ctrlKey || e.shiftKey) return;
+    e.preventDefault();
+    openLb(a.dataset.slug!, a);
+  });
+
+  // ---- Scroll memory -------------------------------------------------------
+  let saveT = 0;
+  addEventListener('scroll', () => {
+    clearTimeout(saveT);
+    saveT = window.setTimeout(() => {
+      try {
+        sessionStorage.setItem('work-scroll', JSON.stringify({ q: location.search.replace(/[?&]p=[^&]*/, ''), y: scrollY }));
+      } catch {}
+    }, 150);
+  }, { passive: true });
+
+  // ---- Initial state from URL ----------------------------------------------
+  const params = new URLSearchParams(location.search);
+  const d = params.get('d') || '';
+  state.d = chips.some((c) => c.dataset.d === d) ? d : '';
+  state.cs = params.get('cs') === '1';
+  apply(false);
+  countEl.textContent = String(shown);
+
+  try {
+    const saved = JSON.parse(sessionStorage.getItem('work-scroll') || 'null');
+    const nav = performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming | undefined;
+    if (saved && nav?.type !== 'reload' && saved.q === location.search.replace(/[?&]p=[^&]*/, '')) {
+      requestAnimationFrame(() => scrollTo(0, saved.y));
+    }
+  } catch {}
+
+  const p = params.get('p');
+  if (p) {
+    const tile = grid.querySelector<HTMLElement>(`li[data-slug="${p}"] a`);
+    tile?.scrollIntoView({ block: 'center' });
+    openLb(p, tile);
+  }
+</script>
+
+<style>
+  .head {
+    padding-block: clamp(24px, 3vw, 40px) clamp(20px, 2.4vw, 28px);
+  }
+  .head .display {
+    font-size: clamp(2.2rem, 4.6vw, 4rem);
+  }
+  .suffix {
+    color: var(--ink-3);
+  }
+  .filters {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px 24px;
+    margin-top: clamp(18px, 2.2vw, 28px);
+  }
+  .chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 44px;
+    padding: 0 16px;
+    border: 1px solid var(--line);
+    border-radius: var(--pill);
+    background: var(--surface);
+    color: var(--ink);
+    font-weight: 600;
+    font-size: 0.9375rem;
+    cursor: pointer;
+    transition:
+      background-color var(--t-fast) var(--ease-out),
+      border-color var(--t-fast) var(--ease-out),
+      color var(--t-fast) var(--ease-out);
+  }
+  .chip:hover {
+    border-color: #bfc3cb;
+  }
+  .n {
+    color: var(--ink-2);
+    font-weight: 500;
+  }
+  .chip[aria-pressed='true'] {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: var(--accent-ink);
+  }
+  .chip[aria-pressed='true'] .n {
+    color: #d9ddff;
+  }
+  .switch {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    min-height: 44px;
+    font-weight: 600;
+    font-size: 0.9375rem;
+    cursor: pointer;
+  }
+  .switch input {
+    position: absolute;
+    opacity: 0;
+    width: 1px;
+    height: 1px;
+  }
+  .track {
+    position: relative;
+    width: 40px;
+    height: 24px;
+    border-radius: var(--pill);
+    background: #c9ccd3;
+    transition: background-color var(--t-fast) var(--ease-out);
+  }
+  .track::after {
+    content: '';
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: #fff;
+    box-shadow: 0 1px 3px rgb(0 0 0 / 0.2);
+    transition: transform var(--t-med) var(--ease-out);
+  }
+  .switch input:checked + .track {
+    background: var(--accent);
+  }
+  .switch input:checked + .track::after {
+    transform: translateX(16px);
+  }
+  .switch input:focus-visible + .track {
+    outline: 2px solid var(--accent);
+    outline-offset: 3px;
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: clamp(12px, 1.4vw, 20px);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .grid > li[hidden] {
+    display: none;
+  }
+  .empty {
+    display: grid;
+    justify-items: start;
+    gap: 16px;
+    padding: 48px 0;
+    color: var(--ink-2);
+  }
+
+  ::view-transition-old(*):only-child {
+    animation: vt-out 200ms var(--ease-out) both;
+  }
+  ::view-transition-new(*):only-child {
+    animation: vt-in 320ms var(--ease-out) both;
+  }
+  @keyframes vt-out {
+    to { opacity: 0; transform: scale(0.94); }
+  }
+  @keyframes vt-in {
+    from { opacity: 0; transform: scale(0.94); }
+  }
+
+  /* Lightbox */
+  .lb {
+    width: min(1100px, calc(100vw - 32px));
+    max-height: calc(100dvh - 48px);
+    padding: 0;
+    border: 0;
+    border-radius: var(--radius-lg);
+    background: var(--surface);
+    color: var(--ink);
+    box-shadow: 0 40px 100px -30px rgb(16 18 40 / 0.55);
+    overflow: auto;
+  }
+  .lb[open] {
+    animation: lb-in 320ms var(--ease-out);
+  }
+  @keyframes lb-in {
+    from { opacity: 0; transform: translateY(12px) scale(0.98); }
+  }
+  .lb::backdrop {
+    background: rgb(22 23 26 / 0.45);
+    backdrop-filter: blur(6px);
+  }
+  .lb-inner {
+    position: relative;
+    display: grid;
+    grid-template-columns: 1.55fr 1fr;
+  }
+  .lb-media {
+    padding: 10px;
+    view-transition-name: lb-media;
+  }
+  .lb-media :global(.cover) {
+    border-radius: var(--radius-md);
+  }
+  .lb-side {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    padding: 36px 32px 28px 24px;
+  }
+  .lb-pos {
+    min-width: 4.5rem;
+    color: var(--ink-2);
+    font-size: 0.9375rem;
+    text-align: center;
+  }
+  .lb-title {
+    font-size: clamp(1.75rem, 2.6vw, 2.4rem);
+    padding-right: 44px;
+  }
+  .lb-meta {
+    margin: 0;
+    border-top: 1px solid var(--line);
+  }
+  .lb-meta div {
+    display: grid;
+    grid-template-columns: 6.5rem 1fr;
+    gap: 12px;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--line);
+    font-size: 0.9375rem;
+  }
+  .lb-meta dt {
+    color: var(--ink-2);
+  }
+  .lb-meta dd {
+    margin: 0;
+  }
+  .lb-summary {
+    color: var(--ink-2);
+  }
+  .lb-case {
+    align-self: flex-start;
+  }
+  .lb-nav {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: auto;
+    padding-top: 12px;
+  }
+  .round {
+    width: 44px;
+    height: 44px;
+    display: grid;
+    place-items: center;
+    border: 1px solid var(--line);
+    border-radius: 50%;
+    background: var(--surface);
+    cursor: pointer;
+    transition: background-color var(--t-fast) var(--ease-out), color var(--t-fast) var(--ease-out);
+  }
+  .round:hover {
+    background: var(--btn-bg);
+    border-color: var(--btn-bg);
+    color: var(--btn-ink);
+  }
+  .lb-close {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+  }
+
+  @media (max-width: 1180px) {
+    .grid {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+  }
+  @media (max-width: 860px) {
+    .grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+    .lb-inner {
+      grid-template-columns: 1fr;
+    }
+    .lb-side {
+      padding: 8px 24px 24px;
+    }
+    .lb-close {
+      top: 18px;
+      right: 18px;
+      background: rgb(255 255 255 / 0.92);
+    }
+  }
+  @media (max-width: 560px) {
+    .grid :global(.tile) {
+      padding: 5px;
+      border-radius: var(--radius-md);
+    }
+    .grid :global(.frame) {
+      border-radius: 15px;
+    }
+    .grid :global(.text) {
+      padding: 10px 6px 6px;
+    }
+    .grid :global(.title) {
+      font-size: 0.9375rem;
+    }
+    .grid :global(.meta) {
+      font-size: 0.75rem;
+      flex-direction: column;
+      gap: 0;
+    }
+    .filters {
+      margin-inline: calc(var(--gutter) * -1);
+    }
+    .chips {
+      flex-wrap: nowrap;
+      overflow-x: auto;
+      padding: 2px var(--gutter) 6px;
+      scrollbar-width: none;
+      scroll-padding-inline: var(--gutter);
+    }
+    .chip {
+      flex: none;
+    }
+    .switch {
+      padding-inline: var(--gutter);
+    }
+  }
+</style>

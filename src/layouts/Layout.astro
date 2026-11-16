@@ -1,0 +1,291 @@
+---
+import '../styles/global.css';
+import { site } from '../data/site';
+import { projects } from '../data/projects';
+import Icon from '../components/Icon.astro';
+import QuickJump from '../components/QuickJump.astro';
+
+interface Props {
+  title?: string;
+  description?: string;
+  current?: 'home' | 'work' | 'case';
+}
+
+const { title, description = site.intro, current } = Astro.props;
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+const pageTitle = title ? `${title} · ${site.name}` : `${site.name}, ${site.role}`;
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{pageTitle}</title>
+    <meta name="description" content={description} />
+    <meta name="theme-color" content="#f2f3f5" />
+    <link rel="icon" href={`${base}/favicon.svg`} type="image/svg+xml" />
+  </head>
+  <body>
+    <a class="skip" href="#main">Skip to content</a>
+    {site.showSampleNotice && (
+      <p class="sample-notice">Sample content: every project here is a placeholder showing how the site handles {projects.length} projects.</p>
+    )}
+    <header class="site-header">
+      <div class="wrap bar">
+        <a class="brand" href={`${base}/`} aria-label={`${site.name}, home`}>
+          <span class="mono" aria-hidden="true">{site.initials}</span>
+          <span class="brand-name">{site.name}</span>
+        </a>
+        <nav aria-label="Main">
+          <ul>
+            <li>
+              <a href={`${base}/work/`} data-work-link aria-current={current === 'work' ? 'page' : undefined}>
+                Work <span class="count">{projects.length}</span>
+              </a>
+            </li>
+            <li class="hide-sm"><a href={`${base}/#about`}>About</a></li>
+          </ul>
+        </nav>
+        <div class="actions">
+          <button class="find" type="button" data-jump-open aria-haspopup="dialog">
+            <Icon name="search" />
+            <span class="find-label">Find a project</span>
+            <kbd class="hide-sm" data-kbd>⌘K</kbd>
+          </button>
+          <a class="pill pill-dark contact" href={`mailto:${site.email}`} aria-label="Get in touch by email">
+            <span class="contact-label">Get in touch</span>
+            <span class="contact-icon"><Icon name="mail" /></span>
+          </a>
+        </div>
+      </div>
+    </header>
+
+    <main id="main">
+      <slot />
+    </main>
+
+    <footer class="site-footer">
+      <div class="wrap foot">
+        <div>
+          <p class="foot-title">{site.name}</p>
+          <p class="foot-meta">{site.role} · {site.location}</p>
+        </div>
+        <ul class="foot-links">
+          <li><a href={`mailto:${site.email}`}>{site.email}</a></li>
+          {site.socials.map((s) => (
+            <li><a href={s.href} rel="me noopener">{s.label}</a></li>
+          ))}
+        </ul>
+      </div>
+    </footer>
+
+    <QuickJump />
+
+    <script>
+      // Remember the last work-index URL (filter + scroll) so "All work" links return to it.
+      const KEY = 'last-work-url';
+      const restore = () => {
+        try {
+          const saved = sessionStorage.getItem(KEY);
+          if (!saved) return;
+          document.querySelectorAll<HTMLAnchorElement>('[data-work-link], [data-back-to-work]').forEach((a) => {
+            const url = new URL(saved, location.href);
+            if (url.pathname === new URL(a.href).pathname) a.href = url.pathname + url.search;
+          });
+        } catch {}
+      };
+      restore();
+
+      // Show Ctrl+K on non-Apple platforms.
+      if (!/Mac|iPhone|iPad/.test(navigator.platform)) {
+        document.querySelectorAll('[data-kbd]').forEach((k) => (k.textContent = 'Ctrl K'));
+      }
+    </script>
+
+    <style>
+      .skip {
+        position: absolute;
+        left: 12px;
+        top: -60px;
+        z-index: 100;
+        padding: 10px 16px;
+        background: var(--btn-bg);
+        color: var(--btn-ink);
+        border-radius: var(--pill);
+      }
+      .skip:focus {
+        top: 12px;
+      }
+      .sample-notice {
+        margin: 0;
+        padding: 8px var(--gutter);
+        background: var(--surface-2);
+        color: var(--ink-2);
+        font-size: 0.8125rem;
+        text-align: center;
+      }
+      .site-header {
+        position: sticky;
+        top: 0;
+        z-index: 40;
+        background: rgb(242 243 245 / 0.82);
+        backdrop-filter: blur(18px) saturate(1.6);
+        -webkit-backdrop-filter: blur(18px) saturate(1.6);
+        border-bottom: 1px solid transparent;
+        transition: border-color var(--t-med) var(--ease-out);
+      }
+      .bar {
+        display: flex;
+        align-items: center;
+        gap: clamp(12px, 3vw, 40px);
+        height: 72px;
+      }
+      .brand {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        text-decoration: none;
+        font-weight: 600;
+      }
+      .mono {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        display: grid;
+        place-items: center;
+        background: var(--btn-bg);
+        color: var(--btn-ink);
+        font-family: var(--font-display);
+        font-size: 0.8rem;
+        font-weight: 600;
+        letter-spacing: 0;
+      }
+      nav ul {
+        display: flex;
+        gap: clamp(12px, 2.4vw, 28px);
+        margin: 0;
+        padding: 0;
+        list-style: none;
+      }
+      nav a {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        min-height: 44px;
+        color: var(--ink-2);
+        text-decoration: none;
+        font-weight: 500;
+      }
+      nav a:hover,
+      nav a[aria-current='page'] {
+        color: var(--ink);
+      }
+      .count {
+        min-width: 1.6em;
+        padding: 1px 7px;
+        border-radius: var(--pill);
+        background: var(--surface-2);
+        color: var(--ink);
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-align: center;
+      }
+      nav a[aria-current='page'] .count {
+        background: var(--accent);
+        color: var(--accent-ink);
+      }
+      .actions {
+        margin-left: auto;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+      .find {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        min-height: 44px;
+        padding: 0 10px 0 14px;
+        border: 1px solid var(--line);
+        border-radius: var(--pill);
+        background: var(--surface);
+        color: var(--ink-2);
+        cursor: pointer;
+        transition: border-color var(--t-fast) var(--ease-out), color var(--t-fast) var(--ease-out);
+      }
+      .find:hover {
+        border-color: #c3c7ce;
+        color: var(--ink);
+      }
+      .find kbd {
+        font: 600 0.72rem var(--font-ui);
+        padding: 2px 7px;
+        border-radius: 6px;
+        background: var(--surface-2);
+        color: var(--ink-2);
+      }
+      .site-footer {
+        margin-top: clamp(96px, 12vw, 160px);
+        border-top: 1px solid var(--line);
+      }
+      .foot {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-between;
+        gap: 24px;
+        padding-block: 40px 56px;
+      }
+      .foot-title {
+        font-weight: 600;
+      }
+      .foot-meta {
+        color: var(--ink-2);
+        font-size: 0.9rem;
+      }
+      .foot-links {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px 24px;
+        margin: 0;
+        padding: 0;
+        list-style: none;
+      }
+      .foot-links a {
+        display: inline-flex;
+        min-height: 44px;
+        align-items: center;
+        color: var(--ink-2);
+      }
+      .foot-links a:hover {
+        color: var(--ink);
+      }
+      .contact-icon {
+        display: none;
+      }
+      @media (max-width: 720px) {
+        .hide-sm,
+        .find-label,
+        .contact-label {
+          display: none;
+        }
+        .contact-icon {
+          display: grid;
+        }
+        .find,
+        .contact {
+          width: 44px;
+          padding: 0;
+          justify-content: center;
+        }
+        .bar {
+          height: 64px;
+          gap: 14px;
+        }
+        .brand {
+          gap: 8px;
+        }
+      }
+    </style>
+  </body>
+</html>

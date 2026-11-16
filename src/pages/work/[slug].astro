@@ -1,0 +1,385 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import Cover from '../../components/Cover.astro';
+import Tile from '../../components/Tile.astro';
+import Icon from '../../components/Icon.astro';
+import { caseStudies, related, slugify, type Project } from '../../data/projects';
+
+export function getStaticPaths() {
+  return caseStudies.map((p) => ({ params: { slug: p.slug }, props: { project: p } }));
+}
+
+const { project: p } = Astro.props as { project: Project };
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+const i = caseStudies.findIndex((c) => c.slug === p.slug);
+const prev = caseStudies[(i - 1 + caseStudies.length) % caseStudies.length];
+const next = caseStudies[(i + 1) % caseStudies.length];
+const rel = related(p, 3);
+const href = (x: Project) => (x.caseStudy ? `${base}/work/${x.slug}/` : `${base}/work/?p=${x.slug}`);
+---
+
+<Layout title={p.title} description={p.summary} current="case">
+  <nav class="wrap crumbs" aria-label="Case studies">
+    <a class="back" href={`${base}/work/`} data-back-to-work>
+      <Icon name="arrow-left" size={16} /> All work
+    </a>
+    <div class="stepper">
+      <span class="pos">Case study {i + 1} of {caseStudies.length}</span>
+      <a class="round" href={href(prev)} rel="prev" aria-label={`Previous case study: ${prev.title}`} data-key-prev>
+        <Icon name="arrow-left" />
+      </a>
+      <a class="round" href={href(next)} rel="next" aria-label={`Next case study: ${next.title}`} data-key-next>
+        <Icon name="arrow-right" />
+      </a>
+    </div>
+  </nav>
+
+  <header class="wrap intro">
+    <h1 class="display">
+      {p.title}
+      <span class="quiet">{p.summary.replace(/^Sample project\.\s*/, '')}</span>
+    </h1>
+    <dl class="facts">
+      <div><dt>Client</dt><dd>{p.client}</dd></div>
+      <div><dt>Year</dt><dd>{p.year}</dd></div>
+      {p.role && <div><dt>Role</dt><dd>{p.role}</dd></div>}
+      <div>
+        <dt>Discipline</dt>
+        <dd>
+          {p.disciplines.map((d, n) => (
+            <>
+              <a href={`${base}/work/?d=${slugify(d)}`}>{d}</a>{n < p.disciplines.length - 1 && ', '}
+            </>
+          ))}
+        </dd>
+      </div>
+    </dl>
+  </header>
+
+  <figure class="wrap hero">
+    <div class="hero-frame" style={`view-transition-name: cover-${p.slug}; view-transition-class: cover`}>
+      <Cover project={p} ratio="16/9" eager />
+    </div>
+  </figure>
+
+  <article class="wrap story">
+    <p class="sample">Sample case study. Replace this text with your own write-up.</p>
+    <section>
+      <h2>The brief</h2>
+      <p>
+        Two or three sentences on what the client needed and why. Who were they trying to reach, what
+        was not working before, and what had to stay the same?
+      </p>
+    </section>
+    <section>
+      <h2>Approach</h2>
+      <p>
+        Explain the one or two decisions that shaped the work. Show the thinking: what you tried, what
+        you dropped, and what made the final direction the right one for this client.
+      </p>
+    </section>
+    <div class="gallery">
+      {[
+        { cls: 'g-wide', ratio: '16 / 9', label: 'Wide image: the work in use' },
+        { cls: '', ratio: '1 / 1', label: 'Detail or process image' },
+        { cls: '', ratio: '1 / 1', label: 'Detail or process image' },
+      ].map((s) => (
+        <div class:list={['slot', s.cls]} style={`aspect-ratio:${s.ratio}`}>
+          <Icon name="image" size={28} />
+          <span class="slot-label">{s.label}</span>
+          <span class="slot-hint">Placeholder: add your image</span>
+        </div>
+      ))}
+    </div>
+    <section>
+      <h2>Outcome</h2>
+      <p>
+        What happened after launch. Use only real results you can stand behind: a quote from the client,
+        what shipped, where it lives now.
+      </p>
+    </section>
+  </article>
+
+  <nav class="wrap pager" aria-label="More case studies">
+    <a class="pager-card" href={href(prev)} rel="prev">
+      <span class="pager-dir"><Icon name="arrow-left" size={16} /> Previous</span>
+      <span class="pager-title">{prev.title}</span>
+    </a>
+    <a class="pager-card next" href={href(next)} rel="next">
+      <span class="pager-dir">Next <Icon name="arrow-right" size={16} /></span>
+      <span class="pager-title">{next.title}</span>
+    </a>
+  </nav>
+
+  <section class="wrap rel" aria-labelledby="rel-title">
+    <div class="rel-head">
+      <h2 id="rel-title" class="h2">Related work</h2>
+      <a class="pill pill-light" href={`${base}/work/`} data-back-to-work>
+        All work <span class="arrow"><Icon name="arrow-right" size={14} /></span>
+      </a>
+    </div>
+    <ul class="rel-grid" role="list">
+      {rel.map((r) => <li><Tile project={r} /></li>)}
+    </ul>
+  </section>
+</Layout>
+
+<script>
+  // ← / → step through case studies when nothing else wants the keys.
+  document.addEventListener('keydown', (e) => {
+    if (e.metaKey || e.ctrlKey || e.altKey || document.querySelector('dialog[open]')) return;
+    if ((e.target as HTMLElement).closest('input, textarea, [contenteditable]')) return;
+    const sel = e.key === 'ArrowLeft' ? '[data-key-prev]' : e.key === 'ArrowRight' ? '[data-key-next]' : '';
+    const a = sel && document.querySelector<HTMLAnchorElement>(sel);
+    if (a) location.href = a.href;
+  });
+</script>
+
+<style>
+  .crumbs {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding-top: 20px;
+  }
+  .back {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 44px;
+    padding: 0 16px 0 12px;
+    border-radius: var(--pill);
+    background: var(--surface);
+    box-shadow: var(--shadow-tile);
+    font-weight: 600;
+    font-size: 0.9375rem;
+    text-decoration: none;
+  }
+  .stepper {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .pos {
+    margin-right: 8px;
+    color: var(--ink-2);
+    font-size: 0.9375rem;
+  }
+  .round {
+    width: 44px;
+    height: 44px;
+    display: grid;
+    place-items: center;
+    border-radius: 50%;
+    background: var(--surface);
+    box-shadow: var(--shadow-tile);
+    transition: background-color var(--t-fast) var(--ease-out), color var(--t-fast) var(--ease-out);
+  }
+  .round:hover {
+    background: var(--btn-bg);
+    color: var(--btn-ink);
+  }
+
+  .intro {
+    display: grid;
+    grid-template-columns: minmax(0, 1.7fr) minmax(16rem, 1fr);
+    align-items: end;
+    gap: 32px clamp(32px, 6vw, 96px);
+    padding-block: clamp(40px, 6vw, 80px) clamp(28px, 4vw, 48px);
+  }
+  .intro .display {
+    font-size: clamp(2.6rem, 5.6vw, 5rem);
+  }
+  .intro .quiet {
+    margin-top: 0.2em;
+    font-size: 0.5em;
+    letter-spacing: -0.025em;
+    line-height: 1.12;
+  }
+  .facts {
+    margin: 0;
+    border-top: 1px solid var(--line);
+  }
+  .facts div {
+    display: grid;
+    grid-template-columns: 7rem 1fr;
+    gap: 12px;
+    padding: 11px 0;
+    border-bottom: 1px solid var(--line);
+  }
+  .facts dt {
+    color: var(--ink-2);
+  }
+  .facts dd {
+    margin: 0;
+  }
+  .hero {
+    margin-block: 0;
+  }
+  .hero-frame {
+    overflow: hidden;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-tile);
+  }
+
+  .story {
+    display: grid;
+    gap: clamp(40px, 5vw, 64px);
+    margin-top: clamp(56px, 7vw, 96px);
+  }
+  .sample {
+    justify-self: start;
+    padding: 6px 14px;
+    border-radius: var(--pill);
+    background: var(--surface-2);
+    color: var(--ink-2);
+    font-size: 0.875rem;
+  }
+  .story section {
+    display: grid;
+    grid-template-columns: minmax(10rem, 1fr) minmax(0, 2fr);
+    gap: 16px clamp(32px, 6vw, 96px);
+  }
+  .story h2 {
+    font-size: clamp(1.5rem, 2.2vw, 2rem);
+  }
+  .story section p {
+    max-width: 64ch;
+    font-size: 1.125rem;
+  }
+  .gallery {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: clamp(12px, 1.6vw, 20px);
+  }
+  .gallery > div {
+    overflow: hidden;
+    border-radius: var(--radius-lg);
+  }
+  .slot {
+    display: grid;
+    place-content: center;
+    justify-items: center;
+    gap: 6px;
+    padding: 24px;
+    border: 1.5px dashed #c3c7ce;
+    background: var(--surface-2);
+    color: var(--ink-2);
+    text-align: center;
+  }
+  .slot-label {
+    color: var(--ink);
+    font-weight: 600;
+  }
+  .slot-hint {
+    font-size: 0.875rem;
+  }
+  .g-wide {
+    grid-column: 1 / -1;
+  }
+
+  .pager {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: clamp(12px, 1.6vw, 20px);
+    margin-top: clamp(80px, 10vw, 128px);
+  }
+  .pager-card {
+    display: grid;
+    gap: 6px;
+    padding: 24px 28px;
+    border-radius: var(--radius-lg);
+    background: var(--surface);
+    box-shadow: var(--shadow-tile);
+    text-decoration: none;
+    transition: transform var(--t-med) var(--ease-out), box-shadow var(--t-med) var(--ease-out);
+  }
+  .pager-card.next {
+    text-align: right;
+  }
+  .pager-dir {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--ink-2);
+    font-size: 0.875rem;
+  }
+  .next .pager-dir {
+    justify-content: flex-end;
+  }
+  .pager-title {
+    font-family: var(--font-display);
+    font-size: clamp(1.25rem, 2vw, 1.75rem);
+    font-weight: 600;
+    letter-spacing: -0.025em;
+    line-height: 1.15;
+  }
+  @media (hover: hover) {
+    .pager-card:hover {
+      transform: translateY(-3px);
+      box-shadow: var(--shadow-lift);
+    }
+  }
+
+  .rel {
+    margin-top: clamp(80px, 10vw, 128px);
+  }
+  .rel-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: end;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: clamp(20px, 3vw, 32px);
+  }
+  .rel-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: clamp(12px, 1.6vw, 20px);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  @media (max-width: 860px) {
+    .intro,
+    .story section {
+      grid-template-columns: 1fr;
+    }
+    .rel-grid {
+      grid-template-columns: 1fr 1fr;
+    }
+    .rel-grid li:nth-child(3) {
+      display: none;
+    }
+  }
+  @media (max-width: 560px) {
+    .pos {
+      font-size: 0.8125rem;
+      margin-right: 2px;
+    }
+    .pager {
+      grid-template-columns: 1fr;
+    }
+    .pager-card.next {
+      text-align: left;
+    }
+    .next .pager-dir {
+      justify-content: flex-start;
+    }
+    .gallery {
+      grid-template-columns: 1fr;
+    }
+    .hero-frame,
+    .gallery > div {
+      border-radius: var(--radius-md);
+    }
+    .rel-grid {
+      grid-template-columns: 1fr;
+    }
+    .rel-grid li:nth-child(3) {
+      display: block;
+    }
+  }
+</style>

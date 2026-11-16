@@ -1,0 +1,472 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Tile from '../components/Tile.astro';
+import Cover from '../components/Cover.astro';
+import Icon from '../components/Icon.astro';
+import { site } from '../data/site';
+import { projects, featured, disciplines, countBy, slugify } from '../data/projects';
+
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+const rest = projects.filter((p) => !p.featured);
+const blurbs: Record<string, string> = {
+  Branding: 'Identities, naming support and the guidelines that keep them alive.',
+  Packaging: 'Boxes, bottles, labels and the systems behind a whole range.',
+  Print: 'Books, posters, reports and anything that goes to press.',
+  Illustration: 'Drawn worlds for packaging, editorial and campaigns.',
+  Digital: 'Websites and product screens, from first sketch to handoff.',
+  Motion: 'Logo animation, titles and the small moves that bring a brand to life.',
+};
+const years = projects.map((p) => p.year);
+---
+
+<Layout current="home">
+  <section class="hero wrap" aria-labelledby="hero-title">
+    <h1 id="hero-title" class="display">
+      {site.headline[0]}
+      <span class="quiet">{site.headline[1]}</span>
+    </h1>
+    <div class="hero-foot">
+      <p class="intro">{site.intro}</p>
+      <div class="hero-actions">
+        <a class="pill pill-dark" href={`${base}/work/`} data-work-link>
+          See all {projects.length} projects
+          <span class="arrow"><Icon name="arrow-right" size={14} /></span>
+        </a>
+        {site.available && (
+          <p class="avail"><span class="dot" aria-hidden="true"></span>{site.availability}</p>
+        )}
+      </div>
+    </div>
+  </section>
+
+  <section class="featured wrap" aria-labelledby="featured-title">
+    <div class="section-head">
+      <h2 id="featured-title" class="h2">Selected work</h2>
+      <p class="section-note">{featured.length} of {projects.length} projects, {Math.min(...years)}–{Math.max(...years)}</p>
+    </div>
+    <ul class="feat-grid" role="list">
+      {featured.map((p, i) => (
+        <li class={i < 2 ? 'big' : ''}>
+          <Tile project={p} eager={i < 2} size={i < 2 ? 'large' : 'normal'} />
+        </li>
+      ))}
+      <li class="all">
+        <a class="all-tile" href={`${base}/work/`} data-work-link>
+          <div class="sheet" aria-hidden="true">
+            {rest.slice(0, 18).map((p) => (
+              <div class="thumb"><Cover project={p} ratio="1/1" /></div>
+            ))}
+          </div>
+          <div class="all-text">
+            <p class="all-num">{projects.length}</p>
+            <p class="all-label">
+              View all projects
+              <span class="arrow"><Icon name="arrow-right" size={14} /></span>
+            </p>
+          </div>
+        </a>
+      </li>
+    </ul>
+  </section>
+
+  <section class="disciplines wrap" aria-labelledby="disc-title">
+    <div class="section-head">
+      <h2 id="disc-title" class="h2">What I do</h2>
+      <p class="section-note">Pick one to see only that work.</p>
+    </div>
+    <ul class="disc-list" role="list">
+      {disciplines.map((d) => (
+        <li>
+          <a href={`${base}/work/?d=${slugify(d)}`}>
+            <span class="disc-name">{d}</span>
+            <span class="disc-blurb">{blurbs[d]}</span>
+            <span class="disc-count">{countBy(d)} projects</span>
+            <span class="disc-arrow"><Icon name="arrow-right" /></span>
+          </a>
+        </li>
+      ))}
+    </ul>
+  </section>
+
+  <section class="about wrap" id="about" aria-labelledby="about-title">
+    <h2 id="about-title" class="h2">
+      About
+      <span class="quiet">Placeholder biography.</span>
+    </h2>
+    <div class="about-body">
+      <p>
+        Write a few sentences here about your background, the studios or teams you have worked with, and
+        what you care about in your work. Keep it short: the projects do most of the talking.
+      </p>
+      <p>
+        A second paragraph can cover how you like to work with clients, or what kind of projects you are
+        looking for next. Replace this text in <code>src/pages/index.astro</code>.
+      </p>
+      <dl class="facts">
+        <div><dt>Based in</dt><dd>{site.location}</dd></div>
+        <div><dt>Disciplines</dt><dd>{disciplines.join(', ')}</dd></div>
+        <div><dt>Projects online</dt><dd>{projects.length}</dd></div>
+      </dl>
+    </div>
+  </section>
+
+  <section class="contact wrap" aria-labelledby="contact-title">
+    <h2 id="contact-title" class="display">
+      Have a project in mind?
+      <span class="quiet">Let’s talk.</span>
+    </h2>
+    <div class="contact-actions">
+      <a class="pill pill-dark" href={`mailto:${site.email}`}>
+        Email {site.email}
+        <span class="arrow"><Icon name="arrow-right" size={14} /></span>
+      </a>
+      <button class="pill pill-light" type="button" data-copy={site.email}>
+        <span data-copy-label>Copy email address</span>
+      </button>
+    </div>
+  </section>
+</Layout>
+
+<script>
+  document.querySelectorAll<HTMLButtonElement>('[data-copy]').forEach((btn) => {
+    btn.addEventListener('click', async () => {
+      const label = btn.querySelector('[data-copy-label]')!;
+      try {
+        await navigator.clipboard.writeText(btn.dataset.copy!);
+        label.textContent = 'Copied to clipboard';
+      } catch {
+        label.textContent = btn.dataset.copy!;
+      }
+      setTimeout(() => (label.textContent = 'Copy email address'), 2400);
+    });
+  });
+</script>
+
+<style>
+  .hero {
+    padding-block: clamp(40px, 6vw, 72px) clamp(40px, 5vw, 64px);
+  }
+  .hero .display {
+    max-width: 21ch;
+    font-size: clamp(2.4rem, 5vw, 4.5rem);
+  }
+  .hero-foot {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 24px 48px;
+    margin-top: clamp(24px, 3vw, 36px);
+  }
+  .intro {
+    max-width: 52ch;
+    color: var(--ink-2);
+    font-size: clamp(1.0625rem, 1.3vw, 1.1875rem);
+  }
+  .hero-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 16px 24px;
+  }
+  .avail {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    color: var(--ink-2);
+    font-size: 0.9375rem;
+  }
+  .dot {
+    position: relative;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #1f9d55;
+  }
+  .dot::after {
+    content: '';
+    position: absolute;
+    inset: -4px;
+    border-radius: 50%;
+    border: 2px solid #1f9d55;
+    opacity: 0;
+    animation: ping 2.4s var(--ease-out) infinite;
+  }
+  @keyframes ping {
+    0% { transform: scale(0.6); opacity: 0.7; }
+    80%, 100% { transform: scale(1.6); opacity: 0; }
+  }
+
+  .section-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 8px 24px;
+    margin-bottom: clamp(20px, 3vw, 32px);
+  }
+  .section-note {
+    color: var(--ink-2);
+  }
+
+  .feat-grid {
+    display: grid;
+    grid-template-columns: repeat(12, 1fr);
+    gap: clamp(12px, 1.6vw, 20px);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .feat-grid > li {
+    grid-column: span 4;
+  }
+  .feat-grid > li.big {
+    grid-column: span 6;
+  }
+  .feat-grid > li.all {
+    grid-column: span 8;
+  }
+  .all-tile {
+    position: relative;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: end;
+    gap: 24px;
+    height: 100%;
+    min-height: 260px;
+    padding: 20px 28px 24px 20px;
+    border-radius: var(--radius-lg);
+    background: var(--btn-bg);
+    color: var(--btn-ink);
+    text-decoration: none;
+    overflow: hidden;
+    transition: transform var(--t-med) var(--ease-out), box-shadow var(--t-med) var(--ease-out);
+  }
+  .sheet {
+    align-self: stretch;
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 6px;
+    align-content: start;
+  }
+  .thumb {
+    border-radius: 8px;
+    overflow: hidden;
+    opacity: 0.88;
+    transition: opacity var(--t-med) var(--ease-out), transform var(--t-med) var(--ease-out);
+  }
+  .all-text {
+    text-align: right;
+  }
+  .all-num {
+    font-family: var(--font-display);
+    font-size: clamp(4rem, 9vw, 7.5rem);
+    font-weight: 600;
+    letter-spacing: -0.04em;
+    line-height: 0.9;
+  }
+  .all-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 10px;
+    font-weight: 600;
+  }
+  .all-label .arrow {
+    width: 1.75rem;
+    height: 1.75rem;
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    background: var(--btn-ink);
+    color: var(--btn-bg);
+  }
+  @media (hover: hover) {
+    .all-tile:hover {
+      transform: translateY(-4px);
+      box-shadow: var(--shadow-lift);
+    }
+    .all-tile:hover .thumb {
+      opacity: 1;
+    }
+    .all-tile:hover .thumb:nth-child(3n) {
+      transform: translateY(-3px);
+    }
+  }
+
+  .disciplines,
+  .about {
+    margin-top: clamp(96px, 11vw, 152px);
+  }
+  .disc-list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    border-top: 1px solid var(--line);
+  }
+  .disc-list a {
+    display: grid;
+    grid-template-columns: minmax(9rem, 1fr) 2fr auto auto;
+    align-items: center;
+    gap: 8px 32px;
+    padding: 22px 4px;
+    border-bottom: 1px solid var(--line);
+    text-decoration: none;
+    transition: background-color var(--t-fast) var(--ease-out), padding var(--t-med) var(--ease-out);
+  }
+  .disc-name {
+    font-family: var(--font-display);
+    font-size: clamp(1.5rem, 2.4vw, 2rem);
+    font-weight: 600;
+    letter-spacing: -0.03em;
+  }
+  .disc-blurb {
+    color: var(--ink-2);
+  }
+  .disc-count {
+    color: var(--ink-2);
+    font-size: 0.9375rem;
+    white-space: nowrap;
+  }
+  .disc-arrow {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    background: var(--surface);
+    box-shadow: var(--shadow-tile);
+    transition: background-color var(--t-fast) var(--ease-out), color var(--t-fast) var(--ease-out);
+  }
+  @media (hover: hover) {
+    .disc-list a:hover {
+      padding-inline: 16px;
+      background: var(--surface);
+    }
+    .disc-list a:hover .disc-arrow {
+      background: var(--btn-bg);
+      color: var(--btn-ink);
+    }
+  }
+
+  .about {
+    display: grid;
+    grid-template-columns: 1fr 1.2fr;
+    gap: 32px clamp(32px, 6vw, 96px);
+  }
+  .about-body {
+    display: grid;
+    gap: 18px;
+    max-width: 62ch;
+    font-size: 1.0625rem;
+  }
+  .about-body code {
+    font-size: 0.9em;
+    padding: 1px 6px;
+    border-radius: 6px;
+    background: var(--surface-2);
+  }
+  .facts {
+    display: grid;
+    gap: 0;
+    margin: 12px 0 0;
+    border-top: 1px solid var(--line);
+  }
+  .facts div {
+    display: grid;
+    grid-template-columns: 10rem 1fr;
+    gap: 16px;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--line);
+  }
+  .facts dt {
+    color: var(--ink-2);
+  }
+  .facts dd {
+    margin: 0;
+  }
+
+  .contact {
+    margin-top: clamp(112px, 13vw, 176px);
+  }
+  .contact .display {
+    font-size: clamp(2.4rem, 5.6vw, 4.8rem);
+  }
+  .contact-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 32px;
+  }
+
+  @media (max-width: 960px) {
+    .feat-grid > li,
+    .feat-grid > li.big {
+      grid-column: span 6;
+    }
+    .feat-grid > li.all {
+      grid-column: span 12;
+    }
+    .about {
+      grid-template-columns: 1fr;
+    }
+  }
+  @media (max-width: 640px) {
+    .feat-grid > li,
+    .feat-grid > li.big {
+      grid-column: span 6;
+    }
+    .feat-grid :global(.tile) {
+      padding: 5px;
+      border-radius: var(--radius-md);
+    }
+    .feat-grid :global(.frame) {
+      border-radius: 15px;
+    }
+    .feat-grid :global(.text) {
+      padding: 10px 6px 6px;
+    }
+    .feat-grid :global(.title) {
+      font-size: 0.9375rem;
+    }
+    .feat-grid :global(.meta) {
+      font-size: 0.75rem;
+      flex-direction: column;
+      gap: 0;
+    }
+    .all-tile {
+      min-height: 0;
+    }
+    .sheet {
+      grid-template-columns: repeat(9, 1fr);
+      gap: 4px;
+    }
+    .all-tile {
+      grid-template-columns: 1fr;
+    }
+    .all-text {
+      text-align: left;
+    }
+    .disc-list a {
+      grid-template-columns: 1fr auto;
+      padding-block: 18px;
+    }
+    .disc-blurb {
+      grid-column: 1 / -1;
+      grid-row: 2;
+      font-size: 0.9375rem;
+    }
+    .disc-count {
+      grid-column: 1;
+      grid-row: 3;
+    }
+    .disc-arrow {
+      grid-column: 2;
+      grid-row: 1;
+    }
+    .facts div {
+      grid-template-columns: 1fr;
+      gap: 2px;
+    }
+  }
+</style>

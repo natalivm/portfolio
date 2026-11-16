@@ -1,0 +1,33 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Icon from '../components/Icon.astro';
+import { projects } from '../data/projects';
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+---
+
+<Layout title="Page not found">
+  <section class="wrap nf">
+    <h1 class="display">
+      This page isn’t here.
+      <span class="quiet">The work is, all {projects.length} projects of it.</span>
+    </h1>
+    <div class="nf-actions">
+      <a class="pill pill-dark" href={`${base}/work/`} data-work-link>
+        Browse all work <span class="arrow"><Icon name="arrow-right" size={14} /></span>
+      </a>
+      <button class="pill pill-light" type="button" data-jump-open>Find a project by name</button>
+    </div>
+  </section>
+</Layout>
+
+<style>
+  .nf {
+    padding-block: clamp(64px, 10vw, 128px) 0;
+  }
+  .nf-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 32px;
+  }
+</style>

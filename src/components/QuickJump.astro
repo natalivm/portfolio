@@ -1,0 +1,241 @@
+---
+/** ⌘K / Ctrl+K / "/" quick jump to any project. */
+import { projects } from '../data/projects';
+import Icon from './Icon.astro';
+
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+const items = projects.map((p) => ({
+  t: p.title,
+  c: p.client,
+  y: p.year,
+  d: p.disciplines.join(' · '),
+  cs: p.caseStudy,
+  href: p.caseStudy ? `${base}/work/${p.slug}/` : `${base}/work/?p=${p.slug}`,
+}));
+---
+
+<dialog class="jump" id="jump" aria-label="Find a project">
+  <div class="jump-box">
+    <div class="jump-field">
+      <Icon name="search" size={20} />
+      <input
+        id="jump-input"
+        type="text"
+        placeholder={`Search ${projects.length} projects by name, client, discipline or year`}
+        autocomplete="off"
+        spellcheck="false"
+        role="combobox"
+        aria-expanded="true"
+        aria-controls="jump-list"
+        aria-autocomplete="list"
+      />
+      <button class="jump-close" type="button" data-jump-close aria-label="Close">
+        <Icon name="close" />
+      </button>
+    </div>
+    <ul class="jump-list" id="jump-list" role="listbox" aria-label="Projects"></ul>
+    <p class="jump-empty" hidden>No project matches “<span></span>”. Try a discipline like “packaging” or a year.</p>
+    <p class="jump-hint"><span>↑ ↓ to move</span><span>Enter to open</span><span>Esc to close</span></p>
+  </div>
+</dialog>
+
+<script type="application/json" id="jump-data" set:html={JSON.stringify(items)} />
+
+<script>
+  type Item = { t: string; c: string; y: number; d: string; cs: boolean; href: string };
+  const dlg = document.getElementById('jump') as HTMLDialogElement;
+  const input = document.getElementById('jump-input') as HTMLInputElement;
+  const list = document.getElementById('jump-list') as HTMLUListElement;
+  const empty = dlg.querySelector('.jump-empty') as HTMLElement;
+  const data: Item[] = JSON.parse(document.getElementById('jump-data')!.textContent || '[]');
+  let results: Item[] = data;
+  let active = 0;
+
+  const render = () => {
+    const q = input.value.trim().toLowerCase();
+    results = q
+      ? data.filter((i) => `${i.t} ${i.c} ${i.d} ${i.y}`.toLowerCase().includes(q))
+      : data;
+    active = Math.min(active, Math.max(results.length - 1, 0));
+    list.innerHTML = '';
+    results.forEach((i, n) => {
+      const li = document.createElement('li');
+      li.id = `jump-opt-${n}`;
+      li.setAttribute('role', 'option');
+      li.setAttribute('aria-selected', String(n === active));
+      li.innerHTML = `<a href="${i.href}" tabindex="-1"><span class="jt"></span><span class="jm"></span><span class="jy">${i.y}</span></a>`;
+      (li.querySelector('.jt') as HTMLElement).textContent = i.t;
+      (li.querySelector('.jm') as HTMLElement).textContent = `${i.d}${i.cs ? ' · Case study' : ''}`;
+      li.addEventListener('mousemove', () => setActive(n));
+      list.appendChild(li);
+    });
+    empty.hidden = results.length > 0;
+    (empty.querySelector('span') as HTMLElement).textContent = input.value;
+    input.setAttribute('aria-activedescendant', results.length ? `jump-opt-${active}` : '');
+  };
+
+  const setActive = (n: number) => {
+    if (!results.length) return;
+    active = (n + results.length) % results.length;
+    list.querySelectorAll('[role=option]').forEach((el, i) => el.setAttribute('aria-selected', String(i === active)));
+    input.setAttribute('aria-activedescendant', `jump-opt-${active}`);
+    list.querySelector(`#jump-opt-${active}`)?.scrollIntoView({ block: 'nearest' });
+  };
+
+  const open = () => {
+    if (dlg.open) return;
+    input.value = '';
+    active = 0;
+    render();
+    dlg.showModal();
+    input.focus();
+  };
+
+  input.addEventListener('input', () => {
+    active = 0;
+    render();
+  });
+  input.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowDown') { e.preventDefault(); setActive(active + 1); }
+    if (e.key === 'ArrowUp') { e.preventDefault(); setActive(active - 1); }
+    if (e.key === 'Enter' && results[active]) {
+      e.preventDefault();
+      location.href = results[active].href;
+    }
+  });
+  dlg.addEventListener('click', (e) => {
+    if (e.target === dlg) dlg.close();
+  });
+  dlg.querySelector('[data-jump-close]')!.addEventListener('click', () => dlg.close());
+  document.querySelectorAll('[data-jump-open]').forEach((b) => b.addEventListener('click', open));
+
+  document.addEventListener('keydown', (e) => {
+    const typing = (e.target as HTMLElement).closest('input, textarea, [contenteditable]');
+    if ((e.key === 'k' || e.key === 'K') && (e.metaKey || e.ctrlKey)) {
+      e.preventDefault();
+      dlg.open ? dlg.close() : open();
+    } else if (e.key === '/' && !typing && !document.querySelector('dialog[open]')) {
+      e.preventDefault();
+      open();
+    }
+  });
+</script>
+
+<style>
+  .jump {
+    width: min(640px, calc(100vw - 32px));
+    max-height: min(560px, calc(100dvh - 96px));
+    margin: 12vh auto auto;
+    padding: 0;
+    border: 0;
+    border-radius: var(--radius-md);
+    background: var(--surface);
+    color: var(--ink);
+    box-shadow: 0 30px 80px -20px rgb(16 18 40 / 0.45);
+    overflow: hidden;
+  }
+  .jump[open] {
+    animation: jump-in 260ms var(--ease-out);
+  }
+  .jump::backdrop {
+    background: rgb(22 23 26 / 0.32);
+    backdrop-filter: blur(4px);
+  }
+  @keyframes jump-in {
+    from {
+      opacity: 0;
+      transform: translateY(-8px) scale(0.98);
+    }
+  }
+  .jump-box {
+    display: flex;
+    flex-direction: column;
+    max-height: inherit;
+  }
+  .jump-field {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 0 12px 0 20px;
+    border-bottom: 1px solid var(--line);
+    color: var(--ink-2);
+  }
+  .jump-field input {
+    flex: 1;
+    min-width: 0;
+    height: 60px;
+    border: 0;
+    outline: 0;
+    background: transparent;
+    font: 500 1.0625rem var(--font-ui);
+    color: var(--ink);
+  }
+  .jump-field input::placeholder {
+    color: var(--ink-2);
+  }
+  .jump-close {
+    width: 44px;
+    height: 44px;
+    border: 0;
+    border-radius: 50%;
+    background: transparent;
+    display: grid;
+    place-items: center;
+    cursor: pointer;
+  }
+  .jump-close:hover {
+    background: var(--surface-2);
+  }
+  .jump-list {
+    margin: 0;
+    padding: 8px;
+    list-style: none;
+    overflow-y: auto;
+  }
+  .jump-list :global(a) {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 0 16px;
+    padding: 10px 14px;
+    border-radius: var(--radius-sm);
+    text-decoration: none;
+  }
+  .jump-list :global(.jt) {
+    font-weight: 600;
+  }
+  .jump-list :global(.jm) {
+    grid-column: 1;
+    color: var(--ink-2);
+    font-size: 0.875rem;
+  }
+  .jump-list :global(.jy) {
+    grid-row: 1 / span 2;
+    grid-column: 2;
+    align-self: center;
+    color: var(--ink-2);
+    font-size: 0.875rem;
+  }
+  .jump-list :global([aria-selected='true'] a) {
+    background: var(--accent-soft);
+  }
+  .jump-list :global([aria-selected='true'] .jt) {
+    color: #1f2a8a;
+  }
+  .jump-empty {
+    padding: 24px 20px;
+    color: var(--ink-2);
+  }
+  .jump-hint {
+    display: flex;
+    gap: 20px;
+    padding: 10px 20px;
+    border-top: 1px solid var(--line);
+    color: var(--ink-2);
+    font-size: 0.8rem;
+  }
+  @media (hover: none) {
+    .jump-hint {
+      display: none;
+    }
+  }
+</style>

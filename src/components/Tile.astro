@@ -1,0 +1,120 @@
+---
+import type { Project } from '../data/projects';
+import { slugify } from '../data/projects';
+import Cover from './Cover.astro';
+
+interface Props {
+  project: Project;
+  eager?: boolean;
+  size?: 'normal' | 'large';
+}
+
+const { project: p, eager = false, size = 'normal' } = Astro.props;
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+const href = p.caseStudy ? `${base}/work/${p.slug}/` : `${base}/work/?p=${p.slug}`;
+---
+
+<a
+  class:list={['tile', size]}
+  href={href}
+  data-slug={p.slug}
+  data-quick={p.caseStudy ? undefined : ''}
+  data-disciplines={p.disciplines.map(slugify).join(' ')}
+>
+  <div class="frame" style={`view-transition-name: cover-${p.slug}; view-transition-class: cover`}>
+    <Cover project={p} eager={eager} />
+  </div>
+  <div class="text">
+    <h3 class="title">{p.title}</h3>
+    <p class="meta">
+      <span>{p.disciplines.join(' · ')}</span>
+      <span class="year">{p.year}</span>
+    </p>
+  </div>
+  <span class="kind">{p.caseStudy ? 'Case study' : 'Quick view'}</span>
+</a>
+
+<style>
+  .tile {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    padding: 8px;
+    border-radius: var(--radius-lg);
+    background: var(--surface);
+    box-shadow: var(--shadow-tile);
+    text-decoration: none;
+    color: var(--ink);
+    transition:
+      transform var(--t-med) var(--ease-out),
+      box-shadow var(--t-med) var(--ease-out);
+  }
+  .frame {
+    overflow: hidden;
+    border-radius: var(--radius-md);
+    background: var(--surface-2);
+  }
+  .frame :global(.cover) {
+    transition: transform 700ms var(--ease-out);
+  }
+  .text {
+    padding: 14px 12px 10px;
+  }
+  .title {
+    font-size: 1.125rem;
+    letter-spacing: -0.02em;
+    line-height: 1.2;
+  }
+  .large .title {
+    font-size: clamp(1.25rem, 1.6vw, 1.5rem);
+  }
+  .meta {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    margin-top: 4px;
+    color: var(--ink-2);
+    font-size: 0.875rem;
+  }
+  .year {
+    flex: none;
+  }
+  .kind {
+    position: absolute;
+    top: 18px;
+    left: 18px;
+    padding: 4px 10px;
+    border-radius: var(--pill);
+    background: rgb(255 255 255 / 0.92);
+    color: var(--ink);
+    font-size: 0.75rem;
+    font-weight: 600;
+    opacity: 0;
+    transform: translateY(-4px);
+    transition:
+      opacity var(--t-fast) var(--ease-out),
+      transform var(--t-fast) var(--ease-out);
+  }
+  @media (hover: hover) {
+    .tile:hover {
+      transform: translateY(-4px);
+      box-shadow: var(--shadow-lift);
+    }
+    .tile:hover .frame :global(.cover) {
+      transform: scale(1.03);
+    }
+    .tile:hover .kind,
+    .tile:focus-visible .kind {
+      opacity: 1;
+      transform: none;
+    }
+  }
+  .tile:focus-visible {
+    outline-offset: 4px;
+    border-radius: var(--radius-lg);
+  }
+  .tile:active {
+    transform: scale(0.99);
+  }
+</style>
