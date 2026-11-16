@@ -1,10 +1,8 @@
-/** Your details. The name and what you do are real; the headline, intro, email, location and socials are still placeholders. */
+/** Your details. The name and what you do are real; the email and socials are still placeholders. */
 export const site = {
   name: 'Natalia Petrovska',
   initials: 'NP',
   role: 'Art direction',
-  /** What you do, in one line. The quiet line of the About headline. */
-  statement: 'Art direction. Full-scale art production. AI gen pipeline on demand.',
   /** What you can help with. Shown in the About section. */
   services: [
     {
@@ -24,12 +22,12 @@ export const site = {
       text: 'Mentoring and coaching junior and mid-level artists, helping them navigate career progression and find satisfaction in day-to-day life.',
     },
   ],
-  headline: ['Brand, packaging and print', 'for small companies with big character.'],
+  /** What you do, as the home headline: an ink line, then a quieter one. */
+  // "full‑scale" uses a non-breaking hyphen so the word never splits across two lines
+  headline: ['Art direction and full‑scale art production,', 'with an AI gen pipeline on demand.'],
   intro:
-    'Placeholder introduction. Two or three sentences about what you make, who for, and how you like to work. Replace this in src/data/site.ts.',
+    'I help game studios with art direction, AI production, UI/UX design and mentoring.',
   email: 'hello@example.com',
-  /** Leave empty until you want it shown; the footer skips it when empty. */
-  location: '',
   available: true,
   availability: 'Available for new projects',
   socials: [

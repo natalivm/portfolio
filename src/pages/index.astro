@@ -103,8 +103,8 @@ const years = projects.map((p) => p.year);
 
   <section class="about wrap" id="about" aria-labelledby="about-title">
     <h2 id="about-title" class="h2">
-      {site.name}
-      <span class="quiet">{site.statement}</span>
+      About
+      <span class="quiet">{site.name}.</span>
     </h2>
     <div class="about-body">
       <p class="help-lead">I can help you with</p>
@@ -366,12 +366,6 @@ const years = projects.map((p) => p.year);
     display: grid;
     grid-template-columns: 1fr 1.2fr;
     gap: 32px clamp(32px, 6vw, 96px);
-  }
-  .about .quiet {
-    margin-top: 0.35em;
-    font-size: 0.5em;
-    line-height: 1.2;
-    letter-spacing: -0.02em;
   }
   .about-body {
     display: grid;
