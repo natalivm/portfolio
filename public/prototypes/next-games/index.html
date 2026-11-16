@@ -1107,18 +1107,27 @@
         await ok(tween(460, (t) => { const d = -116 * t; setX(target, d < -REVEAL ? -REVEAL + (d + REVEAL) * 0.45 : d); place(cx + d, cy); }));
         touch.classList.remove('down');
         setX(target, -REVEAL, true);
-        await ok(sleep(480));
+        // The finger lifts and comes down on Remove, rather than sliding across the play button
+        touch.classList.remove('on');
+        await ok(sleep(520));
         const del = target.querySelector('.delete');
         const [dx, dy] = at(del);
-        await ok(move(dx, dy, 360));
+        place(dx, dy);
+        touch.classList.add('on');
+        await ok(sleep(380));
         await ok(press(del));
         remove(target);
-        await ok(sleep(1150));
+        // Lift the finger at once: the row above slides its play button into this very spot,
+        // and a finger resting there reads as tapping play.
+        touch.classList.remove('on');
+        await ok(sleep(1250));
       }
 
       // 3. Drag the sheet back down: Home returns
       const [hx, hy] = at(grab, 0.5, 0.4);
-      await ok(move(hx, hy, 640));
+      place(hx, hy);
+      touch.classList.add('on');
+      await ok(sleep(420));
       touch.classList.add('down');
       stop();
       const c = y, d = collapsedY() - 24;
