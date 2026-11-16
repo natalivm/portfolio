@@ -439,10 +439,11 @@ const rules = [
   $$('[data-fig]').forEach((f) => io.observe(f));
   const live = (el: Element) => !reduce && !document.hidden && !!el.closest('[data-live]');
 
+  let still = false; // true while a card is changed without its own text animations
   function swap(el: HTMLElement | null, text = '') {
     if (!el || el.textContent === text) return;
     el.textContent = text;
-    if (!reduce) el.animate([{ opacity: 0, transform: 'translateY(4px)' }, { opacity: 1, transform: 'none' }], { duration: 360, easing: EASE });
+    if (!reduce && !still) el.animate([{ opacity: 0, transform: 'translateY(4px)' }, { opacity: 1, transform: 'none' }], { duration: 360, easing: EASE });
   }
   // Move a puzzle card to another state: text swaps, CSS morphs the action.
   function applyCard(card: HTMLElement, s: St) {
@@ -455,7 +456,7 @@ const rules = [
     const timer = card.querySelector<HTMLElement>('.pc-timer')!;
     if (s.timer) card.querySelector('.pc-timer-t')!.textContent = s.timer;
     timer.hidden = !s.timer;
-    if (!reduce && !tag.hidden) tag.animate([{ opacity: 0, transform: 'scale(0.8)' }, { opacity: 1, transform: 'none' }], { duration: 360, easing: EASE });
+    if (!reduce && !still && !tag.hidden) tag.animate([{ opacity: 0, transform: 'scale(0.8)' }, { opacity: 1, transform: 'none' }], { duration: 360, easing: EASE });
     card.dataset.action = s.action ?? 'play';
     card.toggleAttribute('data-bar', !!s.bar);
     card.style.setProperty('--prog', String(s.progress ?? 0));
@@ -527,7 +528,20 @@ const rules = [
       knob.style.transform = `translateX(${btns.indexOf(b) * 100}%)`;
     };
     pick(btns.find((b) => b.getAttribute('aria-pressed') === 'true')!);
-    btns.forEach((b) => b.addEventListener('click', () => { pick(b); applyCard(card, states[b.dataset.d!]); }));
+    // A new difficulty brings its list in: each card rises a few pixels into place, one after another.
+    const cards = $$('.pc', seg.parentElement!);
+    btns.forEach((b) => b.addEventListener('click', () => {
+      if (b.getAttribute('aria-pressed') === 'true') return;
+      pick(b);
+      still = true;
+      applyCard(card, states[b.dataset.d!]);
+      still = false;
+      if (reduce) return;
+      cards.forEach((c, i) => c.animate(
+        [{ opacity: 0, transform: 'translateY(8px)' }, { opacity: 1, transform: 'none' }],
+        { duration: 300, delay: i * 45, easing: EASE, fill: 'backwards' },
+      ));
+    }));
   });
 
   // Puzzle end screen: Continue turns the finished daily into its countdown, then it resets.
