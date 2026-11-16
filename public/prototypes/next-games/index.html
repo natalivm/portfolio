@@ -1050,7 +1050,8 @@
   pick(5);
 
   // ---------- Walk-through (?demo=1) ----------
-  // Plays the flow on a loop with a touch indicator, through the same code a real finger drives.
+  // Plays three steps on a loop with a touch indicator, through the same code a real finger
+  // drives: open the sheet, remove a game, go back to Home. Resuming a game stays hands-on only.
   if (!params.has('demo') || reduce) return;
 
   const touch = document.createElement('div');
@@ -1115,18 +1116,18 @@
         await ok(sleep(1150));
       }
 
-      // 3. Resume a game: it rises to the top and the Dynamic Island shows progress
-      const next = rows()[1];
-      if (next) {
-        const play = next.querySelector('.play');
-        const [px, py] = at(play);
-        await ok(move(px, py, 620));
-        await ok(press(play));
-        resume(next);
-        await ok(sleep(500));
-      }
+      // 3. Drag the sheet back down: Home returns
+      const [hx, hy] = at(grab, 0.5, 0.4);
+      await ok(move(hx, hy, 640));
+      touch.classList.add('down');
+      stop();
+      const c = y, d = collapsedY() - 24;
+      await ok(tween(620, (t) => { const yy = c + (d - c) * t; render(yy); place(hx, hy + (yy - c)); }));
+      touch.classList.remove('down');
+      settle(false, 700);
+      await ok(sleep(350));
       touch.classList.remove('on');
-      await ok(sleep(4200));
+      await ok(sleep(2600));
       tour(id);
     } catch (e) { if (e !== STOP) throw e; }
   }
