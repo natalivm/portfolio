@@ -3,6 +3,7 @@ import Layout from '../../layouts/Layout.astro';
 import Cover from '../../components/Cover.astro';
 import Tile from '../../components/Tile.astro';
 import Icon from '../../components/Icon.astro';
+import NextGamesCase from '../../components/cases/NextGamesCase.astro';
 import { caseStudies, related, slugify, type Project } from '../../data/projects';
 
 export function getStaticPaths() {
@@ -85,33 +86,7 @@ const href = (x: Project) => (x.caseStudy ? `${base}/work/${x.slug}/` : `${base}
   )}
 
   {p.slug === 'next-games' ? (
-    <article class="wrap story">
-      <section>
-        <h2>The brief</h2>
-        <p>
-          The Home screen needed one place for the games a player has in progress. The card for the last
-          game waits at the bottom of Home; pulling it up reveals every game in progress, each with its
-          chapter, puzzle and difficulty.
-        </p>
-      </section>
-      <section>
-        <h2>Questions the design had to answer</h2>
-        <ul class="qs">
-          <li>How does the list look with one game, two, four, or all of them? Do we show the expand at all for one?</li>
-          <li>If someone tried a game but didn’t finish a puzzle, does it join the list?</li>
-          <li>If a game hasn’t been played for a while, do we keep suggesting it? Does it expire?</li>
-          <li>Can players remove a game themselves? Is there a maximum?</li>
-        </ul>
-      </section>
-      <section>
-        <h2>What the prototype shows</h2>
-        <p>
-          With one game the card stands alone, with no handle. With more, it becomes a sheet that grows to fit
-          its content and the Home screen steps back behind it. Swiping a game left removes it. Resuming
-          a game moves it to the top of the list and shows progress in the Dynamic Island.
-        </p>
-      </section>
-    </article>
+    <NextGamesCase />
   ) : (
   <article class="wrap story">
     <p class="sample">Sample case study. Replace this text with your own write-up.</p>

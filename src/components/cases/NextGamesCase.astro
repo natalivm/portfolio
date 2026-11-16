@@ -1,0 +1,1139 @@
+---
+/**
+ * Next Games: the readable design case, built from the project's Figma file
+ * (overview, UX drivers, hypotheses, player stories, navigation flow,
+ * card states and wireframes).
+ */
+import PuzzleCard from './PuzzleCard.astro';
+
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+const img = (n: string) => `${base}/cases/next-games/${n}.png`;
+
+const toc = [
+  ['overview', 'Overview'],
+  ['problem', 'The problem'],
+  ['drivers', 'UX drivers'],
+  ['hypotheses', 'Hypotheses'],
+  ['stories', 'Player stories'],
+  ['flow', 'Flow'],
+  ['states', 'Card states'],
+  ['screens', 'Screens'],
+  ['next', 'What’s next'],
+];
+
+const anatomy = [
+  ['Game name', 'What you will play: Sudoku, Tangram, Nonogram…'],
+  ['Game mode', 'Classic chapter, daily puzzle or live event, with its progress line.'],
+  ['Difficulty', 'Easy, Hard or Expert, so the choice matches the player’s skill.'],
+  ['Progression', 'Where you are in a chapter or event, and whether you’ve started.'],
+  ['Timer', 'Only for time-limited events: how long is left, or when it starts.'],
+];
+
+const drivers = [
+  ['Clear information', 'Show the essentials: name, mode, difficulty, progression, and a timer for time-limited events.'],
+  ['Contextual relevance', 'Tailor what the card shows to where it appears, so players get the details that matter at that point.'],
+  ['Cognitive load', 'Balance how much the card says so players can take it in at a glance.'],
+  ['Consistent format', 'Present puzzle information the same way across the game, so it’s recognised instantly.'],
+  ['Customisation', 'Give players control, for example pinning a game as a favourite.'],
+];
+
+const hypotheses = [
+  'Keeping a consistent information format on game cards across all interfaces improves the player’s ability to quickly find and understand level details.',
+  'Showing the game name and mode on the card lets players make the right choice intuitively.',
+  'Clearly presenting the difficulty level helps players choose a puzzle that matches their skill or the challenge they want.',
+  'Including progression on the card helps players manage and plan their play.',
+];
+
+const stories = [
+  ['In review', 'Easily identify the specific game, mode and difficulty level shown on a puzzle card.'],
+  ['In review', 'Easily tell whether the card is a content path I’m already progressing on, or a new path to start (chapter, event, etc.).'],
+  ['In review', 'Easily tell whether the card is a puzzle I’m already progressing on, or a new puzzle to start (continue or start next).'],
+  ['In review', 'Know that the puzzles I play will always be docked on Home (and in the Frequently played list) for easy access.'],
+  ['Not yet', 'Recognise the same puzzle information presented the same way elsewhere in the game (game selection, Home, puzzle header).'],
+];
+
+const columns = ['First time', 'Not started', 'In progress', 'Complete', 'Countdown'];
+type Cell = { title: string; sub: string; action: 'play' | 'progress' | 'done' | 'clock'; tag?: string; timer?: string; progress?: number; note?: string } | null;
+const rows: { name: string; desc: string; cells: Cell[] }[] = [
+  {
+    name: 'Classic',
+    desc: 'Chapters of puzzles at a chosen difficulty.',
+    cells: [
+      { title: 'Sudoku', sub: 'Tap to start your journey', action: 'play' },
+      { title: 'Classic Sudoku', sub: 'Chapter 1 · Puzzle 15/30', action: 'play', tag: 'Hard' },
+      { title: 'Classic Sudoku', sub: 'Chapter 1 · Puzzle 15/30', action: 'progress', tag: 'Hard', progress: 0.5 },
+      { title: 'Classic Sudoku', sub: 'Content completed', action: 'done', note: 'Exception state' },
+      null,
+    ],
+  },
+  {
+    name: 'Daily',
+    desc: 'One new puzzle every day.',
+    cells: [
+      null,
+      { title: 'Daily Sudoku', sub: 'November 24, 2023', action: 'play' },
+      { title: 'Daily Sudoku', sub: 'November 24, 2023', action: 'progress', progress: 0.3 },
+      { title: 'Daily Sudoku', sub: 'November 24, 2023', action: 'done' },
+      { title: 'Daily Sudoku', sub: 'Next in 23h 30m', action: 'clock' },
+    ],
+  },
+  {
+    name: 'Live event',
+    desc: 'Time-limited events with their own puzzle set.',
+    cells: [
+      { title: 'Bridgerton Sudoku', sub: 'Tap to start your event', action: 'play', timer: '7h 45m' },
+      { title: 'Bridgerton Sudoku', sub: 'Puzzle 6/30', action: 'play', timer: '7h 45m' },
+      { title: 'Bridgerton Sudoku', sub: 'Puzzle 6/30', action: 'progress', timer: '7h 45m', progress: 0.2 },
+      { title: 'Bridgerton Sudoku', sub: 'Event completed', action: 'done', timer: '7h 45m' },
+      { title: 'Bridgerton Sudoku', sub: 'Starts in 9h 36m', action: 'clock', timer: '7h 45m' },
+    ],
+  },
+];
+
+const moments = [
+  {
+    title: 'On Home',
+    text: 'The game you’re playing waits at the bottom of Home. Pull it up for every game in progress, or open the Frequently played list.',
+    shots: [
+      ['home-card', 'Home with the continue card'],
+      ['recent-list', 'Recent games, pulled up'],
+      ['frequently-played', 'Continue playing and Played recently'],
+    ],
+  },
+  {
+    title: 'Choosing a game',
+    text: 'The same card leads the way from game selection to mode and difficulty, so a puzzle looks the same wherever you meet it.',
+    shots: [
+      ['game-selection', 'Game selection'],
+      ['preselection', 'Game preselection: start your journey'],
+      ['mode-selection', 'Mode and difficulty, with the event on top'],
+    ],
+  },
+  {
+    title: 'Finishing a puzzle',
+    text: 'On solving, the card shows as complete and docks back to Home, ready for the next session.',
+    shots: [
+      ['end-daily', 'Daily Sudoku complete'],
+      ['end-classic', 'Classic puzzle 5 complete'],
+    ],
+  },
+  {
+    title: 'Live events',
+    text: 'Event cards add a timer: a countdown before the event opens, then a card you can start right away.',
+    shots: [
+      ['event-soon', 'Before the event: starts in 9h 36m'],
+      ['event-live', 'Event open: start now'],
+    ],
+  },
+];
+---
+
+<div class="case">
+  <section class="wrap tldr" aria-label="Summary">
+    <div>
+      <h2>Challenge</h2>
+      <p>Players juggle several puzzle games, modes and events. They need to see at a glance what each puzzle is, how hard it is and how far they’ve got, wherever it appears.</p>
+    </div>
+    <div>
+      <h2>Approach</h2>
+      <p>One puzzle card with a fixed hierarchy of information, adapted to its context: classic, daily or live event, from first play to complete.</p>
+    </div>
+    <div>
+      <h2>Delivered</h2>
+      <p>13 card states across 3 game modes, the navigation flow, wireframes for 10 screens, and an interactive prototype of the Home cards.</p>
+    </div>
+  </section>
+
+  <nav class="wrap jump" aria-label="On this page">
+    <ul role="list">
+      {toc.map(([id, label]) => <li><a href={`#${id}`}>{label}</a></li>)}
+    </ul>
+  </nav>
+
+  <section class="wrap block" id="overview" aria-labelledby="overview-title">
+    <header class="block-head">
+      <h2 id="overview-title" class="h2">Overview <span class="quiet">What a puzzle card is.</span></h2>
+    </header>
+    <div class="block-body">
+      <p class="lead">
+        The puzzle card is the interface element that tells a player about a puzzle. To keep cognitive load down,
+        what it shows depends on where it appears, leading with what the player needs at that moment. Wherever
+        possible, the same information appears in the same format, so it’s quick to recognise and easy to take in.
+      </p>
+      <div class="anatomy">
+        <div class="anatomy-card">
+          <PuzzleCard title="Bridgerton Sudoku" sub="Chapter 1 · Puzzle 6/30" tag="Hard" action="progress" timer="7h 45m" progress={0.2} />
+          <ol class="pins" aria-hidden="true">
+            <li style="--x: 34%; --y: -24%">1</li>
+            <li style="--x: 30%; --y: 124%">2</li>
+            <li style="--x: 61%; --y: -24%">3</li>
+            <li style="--x: 107%; --y: 50%">4</li>
+            <li style="--x: 87%; --y: -58%">5</li>
+          </ol>
+        </div>
+        <ol class="anatomy-list">
+          {anatomy.map(([t, d]) => <li><b>{t}</b><span>{d}</span></li>)}
+          <li class="tbd"><b>Favourite <em>TBD</em></b><span>Pinning a game as a favourite is still being explored.</span></li>
+        </ol>
+      </div>
+    </div>
+  </section>
+
+  <section class="wrap block" id="problem" aria-labelledby="problem-title">
+    <header class="block-head">
+      <h2 id="problem-title" class="h2">The problem <span class="quiet">Questions the design had to answer.</span></h2>
+    </header>
+    <div class="block-body two">
+      <div class="qgroup">
+        <h3>How does the list look when a player has…</h3>
+        <ul role="list" class="qlist">
+          <li>only one game? Do we show the expand at all?<span class="chip explored">Explored</span></li>
+          <li>two games?<span class="chip explored">Explored</span></li>
+          <li>four games?<span class="chip explored">Explored</span></li>
+          <li>all the games?<span class="chip explored">Explored</span></li>
+        </ul>
+      </div>
+      <div class="qgroup">
+        <h3>Rules to decide</h3>
+        <ul role="list" class="qlist">
+          <li>If you tried a game but didn’t complete a puzzle, does it join the list?<span class="chip open">Open</span></li>
+          <li>If you haven’t started a session for X days, do we still suggest the puzzle?<span class="chip open">Open</span></li>
+          <li>Can you remove a puzzle yourself? Could it be a swipe?<span class="chip explored">Explored</span></li>
+          <li>Does a puzzle expire?<span class="chip open">Open</span></li>
+          <li>Is there a maximum of 5 games at a time?<span class="chip open">Open</span></li>
+        </ul>
+      </div>
+      <p class="note">“Explored” means the interactive prototype above shows an answer you can try: switch between 1, 2, 4 and all games, and swipe a game left to remove it.</p>
+    </div>
+  </section>
+
+  <section class="wrap block" id="drivers" aria-labelledby="drivers-title">
+    <header class="block-head">
+      <h2 id="drivers-title" class="h2">UX drivers <span class="quiet">What every decision was checked against.</span></h2>
+    </header>
+    <dl class="drivers">
+      {drivers.map(([t, d]) => (
+        <div>
+          <dt>{t}</dt>
+          <dd>{d}</dd>
+        </div>
+      ))}
+    </dl>
+  </section>
+
+  <section class="wrap block" id="hypotheses" aria-labelledby="hyp-title">
+    <header class="block-head">
+      <h2 id="hyp-title" class="h2">Hypotheses <span class="quiet">What we believed, and set out to test.</span></h2>
+    </header>
+    <ol class="hyps" role="list">
+      {hypotheses.map((h, i) => (
+        <li>
+          <span class="hyp-n">H{i + 1}</span>
+          <p>{h}</p>
+        </li>
+      ))}
+    </ol>
+  </section>
+
+  <section class="wrap block" id="stories" aria-labelledby="stories-title">
+    <header class="block-head">
+      <h2 id="stories-title" class="h2">Player stories <span class="quiet">As a player, I want to…</span></h2>
+      <ul class="legend" role="list" aria-label="Status legend">
+        <li><i class="s-not"></i>Not yet</li>
+        <li><i class="s-review"></i>In review</li>
+        <li><i class="s-ready"></i>Ready for dev</li>
+        <li><i class="s-hold"></i>On hold or blocked</li>
+      </ul>
+    </header>
+    <ol class="stories" role="list">
+      {stories.map(([s, t]) => (
+        <li>
+          <span class:list={['status', s === 'Not yet' ? 's-not' : 's-review']}>{s}</span>
+          <p>{t}</p>
+        </li>
+      ))}
+    </ol>
+  </section>
+
+  <section class="wrap block" id="flow" aria-labelledby="flow-title">
+    <header class="block-head">
+      <h2 id="flow-title" class="h2">Navigation flow <span class="quiet">A played game docks back to Home when you finish a level.</span></h2>
+    </header>
+    <div class="flow" role="img" aria-label="Flow: Home page to Game selection, select game to Game preselection, select mode and difficulty to Game screen, solve to Puzzle end screen, then the card docks back to the Home page. Back returns one step from preselection and from the game screen.">
+      <div class="flow-inner">
+      <ol class="flow-row">
+        <li class="node home">Home</li>
+        <li class="edge both"><span>Browse</span></li>
+        <li class="node">Game selection</li>
+        <li class="edge"><span>Select game</span><em>Back</em></li>
+        <li class="node">Game preselection</li>
+        <li class="edge"><span>Select mode &amp; difficulty</span><em>Back</em></li>
+        <li class="node">Game screen</li>
+        <li class="edge solve"><span>Solve</span></li>
+        <li class="node end">Puzzle end screen</li>
+      </ol>
+      <div class="flow-loop"><span>Dock the card to Home</span></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="block states-block" id="states" aria-labelledby="states-title">
+    <header class="wrap block-head">
+      <h2 id="states-title" class="h2">Card states <span class="quiet">Three game modes, from first play to complete.</span></h2>
+      <ul class="legend" role="list" aria-label="Action legend">
+        <li><span class="lg play"></span>Play</li>
+        <li><span class="lg progress"></span>Continue</li>
+        <li><span class="lg done"></span>Complete</li>
+        <li><span class="lg clock"></span>Not open yet</li>
+      </ul>
+    </header>
+    <div class="wrap wide">
+      <div class="matrix" role="table" aria-label="Puzzle card states by game mode">
+        <div class="m-row m-head" role="row">
+          {columns.map((c) => <span role="columnheader">{c}</span>)}
+        </div>
+        {rows.map((r) => (
+          <div class="m-row" role="row">
+            <div role="rowheader" class="m-name"><b>{r.name}</b><span>{r.desc}</span></div>
+            {r.cells.map((c, i) => (
+              <div role="cell" class:list={['m-cell', !c && 'empty']} data-col={columns[i]}>
+                {c ? (
+                  <>
+                    <PuzzleCard {...c} compact />
+                    {c.note && <span class="m-note">{c.note}</span>}
+                  </>
+                ) : (
+                  <span class="m-none">Not used</span>
+                )}
+              </div>
+            ))}
+          </div>
+        ))}
+      </div>
+    </div>
+    <div class="wrap">
+      <ul class="rules" role="list">
+        <li><b>Keep consistent</b> the hierarchy of information on every card, the visuals across the game, and how game-mode icons are presented on every screen.</li>
+        <li><b>Room to flex.</b> Card size can change slightly for artistic needs, and the game-mode icon size is still being explored.</li>
+        <li><b>To validate in testing.</b> On the preselection screen the whole card works as a play button, following the pre-game selection design.</li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="block" id="screens" aria-labelledby="screens-title">
+    <header class="wrap block-head">
+      <h2 id="screens-title" class="h2">Where the card lives <span class="quiet">Wireframes, from Home to the end of a puzzle.</span></h2>
+    </header>
+    {moments.map((m) => (
+      <div class="wrap moment">
+        <div class="moment-text">
+          <h3>{m.title}</h3>
+          <p>{m.text}</p>
+        </div>
+        <ul class="shots" role="list">
+          {m.shots.map(([f, cap]) => (
+            <li>
+              <a href={img(f)} target="_blank" rel="noopener">
+                <img src={img(f)} alt={`Wireframe: ${cap}`} width="393" height="852" loading="lazy" decoding="async" />
+              </a>
+              <span>{cap}</span>
+            </li>
+          ))}
+        </ul>
+      </div>
+    ))}
+  </section>
+
+  <section class="wrap block" id="next" aria-labelledby="next-title">
+    <header class="block-head">
+      <h2 id="next-title" class="h2">What’s next <span class="quiet">Still open in the design.</span></h2>
+    </header>
+    <ul class="next" role="list">
+      <li>Decide the list rules: unfinished tries, inactivity, expiry, and the 5-game maximum.</li>
+      <li>Finish the last player story: the same puzzle information on game selection, Home and the puzzle header.</li>
+      <li>Explore pinning a game as a favourite.</li>
+      <li>Test whether players expect the whole card to start the game.</li>
+    </ul>
+  </section>
+</div>
+
+<style>
+  .case {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: clamp(72px, 9vw, 120px);
+    margin-top: clamp(48px, 6vw, 80px);
+  }
+
+  /* Summary */
+  .tldr {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 24px clamp(24px, 4vw, 56px);
+  }
+  .tldr h2 {
+    font-family: var(--font-ui);
+    font-size: 0.9375rem;
+    font-weight: 600;
+    letter-spacing: 0;
+    color: var(--ink-2);
+    margin-bottom: 8px;
+  }
+  .tldr p {
+    font-size: 1.125rem;
+    line-height: 1.5;
+  }
+
+  /* Jump links */
+  .jump {
+    margin-top: calc(clamp(72px, 9vw, 120px) * -0.55);
+  }
+  .jump ul {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 0;
+    padding: 18px 0 0;
+    list-style: none;
+    border-top: 1px solid var(--line);
+  }
+  .jump a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 40px;
+    padding: 0 14px;
+    border-radius: var(--pill);
+    background: var(--surface);
+    box-shadow: 0 0 0 1px var(--line) inset;
+    font-size: 0.9375rem;
+    font-weight: 500;
+    text-decoration: none;
+    transition: box-shadow var(--t-fast) var(--ease-out);
+  }
+  .jump a:hover {
+    box-shadow: 0 0 0 1px #b9bec7 inset;
+  }
+
+  /* Blocks */
+  .block {
+    scroll-margin-top: 96px;
+  }
+  .block-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: end;
+    justify-content: space-between;
+    gap: 16px 32px;
+    margin-bottom: clamp(24px, 3vw, 40px);
+  }
+  .block-head .h2 {
+    max-width: 22ch;
+  }
+  .block-head .quiet {
+    margin-top: 0.15em;
+    font-size: 0.62em;
+    line-height: 1.15;
+    letter-spacing: -0.02em;
+  }
+  .lead {
+    max-width: 60ch;
+    font-size: 1.1875rem;
+    line-height: 1.55;
+  }
+
+  /* Anatomy */
+  .anatomy {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    align-items: center;
+    gap: 32px clamp(32px, 6vw, 96px);
+    margin-top: clamp(32px, 4vw, 48px);
+  }
+  .anatomy-card {
+    position: relative;
+    padding: clamp(44px, 6vw, 72px) clamp(20px, 4vw, 48px);
+    border-radius: var(--radius-lg);
+    background: linear-gradient(160deg, #eef5ff, #dcebff);
+  }
+  .anatomy-card > :global(.pc) {
+    max-width: 380px;
+    margin-inline: auto;
+  }
+  .pins {
+    position: absolute;
+    inset: clamp(44px, 6vw, 72px) clamp(20px, 4vw, 48px);
+    max-width: 380px;
+    margin: 0 auto;
+    padding: 0;
+    list-style: none;
+    pointer-events: none;
+  }
+  .pins li {
+    position: absolute;
+    left: var(--x);
+    top: var(--y);
+    width: 22px;
+    height: 22px;
+    margin: -11px 0 0 -11px;
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    background: var(--accent);
+    color: #fff;
+    font-size: 0.75rem;
+    font-weight: 600;
+    box-shadow: 0 0 0 3px #fff;
+  }
+  .anatomy-list {
+    display: grid;
+    gap: 0;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    counter-reset: a;
+    border-top: 1px solid var(--line);
+  }
+  .anatomy-list li {
+    display: grid;
+    grid-template-columns: 30px 9rem 1fr;
+    gap: 4px 12px;
+    align-items: baseline;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--line);
+    counter-increment: a;
+  }
+  .anatomy-list li::before {
+    content: counter(a);
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    background: var(--accent);
+    color: #fff;
+    font-size: 0.75rem;
+    font-weight: 600;
+  }
+  .anatomy-list li.tbd::before {
+    content: '';
+    background: var(--surface-2);
+  }
+  .anatomy-list span {
+    color: var(--ink-2);
+    font-size: 0.9375rem;
+  }
+  .anatomy-list em {
+    margin-left: 6px;
+    padding: 2px 7px;
+    border-radius: var(--pill);
+    background: var(--surface-2);
+    color: var(--ink-2);
+    font-size: 0.75rem;
+    font-style: normal;
+    font-weight: 600;
+  }
+
+  /* Problem */
+  .two {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 32px clamp(32px, 6vw, 96px);
+  }
+  .qgroup h3 {
+    margin-bottom: 14px;
+    font-size: 1.25rem;
+    letter-spacing: -0.02em;
+  }
+  .qlist {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    border-top: 1px solid var(--line);
+  }
+  .qlist li {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 16px;
+    padding: 13px 0;
+    border-bottom: 1px solid var(--line);
+    font-size: 1.0625rem;
+  }
+  .chip {
+    flex: none;
+    padding: 3px 10px;
+    border-radius: var(--pill);
+    font-size: 0.8125rem;
+    font-weight: 600;
+  }
+  .chip.explored {
+    background: #e3f4ea;
+    color: #136b3b;
+  }
+  .chip.open {
+    background: var(--surface-2);
+    color: var(--ink-2);
+  }
+  .note {
+    grid-column: 1 / -1;
+    color: var(--ink-2);
+    font-size: 0.9375rem;
+  }
+
+  /* Drivers */
+  .drivers {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 0 24px;
+    margin: 0;
+  }
+  .drivers div {
+    padding-top: 18px;
+    border-top: 2px solid var(--ink);
+  }
+  .drivers dt {
+    font-weight: 600;
+    font-size: 1.0625rem;
+    margin-bottom: 8px;
+  }
+  .drivers dd {
+    margin: 0;
+    color: var(--ink-2);
+    font-size: 0.9375rem;
+    line-height: 1.5;
+  }
+
+  /* Hypotheses */
+  .hyps {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: clamp(12px, 1.6vw, 20px);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .hyps li {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 20px;
+    padding: clamp(22px, 3vw, 32px);
+    border-radius: var(--radius-lg);
+    background: var(--surface);
+    box-shadow: var(--shadow-tile);
+  }
+  .hyp-n {
+    font-family: var(--font-display);
+    font-size: clamp(1.75rem, 2.6vw, 2.25rem);
+    font-weight: 600;
+    letter-spacing: -0.03em;
+    line-height: 1;
+    color: var(--accent);
+  }
+  .hyps p {
+    font-family: var(--font-display);
+    font-size: clamp(1.125rem, 1.6vw, 1.375rem);
+    font-weight: 500;
+    line-height: 1.35;
+    letter-spacing: -0.015em;
+  }
+
+  /* Stories */
+  .legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 16px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    color: var(--ink-2);
+    font-size: 0.875rem;
+  }
+  .legend li {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+  }
+  .legend i {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+  }
+  .s-not { background: #d93a3a; }
+  .s-review { background: #f2b630; }
+  .s-ready { background: #34c759; }
+  .s-hold { background: #8b9099; }
+  .stories {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: clamp(12px, 1.4vw, 16px);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .stories li {
+    display: grid;
+    align-content: start;
+    gap: 14px;
+    padding: 20px;
+    border-radius: var(--radius-md);
+    background: var(--surface);
+    box-shadow: var(--shadow-tile);
+  }
+  .status {
+    justify-self: start;
+    padding: 4px 10px;
+    border-radius: var(--pill);
+    font-size: 0.75rem;
+    font-weight: 600;
+  }
+  .status.s-review {
+    background: #fdf1d3;
+    color: #7a5200;
+  }
+  .status.s-not {
+    background: #fbe1e1;
+    color: #a12424;
+  }
+  .stories p {
+    font-size: 1rem;
+    line-height: 1.45;
+  }
+
+  /* Flow */
+  .flow {
+    position: relative;
+    padding: clamp(28px, 4vw, 48px) clamp(16px, 3vw, 40px) clamp(40px, 5vw, 56px);
+    border-radius: var(--radius-lg);
+    background: var(--surface);
+    box-shadow: var(--shadow-tile);
+    overflow-x: auto;
+  }
+  .flow-inner {
+    min-width: 880px;
+  }
+  .flow-row {
+    display: grid;
+    grid-template-columns: 1fr 0.8fr 1fr 1fr 1fr 1fr 1fr 0.7fr 1fr;
+    align-items: center;
+    min-width: 880px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .node {
+    display: grid;
+    place-items: center;
+    aspect-ratio: 9 / 16;
+    max-height: 190px;
+    padding: 12px;
+    border: 2px solid #0b1a30;
+    border-radius: 22px;
+    background: linear-gradient(180deg, #ffffff, #f2f7ff);
+    font-weight: 600;
+    font-size: 0.875rem;
+    text-align: center;
+    line-height: 1.25;
+    position: relative;
+  }
+  .node::before {
+    content: '';
+    position: absolute;
+    top: 8px;
+    left: 50%;
+    width: 30%;
+    height: 6px;
+    margin-left: -15%;
+    border-radius: 3px;
+    background: #0b1a30;
+  }
+  .node.home,
+  .node.end {
+    background: linear-gradient(180deg, #eef5ff, #d9eaff);
+  }
+  .edge {
+    position: relative;
+    display: grid;
+    justify-items: center;
+    gap: 34px;
+    padding: 0 6px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-align: center;
+  }
+  .edge span,
+  .edge em {
+    position: relative;
+    z-index: 1;
+    padding: 4px 8px;
+    border-radius: 8px;
+    font-style: normal;
+    line-height: 1.2;
+  }
+  .edge span {
+    background: #3a8dff;
+    color: #fff;
+  }
+  .edge em {
+    background: #e6f1ff;
+    color: #1a5fd0;
+  }
+  .edge::before,
+  .edge::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: 2px;
+  }
+  .edge::before {
+    top: calc(50% - 26px);
+    background: #3a8dff;
+    clip-path: polygon(0 0, calc(100% - 8px) 0, calc(100% - 8px) 0, 100% 50%, calc(100% - 8px) 100%, 0 100%);
+  }
+  .edge::after {
+    top: calc(50% + 26px);
+    background: #9cc6ff;
+  }
+  .edge.both,
+  .edge.solve {
+    gap: 0;
+  }
+  .edge.both::before,
+  .edge.solve::before {
+    top: 50%;
+  }
+  .edge.both::after,
+  .edge.solve::after {
+    display: none;
+  }
+  .flow-loop {
+    height: 40px;
+    margin: 0 calc(100% * 0.5 / 8.5);
+    border: 2px solid #3a8dff;
+    border-top: 0;
+    border-radius: 0 0 16px 16px;
+    display: grid;
+    place-items: end center;
+  }
+  .flow-loop span {
+    transform: translateY(50%);
+    padding: 4px 10px;
+    border-radius: 8px;
+    background: #3a8dff;
+    color: #fff;
+    font-size: 0.75rem;
+    font-weight: 600;
+  }
+
+  /* States */
+  .lg {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    display: inline-block;
+  }
+  .lg.play { background: #3a8dff; }
+  .lg.progress { box-shadow: 0 0 0 2.5px #d6e7ff inset; background: conic-gradient(#3a8dff 0 30%, transparent 30%); -webkit-mask: radial-gradient(circle, transparent 5.5px, #000 6px); mask: radial-gradient(circle, transparent 5.5px, #000 6px); }
+  .lg.done { background: #34c759; }
+  .lg.clock { box-shadow: 0 0 0 2px #53627a inset; }
+  .matrix {
+    display: grid;
+    gap: 14px;
+    padding: clamp(16px, 2.4vw, 28px);
+    border-radius: var(--radius-lg);
+    background: linear-gradient(160deg, #eef5ff, #dcebff);
+    overflow-x: auto;
+  }
+  .wide {
+    max-width: 1560px;
+  }
+  .m-row {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(200px, 1fr));
+    gap: 8px 12px;
+    align-items: stretch;
+    min-width: 1060px;
+  }
+  .m-row + .m-row {
+    padding-top: 10px;
+    border-top: 1px solid rgb(58 141 255 / 0.15);
+  }
+  .m-head span {
+    color: #53627a;
+    font-size: 0.8125rem;
+    font-weight: 600;
+  }
+  .m-name {
+    grid-column: 1 / -1;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 2px 10px;
+  }
+  .m-name b {
+    font-size: 1.0625rem;
+  }
+  .m-name span {
+    color: #53627a;
+    font-size: 0.8125rem;
+    line-height: 1.35;
+  }
+  .m-cell {
+    display: grid;
+    grid-template-rows: 1fr auto;
+    gap: 6px;
+    padding-top: 10px;
+  }
+  .m-note {
+    color: #53627a;
+    font-size: 0.75rem;
+    font-weight: 600;
+  }
+  .m-cell.empty {
+    align-self: stretch;
+  }
+  .m-none {
+    display: grid;
+    place-items: center;
+    min-height: 76px;
+    border: 1.5px dashed #b9cfe9;
+    border-radius: 18px;
+    color: #53627a;
+    font-size: 0.8125rem;
+  }
+  .rules {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 16px clamp(24px, 4vw, 48px);
+    margin: clamp(24px, 3vw, 36px) 0 0;
+    padding: 0;
+    list-style: none;
+    color: var(--ink-2);
+  }
+  .rules b {
+    color: var(--ink);
+  }
+
+  /* Screens */
+  .moment {
+    display: grid;
+    grid-template-columns: minmax(14rem, 1fr) 3fr;
+    gap: 24px clamp(32px, 5vw, 72px);
+    padding-block: clamp(28px, 3.5vw, 44px);
+    border-top: 1px solid var(--line);
+  }
+  .moment h3 {
+    font-size: 1.375rem;
+    letter-spacing: -0.02em;
+    margin-bottom: 8px;
+  }
+  .moment p {
+    color: var(--ink-2);
+    max-width: 34ch;
+  }
+  .shots {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: clamp(12px, 2vw, 24px);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .shots li {
+    display: grid;
+    gap: 10px;
+  }
+  .shots a {
+    display: block;
+    border-radius: 26px;
+    overflow: hidden;
+    box-shadow: 0 0 0 1px rgb(11 26 48 / 0.08), var(--shadow-tile);
+    transition: transform var(--t-med) var(--ease-out), box-shadow var(--t-med) var(--ease-out);
+  }
+  .shots img {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+  .shots span {
+    color: var(--ink-2);
+    font-size: 0.875rem;
+  }
+  @media (hover: hover) {
+    .shots a:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 0 0 1px rgb(11 26 48 / 0.08), var(--shadow-lift);
+    }
+  }
+
+  /* Next */
+  .next {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0 clamp(24px, 4vw, 56px);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    border-top: 1px solid var(--line);
+  }
+  .next li {
+    padding: 16px 0 16px 28px;
+    border-bottom: 1px solid var(--line);
+    position: relative;
+    font-size: 1.0625rem;
+  }
+  .next li::before {
+    content: '';
+    position: absolute;
+    left: 2px;
+    top: 24px;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    border: 2px solid var(--ink-3);
+  }
+
+  @media (max-width: 1100px) {
+    .drivers {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 28px 24px;
+    }
+    .stories {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+  }
+  @media (max-width: 860px) {
+    .tldr,
+    .two,
+    .anatomy,
+    .hyps,
+    .rules,
+    .next,
+    .moment {
+      grid-template-columns: 1fr;
+    }
+    .drivers,
+    .stories {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+    .shots {
+      grid-template-columns: repeat(3, minmax(150px, 1fr));
+      overflow-x: auto;
+      scroll-snap-type: x mandatory;
+      margin-inline: calc(var(--gutter) * -1);
+      padding: 4px var(--gutter) 12px;
+      scroll-padding-inline: var(--gutter);
+    }
+    .shots li {
+      scroll-snap-align: start;
+    }
+  }
+  @media (max-width: 760px) {
+    .flow {
+      overflow: visible;
+      padding: 24px 16px;
+    }
+    .flow-inner {
+      min-width: 0;
+    }
+    .flow-row {
+      grid-template-columns: 1fr;
+      justify-items: center;
+      min-width: 0;
+    }
+    .node {
+      aspect-ratio: auto;
+      width: min(240px, 100%);
+      min-height: 56px;
+      border-radius: 18px;
+    }
+    .node::before {
+      display: none;
+    }
+    .edge,
+    .edge.both,
+    .edge.solve {
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+      width: 100%;
+      padding: 18px 0;
+    }
+    .edge::before,
+    .edge.both::before,
+    .edge.solve::before {
+      top: 0;
+      bottom: 0;
+      left: 50%;
+      right: auto;
+      width: 2px;
+      height: auto;
+      clip-path: none;
+    }
+    .edge::after {
+      display: none;
+    }
+    .flow-loop {
+      height: auto;
+      margin: 14px 0 0;
+      border: 0;
+      place-items: center;
+    }
+    .flow-loop span {
+      transform: none;
+    }
+    .matrix {
+      overflow: visible;
+      gap: 24px;
+    }
+    .m-head {
+      display: none;
+    }
+    .m-row {
+      grid-template-columns: 1fr;
+      min-width: 0;
+      gap: 6px;
+    }
+    .m-row + .m-row {
+      padding-top: 20px;
+    }
+    .m-cell.empty {
+      display: none;
+    }
+    .m-cell::before {
+      content: attr(data-col);
+      color: #53627a;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+    .m-cell {
+      grid-template-rows: auto auto auto;
+      gap: 8px;
+      padding-top: 8px;
+    }
+  }
+  @media (max-width: 560px) {
+    .pins li:nth-child(4) {
+      --x: 92% !important;
+      --y: 126% !important;
+    }
+    .drivers,
+    .stories {
+      grid-template-columns: 1fr;
+    }
+    .anatomy-list li {
+      grid-template-columns: 30px 1fr;
+    }
+    .anatomy-list span {
+      grid-column: 2;
+    }
+    .shots {
+      grid-template-columns: repeat(3, 56%);
+    }
+    .flow,
+    .matrix {
+      margin-inline: calc(var(--gutter) * -1);
+      border-radius: 0;
+    }
+  }
+</style>
