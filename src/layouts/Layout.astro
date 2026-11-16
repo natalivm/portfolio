@@ -17,7 +17,7 @@ const pageTitle = title ? `${title} · ${site.name}` : `${site.name}, ${site.rol
 ---
 
 <!doctype html>
-<html lang="en">
+<html lang="en" data-m={site.emailCode}>
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -53,10 +53,10 @@ const pageTitle = title ? `${title} · ${site.name}` : `${site.name}, ${site.rol
             <span class="find-label">Find a project</span>
             <kbd class="hide-sm" data-kbd>⌘K</kbd>
           </button>
-          <a class="pill pill-dark contact" href={`mailto:${site.email}`} aria-label="Get in touch by email">
+          <button class="pill pill-dark contact" type="button" data-mail="open" aria-label="Get in touch by email">
             <span class="contact-label">Get in touch</span>
             <span class="contact-icon"><Icon name="mail" /></span>
-          </a>
+          </button>
         </div>
       </div>
     </header>
@@ -72,7 +72,7 @@ const pageTitle = title ? `${title} · ${site.name}` : `${site.name}, ${site.rol
           <p class="foot-meta">{site.role}</p>
         </div>
         <ul class="foot-links">
-          <li><a href={`mailto:${site.email}`}>{site.email}</a></li>
+          <li><button class="foot-mail" type="button" data-mail="open">Email me</button></li>
           {site.socials.map((s) => (
             <li><a href={s.href} rel="me noopener">{s.label}</a></li>
           ))}
@@ -81,6 +81,30 @@ const pageTitle = title ? `${title} · ${site.name}` : `${site.name}, ${site.rol
     </footer>
 
     <QuickJump />
+
+    <script>
+      // The email address is never in the page's HTML. It is stored scrambled on <html> and put
+      // together only when a person presses a button: "open" starts an email, "copy" copies it.
+      const address = () => atob(document.documentElement.dataset.m || '').split('').reverse().join('');
+      document.addEventListener('click', async (e) => {
+        const btn = (e.target as HTMLElement).closest<HTMLElement>('[data-mail]');
+        if (!btn) return;
+        if (btn.dataset.mail === 'open') {
+          location.href = 'mailto:' + address();
+          return;
+        }
+        const label = btn.querySelector<HTMLElement>('[data-mail-label]') || btn;
+        const was = label.dataset.was || label.textContent || '';
+        label.dataset.was = was;
+        try {
+          await navigator.clipboard.writeText(address());
+          label.textContent = 'Copied: ' + address();
+        } catch {
+          label.textContent = address(); // clipboard blocked: show it so it can be copied by hand
+        }
+        setTimeout(() => (label.textContent = was), 6000);
+      });
+    </script>
 
     <script>
       // Remember the last work-index URL (filter + scroll) so "All work" links return to it.
@@ -251,14 +275,27 @@ const pageTitle = title ? `${title} · ${site.name}` : `${site.name}, ${site.rol
         padding: 0;
         list-style: none;
       }
-      .foot-links a {
+      .foot-links a,
+      .foot-mail {
         display: inline-flex;
         min-height: 44px;
         align-items: center;
         color: var(--ink-2);
       }
-      .foot-links a:hover {
+      .foot-links a:hover,
+      .foot-mail:hover {
         color: var(--ink);
+      }
+      /* A button that reads as one of the footer's links */
+      .foot-mail {
+        padding: 0;
+        border: 0;
+        background: none;
+        font: inherit;
+        text-decoration: underline;
+        text-decoration-thickness: 1px;
+        text-underline-offset: 0.2em;
+        cursor: pointer;
       }
       .contact-icon {
         display: none;

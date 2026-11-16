@@ -27,7 +27,13 @@ export const site = {
   headline: ['Art direction and full‑scale art production,', 'with an AI gen pipeline on demand.'],
   intro:
     'I help game studios with art direction, AI production, UI/UX design and mentoring.',
-  email: 'petrovska_natalka@yahoo.com',
+  /**
+   * Your email, scrambled so it cannot be read in this file or in the pages' HTML.
+   * Visitors get it by pressing a button. To change it, run this with your address
+   * and paste the result here:
+   *   node -e "console.log(Buffer.from([...'you@example.com'].reverse().join('')).toString('base64'))"
+   */
+  emailCode: 'bW9jLm9vaGF5QGFrbGF0YW5fYWtzdm9ydGVw',
   available: true,
   availability: 'Available for new projects',
   socials: [
