@@ -1,8 +1,9 @@
 /**
  * Every project on the site comes from this list.
  *
- * ALL ENTRIES BELOW ARE SAMPLE CONTENT. Titles, clients, years and text are
- * invented placeholders that show how the layout behaves with ~30 projects.
+ * Next Games is a real project. EVERY OTHER ENTRY IS SAMPLE CONTENT: titles,
+ * clients, years and text are invented placeholders that show how the layout
+ * behaves with ~30 projects.
  * Replace them with your own work, then set `showSampleNotice` to false in
  * src/data/site.ts.
  *

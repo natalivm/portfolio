@@ -42,7 +42,7 @@ Undecided: the owner's name, specialism and positioning have not been given yet.
 
 ## Evidence on Hand
 
-None yet. No real projects, images, testimonials, clients or metrics exist in the repo. Every project, cover image and description currently in the site is a labelled placeholder. Never add testimonials, client logos, awards or numbers until the owner supplies them.
+One real project: Next Games (puzzle cards on the Home screen of a puzzle games app, 2023). Its case study uses only what the owner's design file contains: the feature overview, UX drivers, player stories and their status, the navigation flow, the card states, and the open questions; its prototype is built to that file's measurements. The live event is named "Royale" in place of the brand name used in the file. Every other project, cover image and description in the site is a labelled placeholder. Never add testimonials, client logos, awards or numbers until the owner supplies them.
 
 ## Product Principles
 

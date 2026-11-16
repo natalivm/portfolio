@@ -17,6 +17,8 @@ export interface CardState {
 }
 interface Props extends CardState {
   size?: 'sm' | 'md' | 'lg';
+  /** Which game's artwork: the same drawings the prototype uses */
+  art?: 'sudoku' | 'tangram';
   /** Number the five pieces of information for the anatomy figure */
   marks?: boolean;
   class?: string;
@@ -32,6 +34,7 @@ const {
   bar = false,
   size = 'md',
   marks = false,
+  art = 'sudoku',
   class: cls,
 } = Astro.props;
 const k = (n: number) => (marks ? n : undefined);
@@ -43,7 +46,11 @@ const k = (n: number) => (marks ? n : undefined);
     <span class="pc-timer-t">{timer}</span>
   </span>
   <span class="pc-thumb" aria-hidden="true">
-    <svg viewBox="0 0 38 38"><rect x="1" y="1" width="36" height="36" rx="7" fill="#f1f7ff" stroke="#bcd8ff" /><path d="M13 1v36M25 1v36M1 13h36M1 25h36" stroke="#9cc6ff" stroke-width="1.4" /><rect x="14.5" y="14.5" width="9" height="9" rx="2" fill="#3a8dff" /><rect x="2.5" y="26.5" width="9" height="9" rx="2" fill="#bfe0ff" /><rect x="26.5" y="2.5" width="9" height="9" rx="2" fill="#bfe0ff" /></svg>
+    {art === 'tangram' ? (
+      <svg viewBox="0 0 38 38"><path d="M2 2h34L19 19z" fill="#3a8dff" /><path d="M2 2v34l17-17z" fill="#7cc0ff" /><path d="M36 2v17l-8.5-8.5z" fill="#bfe0ff" /><path d="M19 19l8.5 8.5L19 36 10.5 27.5z" fill="#9fd0ff" /><path d="M2 36h17l-8.5-8.5z" fill="#1f6fe5" /><path d="M36 19v17H19z" fill="#5aa8ff" /></svg>
+    ) : (
+      <svg viewBox="0 0 38 38"><rect x="1" y="1" width="36" height="36" rx="7" fill="#f1f7ff" stroke="#bcd8ff" /><path d="M13 1v36M25 1v36M1 13h36M1 25h36" stroke="#9cc6ff" stroke-width="1.4" /><g font-size="7" font-weight="700" text-anchor="middle" font-family="-apple-system,Inter,sans-serif"><text x="7" y="10.5" fill="#1f6fe5">5</text><text x="19" y="22.5" fill="#0b1a30">3</text><text x="31" y="34.5" fill="#1f6fe5">8</text><text x="31" y="10.5" fill="#0b1a30">1</text></g></svg>
+    )}
   </span>
   <span class="pc-text">
     <span class="pc-title">

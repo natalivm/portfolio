@@ -80,6 +80,7 @@ const loads = [
 const K = 300 / 852;
 const px = (v: number) => `${(v * K).toFixed(1)}px`;
 const sheets = [
+  { n: 0, top: 589, title: 'No games', note: 'The card stays and says so: “No games in progress yet”.' },
   { n: 1, top: 589, title: '1 game', note: 'Stays a single card. No handle, nothing to open.' },
   { n: 2, top: 524, title: '2 games', note: 'Opens just tall enough for both.' },
   { n: 4, top: 336, title: '4 games', note: 'One more row for each game.' },
@@ -272,6 +273,48 @@ const questions = [
       </div>
       <figcaption>The blue block is the puzzle card. It appears on three screens and returns to Home.</figcaption>
     </figure>
+
+    <figure class="fig" data-fig>
+      <div class="tile">
+        <div class="frame screens">
+          <div class="scr">
+            <p class="scr-name">Game preselection</p>
+            <div class="scr-body">
+              <p class="scr-title">Sudoku</p>
+              <p class="scr-seg" aria-hidden="true"><span class="on">Easy</span><span>Hard</span><span>Expert</span></p>
+              <p class="scr-label">Royale event</p>
+              <PuzzleCard size="sm" mode="Royale" sub="Puzzle 6/30" timer="7h 45m" />
+              <PuzzleCard size="sm" mode="Daily" sub="November 24, 2023" action="progress" progress={0.4} />
+              <PuzzleCard size="sm" mode="Classic" sub="Chapter 1 · Puzzle 15/30" tag="Hard" />
+            </div>
+          </div>
+          <div class="scr">
+            <p class="scr-name">Puzzle end screen</p>
+            <div class="scr-body scr-end">
+              <p class="scr-title">Well done!<span>Daily Sudoku complete!</span></p>
+              <PuzzleCard size="sm" mode="Daily" sub="November 24, 2023" action="done" />
+              <p class="scr-btn" aria-hidden="true">Share this puzzle</p>
+              <p class="scr-btn" aria-hidden="true">Continue</p>
+            </div>
+          </div>
+          <div class="scr">
+            <p class="scr-name">Home, list open</p>
+            <div class="scr-body">
+              <p class="scr-label">Continue playing</p>
+              <PuzzleCard size="sm" art="tangram" mode="Royale" game="Tangram" sub="Puzzle 6/30" timer="7h 45m" action="progress" progress={0.4} />
+              <PuzzleCard size="sm" mode="Classic" sub="Chapter 1 · Puzzle 15/30" tag="Hard" />
+              <p class="scr-label">Played recently</p>
+              <PuzzleCard size="sm" art="tangram" mode="Classic" game="Tangram" sub="Chapter 1 · Puzzle 15/30" tag="Hard" action="progress" progress={0.4} />
+            </div>
+          </div>
+        </div>
+      </div>
+      <figcaption>
+        The card as it was drawn on those three screens. The order never changes: artwork, name and mode,
+        one line of detail, then the action. The grouped Home list is an exploration; the prototype uses a
+        single list.
+      </figcaption>
+    </figure>
   </section>
 
   <!-- 5. Card states -->
@@ -376,8 +419,8 @@ const questions = [
       <div>
         <p>
           On Home, the card for the last game waits above the tab bar. Pulling it up opens the recent games
-          list, and the tab bar gives way to Find more games. The prototype at the top of this page is built
-          to these measurements.
+          list, and the tab bar gives way to Find more games. With nothing in progress the card stays and
+          says so. The prototype at the top of this page is built to these measurements.
         </p>
       </div>
     </div>
@@ -387,11 +430,11 @@ const questions = [
           {sheets.map((s, n) => (
             <div class="h-item">
               <div
-                class:list={['h-phone', { still: s.n === 1 }]}
+                class:list={['h-phone', { still: s.n <= 1, none: s.n === 0 }]}
                 style={`--rest:${px(589)}; --open:${px(s.top)}; --lift:${px(88 + 28)}; --bar:${px(88)}; --delay:${n * 90}ms`}
               >
                 <span class="h-sheet">
-                  {Array.from({ length: s.n }).map((_, i) => (
+                  {Array.from({ length: Math.max(s.n, 1) }).map((_, i) => (
                     <i style={`top:${px(49 + i * 94)}; height:${px(86)}; left:${px(22)}; right:${px(22)}`} />
                   ))}
                 </span>
@@ -1104,7 +1147,104 @@ const questions = [
     border-color: #1a5fd0;
   }
   .back {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
     font-size: 0.75rem;
+  }
+  .back::before {
+    content: '';
+    width: 6px;
+    height: 6px;
+    border-left: 1.5px solid currentColor;
+    border-bottom: 1.5px solid currentColor;
+    transform: rotate(45deg);
+  }
+
+  /* ---------- One card, three screens ---------- */
+  .screens {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    align-items: start;
+    gap: 24px clamp(16px, 2.4vw, 32px);
+    padding: clamp(24px, 3.4vw, 48px);
+  }
+  .scr {
+    display: grid;
+    gap: 12px;
+  }
+  .scr-name {
+    font-weight: 600;
+    font-size: 0.9375rem;
+  }
+  .scr-body {
+    display: grid;
+    align-content: start;
+    gap: 8px;
+    min-height: 100%;
+    padding: 20px 14px 16px;
+    border-radius: 24px;
+    background: #f7fbff;
+    box-shadow: 0 0 0 1px rgb(11 26 48 / 0.08);
+  }
+  .scr-title {
+    padding-bottom: 6px;
+    font-family: var(--font-display);
+    font-size: 1.25rem;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    line-height: 1.15;
+    text-align: center;
+  }
+  .scr-title span {
+    display: block;
+    margin-top: 4px;
+    color: #45546c;
+    font-family: var(--font-ui);
+    font-size: 0.875rem;
+    font-weight: 400;
+    letter-spacing: 0;
+  }
+  .scr-seg {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    padding: 3px;
+    border-radius: 10px;
+    background: #dcebff;
+    color: #45546c;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-align: center;
+  }
+  .scr-seg span {
+    padding: 6px 0;
+    border-radius: 8px;
+  }
+  .scr-seg .on {
+    background: #fff;
+    color: #0b1a30;
+  }
+  .scr-label {
+    padding: 8px 4px 6px;
+    color: #45546c;
+    font-size: 0.75rem;
+    font-weight: 600;
+  }
+  .scr-end {
+    padding-top: 28px;
+  }
+  .scr-end .scr-title {
+    padding-bottom: 14px;
+  }
+  .scr-btn {
+    display: grid;
+    place-items: center;
+    min-height: 40px;
+    border-radius: 14px;
+    background: #fff;
+    box-shadow: 0 0 0 1px rgb(11 26 48 / 0.08);
+    font-size: 0.875rem;
+    font-weight: 600;
   }
 
   /* ---------- Card states: player ---------- */
@@ -1260,8 +1400,8 @@ const questions = [
   /* ---------- The Home sheet, to scale ---------- */
   .heights {
     display: grid;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-    gap: 32px clamp(16px, 3vw, 40px);
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 32px clamp(12px, 2vw, 32px);
     padding: clamp(32px, 4.4vw, 64px) clamp(20px, 4vw, 56px);
   }
   .h-item {
@@ -1314,6 +1454,10 @@ const questions = [
   }
   .h-sheet i:not(:first-child) {
     opacity: 0;
+  }
+  .h-phone.none .h-sheet i {
+    background: none;
+    border: 1.5px dashed #7fa5e0;
   }
   .h-bar {
     position: absolute;
@@ -1402,6 +1546,9 @@ const questions = [
 
   /* Mid widths: the driver's name and text stack, so its card keeps a readable width */
   @media (max-width: 1180px) {
+    .screens {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
     .drivers li {
       grid-template-columns: minmax(0, 1fr) minmax(300px, 0.8fr);
       row-gap: 8px;
@@ -1431,6 +1578,7 @@ const questions = [
     .ana,
     .player,
     .notes,
+    .screens,
     .ledger li {
       grid-template-columns: 1fr;
     }
@@ -1442,7 +1590,7 @@ const questions = [
       margin-top: 6px;
     }
     .heights {
-      grid-template-columns: repeat(2, minmax(0, 1fr));
+      grid-template-columns: repeat(3, minmax(0, 1fr));
     }
     .stories li {
       grid-template-columns: 1.75rem minmax(0, 1fr);
@@ -1460,6 +1608,7 @@ const questions = [
       padding: 0;
     }
     .heights {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
       padding-inline: 12px;
     }
   }
