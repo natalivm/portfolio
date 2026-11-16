@@ -56,12 +56,63 @@ const href = (x: Project) => (x.caseStudy ? `${base}/work/${x.slug}/` : `${base}
     </dl>
   </header>
 
-  <figure class="wrap hero">
-    <div class="hero-frame" style={`view-transition-name: cover-${p.slug}; view-transition-class: cover`}>
-      <Cover project={p} ratio="16/9" eager />
-    </div>
-  </figure>
+  {p.prototype ? (
+    <figure class="wrap hero">
+      <div class="proto-frame" style={`view-transition-name: cover-${p.slug}; view-transition-class: cover`}>
+        <iframe
+          class="proto-desktop"
+          src={`${base}${p.prototype}?demo=1`}
+          title={`${p.title}: interactive prototype`}
+        ></iframe>
+        <iframe
+          class="proto-mobile"
+          src={`${base}${p.prototype}?embed=1&demo=1`}
+          title={`${p.title}: interactive prototype`}
+          loading="lazy"
+        ></iframe>
+      </div>
+      <figcaption class="proto-cap">
+        The walk-through plays on its own. Touch or click the phone to take over; it resumes when you stop.
+        <a href={`${base}${p.prototype}`}>Open full screen</a>
+      </figcaption>
+    </figure>
+  ) : (
+    <figure class="wrap hero">
+      <div class="hero-frame" style={`view-transition-name: cover-${p.slug}; view-transition-class: cover`}>
+        <Cover project={p} ratio="16/9" eager />
+      </div>
+    </figure>
+  )}
 
+  {p.slug === 'next-games' ? (
+    <article class="wrap story">
+      <section>
+        <h2>The brief</h2>
+        <p>
+          The Home screen needed one place for the games a player has in progress. The card for the last
+          game waits at the bottom of Home; pulling it up reveals every game in progress, each with its
+          chapter, puzzle and difficulty.
+        </p>
+      </section>
+      <section>
+        <h2>Questions the design had to answer</h2>
+        <ul class="qs">
+          <li>How does the list look with one game, two, four, or all of them? Do we show the expand at all for one?</li>
+          <li>If someone tried a game but didn’t finish a puzzle, does it join the list?</li>
+          <li>If a game hasn’t been played for a while, do we keep suggesting it? Does it expire?</li>
+          <li>Can players remove a game themselves? Is there a maximum?</li>
+        </ul>
+      </section>
+      <section>
+        <h2>What the prototype shows</h2>
+        <p>
+          With one game the card stands alone, with no handle. With more, it becomes a sheet that grows to fit
+          its content and the Home screen steps back behind it. Swiping a game left removes it. Resuming
+          a game moves it to the top of the list and shows progress in the Dynamic Island.
+        </p>
+      </section>
+    </article>
+  ) : (
   <article class="wrap story">
     <p class="sample">Sample case study. Replace this text with your own write-up.</p>
     <section>
@@ -99,6 +150,7 @@ const href = (x: Project) => (x.caseStudy ? `${base}/work/${x.slug}/` : `${base}
       </p>
     </section>
   </article>
+  )}
 
   <nav class="wrap pager" aria-label="More case studies">
     <a class="pager-card" href={href(prev)} rel="prev">
@@ -216,6 +268,56 @@ const href = (x: Project) => (x.caseStudy ? `${base}/work/${x.slug}/` : `${base}
   }
   .hero {
     margin-block: 0;
+  }
+  .proto-frame {
+    display: grid;
+    place-items: center;
+    padding: clamp(24px, 4vw, 48px) 16px;
+    border-radius: var(--radius-lg);
+    background:
+      radial-gradient(80% 60% at 80% 0%, #ffffff 0%, rgb(255 255 255 / 0) 60%),
+      linear-gradient(160deg, #eef5ff 0%, #dcebff 100%);
+    overflow: hidden;
+  }
+  .proto-frame iframe {
+    display: block;
+    border: 0;
+    background: transparent;
+  }
+  .proto-desktop {
+    width: min(100%, 860px);
+    height: 940px;
+  }
+  .proto-mobile {
+    display: none !important;
+    width: 300px;
+    height: 650px;
+  }
+  .proto-cap {
+    margin-top: 14px;
+    color: var(--ink-2);
+    font-size: 0.9375rem;
+  }
+  .proto-cap a {
+    margin-left: 6px;
+    color: var(--ink);
+    font-weight: 600;
+  }
+  .qs {
+    display: grid;
+    gap: 10px;
+    max-width: 64ch;
+    margin: 0;
+    padding-left: 1.2em;
+    font-size: 1.125rem;
+  }
+  @media (max-width: 860px) {
+    .proto-desktop {
+      display: none !important;
+    }
+    .proto-mobile {
+      display: block !important;
+    }
   }
   .hero-frame {
     overflow: hidden;

@@ -4,9 +4,11 @@ import Tile from '../components/Tile.astro';
 import Cover from '../components/Cover.astro';
 import Icon from '../components/Icon.astro';
 import { site } from '../data/site';
-import { projects, featured, disciplines, countBy, slugify } from '../data/projects';
+import { projects, featured as allFeatured, disciplines, countBy, slugify } from '../data/projects';
 
 const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+const showcase = projects.find((p) => p.prototype);
+const featured = allFeatured.filter((p) => p !== showcase).slice(0, 6);
 const rest = projects.filter((p) => !p.featured);
 const blurbs: Record<string, string> = {
   Branding: 'Identities, naming support and the guidelines that keep them alive.',
@@ -38,6 +40,38 @@ const years = projects.map((p) => p.year);
       </div>
     </div>
   </section>
+
+  {showcase && (
+    <section class="showcase wrap" aria-labelledby="showcase-title">
+      <div class="show-band">
+        <div class="show-text">
+          <p class="show-meta">Featured project · {showcase.year}</p>
+          <h2 id="showcase-title" class="h2">
+            {showcase.title}
+            <span class="quiet">{showcase.summary}</span>
+          </h2>
+          <ul class="show-tags" role="list">
+            {showcase.disciplines.map((d) => <li>{d}</li>)}
+            <li>Interactive prototype</li>
+          </ul>
+          <div class="show-actions">
+            <a class="pill pill-dark" href={`${base}/work/${showcase.slug}/`}>
+              Open the project
+              <span class="arrow"><Icon name="arrow-right" size={14} /></span>
+            </a>
+            <a class="pill pill-light" href={`${base}${showcase.prototype}`}>Try it full screen</a>
+          </div>
+        </div>
+        <div class="show-phone">
+          <iframe
+            src={`${base}${showcase.prototype}?embed=1&demo=1`}
+            title={`${showcase.title}: animated walk-through of the prototype`}
+            loading="lazy"
+          ></iframe>
+        </div>
+      </div>
+    </section>
+  )}
 
   <section class="featured wrap" aria-labelledby="featured-title">
     <div class="section-head">
@@ -207,6 +241,79 @@ const years = projects.map((p) => p.year);
   }
   .section-note {
     color: var(--ink-2);
+  }
+
+  .show-band {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 32px clamp(32px, 6vw, 96px);
+    padding: clamp(28px, 4vw, 56px) clamp(24px, 5vw, 72px);
+    border-radius: var(--radius-lg);
+    background:
+      radial-gradient(90% 70% at 85% 10%, #ffffff 0%, rgb(255 255 255 / 0) 60%),
+      linear-gradient(160deg, #eef5ff 0%, #dcebff 100%);
+    overflow: hidden;
+  }
+  .show-meta {
+    color: var(--ink-2);
+    font-size: 0.9375rem;
+    margin-bottom: 14px;
+  }
+  .show-text .h2 .quiet {
+    margin-top: 0.3em;
+    font-size: 0.56em;
+    line-height: 1.18;
+    letter-spacing: -0.02em;
+    color: #5f6f86;
+  }
+  .show-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 24px 0 0;
+    padding: 0;
+    list-style: none;
+  }
+  .show-tags li {
+    padding: 6px 12px;
+    border-radius: var(--pill);
+    background: rgb(255 255 255 / 0.8);
+    font-size: 0.875rem;
+    font-weight: 500;
+  }
+  .show-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 28px;
+  }
+  .show-phone {
+    width: 324px;
+    height: 680px;
+  }
+  .show-phone iframe {
+    display: block;
+    width: 100%;
+    height: 100%;
+    border: 0;
+    background: transparent;
+  }
+  .featured {
+    margin-top: clamp(80px, 10vw, 128px);
+  }
+  @media (max-width: 860px) {
+    .show-band {
+      grid-template-columns: 1fr;
+      justify-items: center;
+    }
+    .show-text {
+      justify-self: stretch;
+    }
+    .show-phone {
+      width: 286px;
+      height: 600px;
+    }
   }
 
   .feat-grid {
