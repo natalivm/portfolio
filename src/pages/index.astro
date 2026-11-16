@@ -5,20 +5,12 @@ import ProtoTile from '../components/ProtoTile.astro';
 import Cover from '../components/Cover.astro';
 import Icon from '../components/Icon.astro';
 import { site } from '../data/site';
-import { projects, featured as allFeatured, disciplines, countBy, slugify } from '../data/projects';
+import { projects, featured as allFeatured } from '../data/projects';
 
 const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 const showcase = projects.find((p) => p.prototype);
 const featured = allFeatured.filter((p) => p !== showcase).slice(0, showcase ? 4 : 6);
 const rest = projects.filter((p) => !p.featured);
-const blurbs: Record<string, string> = {
-  Branding: 'Identities, naming support and the guidelines that keep them alive.',
-  Packaging: 'Boxes, bottles, labels and the systems behind a whole range.',
-  Print: 'Books, posters, reports and anything that goes to press.',
-  Illustration: 'Drawn worlds for packaging, editorial and campaigns.',
-  Digital: 'Websites and product screens, from first sketch to handoff.',
-  Motion: 'Logo animation, titles and the small moves that bring a brand to life.',
-};
 const years = projects.map((p) => p.year);
 ---
 
@@ -82,25 +74,6 @@ const years = projects.map((p) => p.year);
     </ul>
   </section>
 
-  <section class="disciplines wrap" aria-labelledby="disc-title">
-    <div class="section-head">
-      <h2 id="disc-title" class="h2">Work by discipline</h2>
-      <p class="section-note">Pick one to see only that work.</p>
-    </div>
-    <ul class="disc-list" role="list">
-      {disciplines.map((d) => (
-        <li>
-          <a href={`${base}/work/?d=${slugify(d)}`}>
-            <span class="disc-name">{d}</span>
-            <span class="disc-blurb">{blurbs[d]}</span>
-            <span class="disc-count">{countBy(d)} projects</span>
-            <span class="disc-arrow"><Icon name="arrow-right" /></span>
-          </a>
-        </li>
-      ))}
-    </ul>
-  </section>
-
   <section class="about wrap" id="about" aria-labelledby="about-title">
     <h2 id="about-title" class="h2">
       About
@@ -125,31 +98,17 @@ const years = projects.map((p) => p.year);
       <span class="quiet">Let’s talk.</span>
     </h2>
     <div class="contact-actions">
-      <a class="pill pill-dark" href={`mailto:${site.email}`}>
-        Email {site.email}
+      <button class="pill pill-dark" type="button" data-mail="open">
+        Email me
         <span class="arrow"><Icon name="arrow-right" size={14} /></span>
-      </a>
-      <button class="pill pill-light" type="button" data-copy={site.email}>
-        <span data-copy-label>Copy email address</span>
+      </button>
+      <button class="pill pill-light" type="button" data-mail="copy">
+        <span data-mail-label>Copy email address</span>
       </button>
     </div>
+    <noscript><p class="contact-note">These buttons need JavaScript. You can also reach me on LinkedIn, linked below.</p></noscript>
   </section>
 </Layout>
-
-<script>
-  document.querySelectorAll<HTMLButtonElement>('[data-copy]').forEach((btn) => {
-    btn.addEventListener('click', async () => {
-      const label = btn.querySelector('[data-copy-label]')!;
-      try {
-        await navigator.clipboard.writeText(btn.dataset.copy!);
-        label.textContent = 'Copied to clipboard';
-      } catch {
-        label.textContent = btn.dataset.copy!;
-      }
-      setTimeout(() => (label.textContent = 'Copy email address'), 2400);
-    });
-  });
-</script>
 
 <style>
   .hero {
@@ -307,61 +266,9 @@ const years = projects.map((p) => p.year);
     }
   }
 
-  .disciplines,
   .about {
     margin-top: clamp(96px, 11vw, 152px);
   }
-  .disc-list {
-    margin: 0;
-    padding: 0;
-    list-style: none;
-    border-top: 1px solid var(--line);
-  }
-  .disc-list a {
-    display: grid;
-    grid-template-columns: minmax(9rem, 1fr) 2fr auto auto;
-    align-items: center;
-    gap: 8px 32px;
-    padding: 22px 4px;
-    border-bottom: 1px solid var(--line);
-    text-decoration: none;
-    transition: background-color var(--t-fast) var(--ease-out), padding var(--t-med) var(--ease-out);
-  }
-  .disc-name {
-    font-family: var(--font-display);
-    font-size: clamp(1.5rem, 2.4vw, 2rem);
-    font-weight: 600;
-    letter-spacing: -0.03em;
-  }
-  .disc-blurb {
-    color: var(--ink-2);
-  }
-  .disc-count {
-    color: var(--ink-2);
-    font-size: 0.9375rem;
-    white-space: nowrap;
-  }
-  .disc-arrow {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    display: grid;
-    place-items: center;
-    background: var(--surface);
-    box-shadow: var(--shadow-tile);
-    transition: background-color var(--t-fast) var(--ease-out), color var(--t-fast) var(--ease-out);
-  }
-  @media (hover: hover) {
-    .disc-list a:hover {
-      padding-inline: 16px;
-      background: var(--surface);
-    }
-    .disc-list a:hover .disc-arrow {
-      background: var(--btn-bg);
-      color: var(--btn-ink);
-    }
-  }
-
   .about {
     display: grid;
     grid-template-columns: 1fr 1.2fr;
@@ -409,6 +316,10 @@ const years = projects.map((p) => p.year);
   }
   .contact .display {
     font-size: clamp(2.4rem, 5.6vw, 4.8rem);
+  }
+  .contact-note {
+    margin-top: 16px;
+    color: var(--ink-2);
   }
   .contact-actions {
     display: flex;
@@ -468,23 +379,6 @@ const years = projects.map((p) => p.year);
     }
     .all-text {
       text-align: left;
-    }
-    .disc-list a {
-      grid-template-columns: 1fr auto;
-      padding-block: 18px;
-    }
-    .disc-blurb {
-      grid-column: 1 / -1;
-      grid-row: 2;
-      font-size: 0.9375rem;
-    }
-    .disc-count {
-      grid-column: 1;
-      grid-row: 3;
-    }
-    .disc-arrow {
-      grid-column: 2;
-      grid-row: 1;
     }
   }
 </style>
