@@ -22,12 +22,16 @@
     --ink-2: #45546c;
     --ink-3: #55647b;
     --sky-2: #e4f0ff;
-    --sky-3: #cfe4ff;
     --blue: #3a8dff;
     --blue-deep: #1a5fd0;
     --blue-soft: #e6f1ff;
     --hairline: rgba(11, 26, 48, 0.08);
     --red: #d7301f;
+    /* The one warm accent: the streak, against an otherwise blue Home */
+    --flame: #f0651a;
+    --flame-soft: #fff0dc;
+    --flame-quiet: #f8d3ac;
+    --flame-ink: #8a4410;
     --font: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Inter', system-ui, sans-serif;
     --font-display: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Inter', system-ui, sans-serif;
     --ease-out: cubic-bezier(.2, .9, .25, 1);
@@ -221,18 +225,18 @@
   .streak {
     display: flex; align-items: center; gap: 10px;
     margin-top: 10px;
-    padding: 14px 16px;
+    padding: 10px 16px 10px 10px;
     border-radius: 20px;
-    background: rgba(255,255,255,.62);
-    box-shadow: var(--edge);
-    font-size: 14px; line-height: 20px; color: var(--ink-2);
+    background: var(--flame-soft);
+    box-shadow: 0 0 0 1px rgba(240, 101, 26, .16);
+    font-size: 14px; line-height: 20px; color: var(--flame-ink);
   }
-  .streak svg { flex: none; }
+  .streak-badge { flex: none; width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center; background: var(--flame); color: #fff; }
   .streak-text { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .streak b { color: var(--ink); font-weight: 600; }
   .dots { margin-left: auto; display: flex; gap: 5px; flex: none; }
-  .dots i { width: 9px; height: 9px; border-radius: 50%; background: var(--sky-3); }
-  .dots i.on { background: var(--blue); }
+  .dots i { width: 9px; height: 9px; border-radius: 50%; background: var(--flame-quiet); }
+  .dots i.on { background: var(--flame); }
 
   /* All games shelf */
   .shelf { margin-top: 26px; }
@@ -558,7 +562,7 @@
             </div>
 
             <div class="streak">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1a5fd0" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22c4 0 7-2.7 7-6.6 0-3.2-2-5.4-3.6-7.2-.4 1.7-1.3 2.8-2.4 3.2C13.3 7.6 11.6 4.4 9 2c.2 3.3-1.6 5.6-3.2 7.6A8 8 0 0 0 5 15.4C5 19.3 8 22 12 22z"/></svg>
+              <span class="streak-badge" aria-hidden="true"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 22c4 0 7-2.7 7-6.6 0-3.2-2-5.4-3.6-7.2-.4 1.7-1.3 2.8-2.4 3.2C13.3 7.6 11.6 4.4 9 2c.2 3.3-1.6 5.6-3.2 7.6A8 8 0 0 0 5 15.4C5 19.3 8 22 12 22z"/></svg></span>
               <span class="streak-text"><b>4-day streak</b> · keep it going</span>
               <span class="dots" aria-hidden="true"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i></i><i></i><i></i></span>
             </div>
