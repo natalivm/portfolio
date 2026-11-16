@@ -31,7 +31,7 @@ export const site = {
   available: true,
   availability: 'Available for new projects',
   socials: [
-    { label: 'LinkedIn', href: 'https://www.linkedin.com/' },
+    { label: 'LinkedIn', href: 'https://www.linkedin.com/in/natka/' },
     { label: 'Instagram', href: 'https://www.instagram.com/' },
     { label: 'Dribbble', href: 'https://dribbble.com/' },
   ],
