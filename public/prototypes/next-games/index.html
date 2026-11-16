@@ -726,9 +726,12 @@
   // ---------- Spring ----------
   function spring(from, to, v0, onFrame, onDone, k = 340, c = 34) {
     if (reduce) { onFrame(to); onDone && onDone(); return () => {}; }
-    let x = from, v = v0, last = performance.now(), id;
+    // Time is taken only from the frame timestamps. They can run tens of milliseconds behind
+    // performance.now() (inside an iframe on a busy page, for one), and mixing the two clocks made
+    // the first step run backwards in time: a one-frame jump at the start of every movement.
+    let x = from, v = v0, last = null, id;
     const step = (now) => {
-      const dt = Math.min((now - last) / 1000, 1 / 30); last = now;
+      const dt = last === null ? 1 / 60 : Math.min(Math.max((now - last) / 1000, 0), 1 / 30); last = now;
       v += (-k * (x - to) - c * v) * dt; x += v * dt;
       if (Math.abs(v) < 4 && Math.abs(x - to) < 0.5) { onFrame(to); const d = onDone; onDone = null; d && d(); return; }
       onFrame(x);
@@ -741,8 +744,8 @@
   const ease = (t) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
   const tween = (ms, fn) => new Promise((res) => {
     if (reduce) { fn(1); return res(); }
-    const t0 = performance.now();
-    const step = (now) => { const t = clamp((now - t0) / ms); fn(ease(t)); t < 1 ? requestAnimationFrame(step) : res(); };
+    let t0 = null; // the first frame's own timestamp, for the same reason as the spring
+    const step = (now) => { if (t0 === null) t0 = now; const t = clamp((now - t0) / ms); fn(ease(t)); t < 1 ? requestAnimationFrame(step) : res(); };
     requestAnimationFrame(step);
   });
 
