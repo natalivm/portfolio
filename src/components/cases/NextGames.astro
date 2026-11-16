@@ -1,0 +1,1628 @@
+---
+/**
+ * Next Games: the design case. Every statement here comes from the project's design file
+ * (feature overview, UX drivers, player stories, navigation flow, card states, open questions).
+ * The live event is called "Royale" throughout, as in the prototype.
+ */
+import PuzzleCard, { type CardState } from './PuzzleCard.astro';
+
+const parts = [
+  { k: 1, name: 'Game name', eg: 'Sudoku' },
+  { k: 2, name: 'Game mode', eg: 'Classic, Daily or a live event' },
+  { k: 3, name: 'Difficulty level', eg: 'Hard' },
+  { k: 4, name: 'Progression', eg: 'Puzzle 6 of 30' },
+  { k: 5, name: 'Timer', eg: 'Time-limited events only' },
+];
+
+const stories = [
+  { text: 'Easily identify the specific game, mode and difficulty level depicted on a puzzle card.', status: 'review' },
+  { text: 'Easily identify if the puzzle card represents a content path that I am already progressing on, or a new path for me to start (chapter, event, etc.).', status: 'review' },
+  { text: 'Easily identify if the card represents a puzzle that I am already progressing on, or a new puzzle for me to start (continue or start next).', status: 'review' },
+  { text: 'Understand that the puzzles I engage with will always get docked on the Home view (and Frequently Played list) for easy access.', status: 'review' },
+  { text: 'Understand related puzzle information presented in the same fashion elsewhere in the game (game selection, home, puzzle header).', status: 'notyet' },
+];
+const inReview = stories.filter((s) => s.status === 'review').length;
+
+// Card states, as labelled in the design file. null: that state was not drawn.
+const stages = ['First time', 'No progress', 'In progress', 'Complete', 'Countdown'];
+type Named = CardState & { label: string };
+const families: { key: string; name: string; states: (Named | null)[] }[] = [
+  {
+    key: 'classic',
+    name: 'Classic',
+    states: [
+      { label: 'First-time game engagement', sub: 'Tap to start your journey', action: 'play' },
+      { label: 'Without puzzle progress', mode: 'Classic', sub: 'Chapter 1 · Puzzle 15/30', tag: 'Hard', action: 'play' },
+      { label: 'Classic with puzzle progress', mode: 'Classic', sub: 'Chapter 1 · Puzzle 15/30', tag: 'Hard', action: 'progress', progress: 0.4 },
+      { label: 'Classic complete (exception state)', mode: 'Classic', sub: 'Content completed', action: 'done' },
+      null,
+    ],
+  },
+  {
+    key: 'daily',
+    name: 'Daily',
+    states: [
+      null,
+      { label: 'Daily puzzle', mode: 'Daily', sub: 'November 24, 2023', action: 'play' },
+      { label: 'Daily with puzzle progress', mode: 'Daily', sub: 'November 24, 2023', action: 'progress', progress: 0.4 },
+      { label: 'Daily puzzle complete', mode: 'Daily', sub: 'November 24, 2023', action: 'done' },
+      { label: 'Daily countdown card', mode: 'Daily', sub: 'Next in 23h 30m', action: 'clock' },
+    ],
+  },
+  {
+    key: 'live',
+    name: 'Live event',
+    states: [
+      { label: 'Live event, first-time engagement', mode: 'Royale', sub: 'Tap to start your event', timer: '7h 45m', action: 'play' },
+      { label: 'Live event', mode: 'Royale', sub: 'Puzzle 6/30', timer: '7h 45m', action: 'play' },
+      { label: 'Live event with puzzle progress', mode: 'Royale', sub: 'Puzzle 6/30', timer: '7h 45m', action: 'progress', progress: 0.4 },
+      { label: 'Live event card complete', mode: 'Royale', sub: 'Event completed', timer: '7h 45m', action: 'done' },
+      { label: 'Live event card countdown', mode: 'Royale', sub: 'Starts in 9h 36m', timer: '7h 45m', action: 'clock' },
+    ],
+  },
+];
+const drawn = families.flatMap((f) => f.states).filter(Boolean).length;
+const first = families[0].states[0]!;
+
+// UX drivers. `cycle` states animate the small card beside the text.
+const homeCard: CardState = { mode: 'Classic', sub: 'Chapter 1 · Puzzle 6/30', tag: 'Hard', action: 'play', bar: true, progress: 0.2 };
+const contexts = [
+  { ...homeCard, label: 'On Home' },
+  { mode: 'Daily', sub: 'November 24, 2023', action: 'progress', progress: 0.4, label: 'In game selection' },
+  { mode: 'Daily', sub: 'November 24, 2023', action: 'done', label: 'On the puzzle end screen' },
+];
+const loads = [
+  { sub: 'Tap to start your journey', action: 'play', label: 'First time: the name and one prompt', meter: 1 },
+  { ...homeCard, label: 'In progress: name, mode, difficulty, progression', meter: 4 },
+];
+
+// The Home sheet, to scale from the 393 x 852 frame.
+const K = 300 / 852;
+const px = (v: number) => `${(v * K).toFixed(1)}px`;
+const sheets = [
+  { n: 0, top: 589, title: 'No games', note: 'The card stays and says so: “No games in progress yet”.' },
+  { n: 1, top: 589, title: '1 game', note: 'Stays a single card. No handle, nothing to open.' },
+  { n: 2, top: 524, title: '2 games', note: 'Opens just tall enough for both.' },
+  { n: 4, top: 336, title: '4 games', note: 'One more row for each game.' },
+  { n: 5, top: 242, title: '5 games', note: 'The height drawn in the design file.' },
+];
+
+const questions = [
+  { q: 'How does the expanded list look when the player has only one game? Do we show the expand at all?', a: 'One game stays a single card, with no handle.', done: true },
+  { q: 'With only two games? Four? All of them?', a: 'The sheet opens just tall enough for its rows.', done: true },
+  { q: 'Can players delete a puzzle themselves?', a: 'Yes: swipe a game left to remove it.', done: true },
+  { q: 'If you have tried a game but did not complete a puzzle, do we add it to the list?', a: 'The flow docks a game on finishing a level; a game left mid-puzzle is undecided.', done: false },
+  { q: 'If you played a game actively but have not started a session for the past X days, do we still suggest it?', a: '', done: false },
+  { q: 'Will a game expire from the list?', a: '', done: false },
+  { q: 'Will there be a maximum of five games at a time?', a: 'The prototype shows five.', done: false },
+];
+---
+
+<article class="wrap case">
+  <!-- 1. Overview -->
+  <section class="sec">
+    <div class="sec-head">
+      <h2>What a puzzle card is</h2>
+      <div>
+        <p>
+          A puzzle card is the UI element that tells the player about one puzzle: which game it is, its mode
+          and difficulty, how far along they are and, for time-limited events, how long is left.
+        </p>
+        <p>
+          To keep cognitive load down, what the card shows depends on where it appears: only what the player
+          needs at that point. Wherever it can, it keeps the same format, so the information is easy to
+          recognise and to digest.
+        </p>
+      </div>
+    </div>
+    <figure class="fig" data-fig data-anatomy>
+      <div class="tile">
+        <div class="frame ana">
+          <div class="ana-card">
+            <PuzzleCard size="lg" marks mode="Royale" tag="Hard" sub="Puzzle 6/30" timer="7h 45m" action="play" bar progress={0.2} />
+          </div>
+          <ol class="ana-list">
+            {parts.map((p) => (
+              <li>
+                <button type="button" data-k={p.k}>
+                  <span class="num">{p.k}</span>
+                  <span class="what"><b>{p.name}</b><span>{p.eg}</span></span>
+                </button>
+              </li>
+            ))}
+            <li class="tbd">
+              <span class="num">?</span>
+              <span class="what"><b>Pinning a game as a favourite</b><span>To be decided</span></span>
+            </li>
+          </ol>
+        </div>
+      </div>
+      <figcaption>
+        The five pieces of information a puzzle card can carry. This card is a composite: no single state
+        shows all five at once.
+      </figcaption>
+    </figure>
+  </section>
+
+  <!-- 2. Player stories -->
+  <section class="sec">
+    <div class="sec-head">
+      <h2>What the card has to do for a player</h2>
+      <div>
+        <p>Five player stories framed the work. Each is shown with its status as it stood in the design file.</p>
+      </div>
+    </div>
+    <div class="tile stories-tile">
+      <div class="stories-top">
+        <p class="stories-lead">As a player, I want to…</p>
+        <div class="tally" role="img" aria-label={`${inReview} of ${stories.length} stories in review, ${stories.length - inReview} not yet started`}>
+          <span class="tally-bar" aria-hidden="true">{stories.map((s) => <i data-s={s.status} />)}</span>
+          <span aria-hidden="true">{inReview} in review · {stories.length - inReview} not yet</span>
+        </div>
+      </div>
+      <ol class="stories">
+        {stories.map((s) => (
+          <li>
+            <p>{s.text}</p>
+            <span class="status" data-s={s.status}><i aria-hidden="true" />{s.status === 'review' ? 'In review' : 'Not yet'}</span>
+          </li>
+        ))}
+      </ol>
+    </div>
+  </section>
+
+  <!-- 3. UX drivers -->
+  <section class="sec">
+    <div class="sec-head">
+      <h2>Five UX drivers</h2>
+      <div>
+        <p>The principles the card was designed against, each shown on the card itself.</p>
+      </div>
+    </div>
+    <ol class="drivers">
+      <li data-fig>
+        <h3>Clear information display</h3>
+        <p>Present the essential puzzle details: name, mode, difficulty level, progression, and the timer for time-limited events.</p>
+        <div class="mini d-all"><PuzzleCard size="sm" {...homeCard} /></div>
+      </li>
+      <li data-fig>
+        <h3>Contextual relevance</h3>
+        <p>Tailor what the card says to where the player meets it, so they get the most pertinent details at that point in the game.</p>
+        <div class="mini" data-cycle={JSON.stringify(contexts)}>
+          <span class="mini-label" data-cycle-label>{contexts[0].label}</span>
+          <PuzzleCard size="sm" {...contexts[0]} />
+        </div>
+      </li>
+      <li data-fig>
+        <h3>Cognitive load management</h3>
+        <p>Balance the amount and complexity of information so players are not overwhelmed and can take in the puzzle details easily.</p>
+        <div class="mini" data-cycle={JSON.stringify(loads)}>
+          <PuzzleCard size="sm" sub={loads[0].sub} />
+          <span class="meter">
+            <span class="meter-dots" data-cycle-meter data-on={loads[0].meter} aria-hidden="true"><i /><i /><i /><i /><i /></span>
+            <span data-cycle-label>{loads[0].label}</span>
+          </span>
+        </div>
+      </li>
+      <li data-fig>
+        <h3>Consistent information format</h3>
+        <p>Keep one presentation of puzzle information across the game, to aid recognition and comprehension.</p>
+        <div class="mini d-same">
+          <PuzzleCard size="sm" mode="Classic" sub="Chapter 1 · Puzzle 15/30" action="progress" progress={0.4} />
+          <PuzzleCard size="sm" mode="Daily" sub="November 24, 2023" action="done" />
+        </div>
+      </li>
+      <li data-fig>
+        <h3>Customisation options</h3>
+        <p>Give players more control over their games, such as pinning one as a favourite.</p>
+        <div class="mini d-pin">
+          <span class="mini-label">To be decided</span>
+          <div class="pin-wrap">
+            <PuzzleCard size="sm" mode="Classic" sub="Chapter 1 · Puzzle 15/30" />
+            <span class="pin" aria-hidden="true">
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M12 2.5l2.9 6 6.6.9-4.8 4.6 1.2 6.5L12 17.4l-5.9 3.1 1.2-6.5L2.5 9.4l6.6-.9z" /></svg>
+            </span>
+          </div>
+        </div>
+      </li>
+    </ol>
+  </section>
+
+  <!-- 4. Navigation flow -->
+  <section class="sec">
+    <div class="sec-head">
+      <h2>Where the card travels</h2>
+      <div>
+        <p>
+          A player picks a game, then a mode and difficulty, and plays. On finishing a level, the game they
+          played docks to Home, where its card waits for next time.
+        </p>
+      </div>
+    </div>
+    <figure class="fig" data-fig>
+      <div class="tile">
+        <div class="flow-scroll" tabindex="0" role="group" aria-label="Navigation flow: Home page, game selection, game preselection, game screen, puzzle end screen, then the card docks to Home">
+          <div class="flow" data-flow>
+            <div class="node" data-n="0">
+              <span aria-hidden="true" class="ph ph-home"><i /><i /><i /><b /><u /></span>
+              <span class="node-name">Home page</span>
+            </div>
+            <div class="link both" data-l="0"><span class="line"><i /></span></div>
+            <div class="node" data-n="1">
+              <span aria-hidden="true" class="ph ph-select"><i /><i /><i /><i /><u /></span>
+              <span class="node-name">Game selection</span>
+            </div>
+            <div class="link" data-l="1"><span class="go">Select game</span><span class="line" /><span class="back">Back</span></div>
+            <div class="node" data-n="2">
+              <span aria-hidden="true" class="ph ph-pre"><i /><b /><b /><b /></span>
+              <span class="node-name">Game preselection</span>
+            </div>
+            <div class="link" data-l="2"><span class="go">Select mode and difficulty</span><span class="line" /><span class="back">Back</span></div>
+            <div class="node" data-n="3">
+              <span aria-hidden="true" class="ph ph-game"><i /><em /></span>
+              <span class="node-name">Game screen</span>
+            </div>
+            <div class="link" data-l="3"><span class="go">Solve</span><span class="line" /></div>
+            <div class="node" data-n="4">
+              <span aria-hidden="true" class="ph ph-end"><i /><i /><b /><i /><i /></span>
+              <span class="node-name">Puzzle end screen</span>
+            </div>
+            <div class="loop"><span class="loop-line" /><span class="loop-fill" /><span class="loop-name">Dock the card to Home</span></div>
+          </div>
+        </div>
+      </div>
+      <figcaption>The blue block is the puzzle card. It appears on three screens and returns to Home.</figcaption>
+    </figure>
+
+    <figure class="fig" data-fig>
+      <div class="tile">
+        <div class="frame screens">
+          <div class="scr">
+            <p class="scr-name">Game preselection</p>
+            <div class="scr-body">
+              <p class="scr-title">Sudoku</p>
+              <p class="scr-seg" aria-hidden="true"><span class="on">Easy</span><span>Hard</span><span>Expert</span></p>
+              <p class="scr-label">Royale event</p>
+              <PuzzleCard size="sm" mode="Royale" sub="Puzzle 6/30" timer="7h 45m" />
+              <PuzzleCard size="sm" mode="Daily" sub="November 24, 2023" action="progress" progress={0.4} />
+              <PuzzleCard size="sm" mode="Classic" sub="Chapter 1 · Puzzle 15/30" tag="Hard" />
+            </div>
+          </div>
+          <div class="scr">
+            <p class="scr-name">Puzzle end screen</p>
+            <div class="scr-body scr-end">
+              <p class="scr-title">Well done!<span>Daily Sudoku complete!</span></p>
+              <PuzzleCard size="sm" mode="Daily" sub="November 24, 2023" action="done" />
+              <p class="scr-btn" aria-hidden="true">Share this puzzle</p>
+              <p class="scr-btn" aria-hidden="true">Continue</p>
+            </div>
+          </div>
+          <div class="scr">
+            <p class="scr-name">Home, list open</p>
+            <div class="scr-body">
+              <p class="scr-label">Continue playing</p>
+              <PuzzleCard size="sm" art="tangram" mode="Royale" game="Tangram" sub="Puzzle 6/30" timer="7h 45m" action="progress" progress={0.4} />
+              <PuzzleCard size="sm" mode="Classic" sub="Chapter 1 · Puzzle 15/30" tag="Hard" />
+              <p class="scr-label">Played recently</p>
+              <PuzzleCard size="sm" art="tangram" mode="Classic" game="Tangram" sub="Chapter 1 · Puzzle 15/30" tag="Hard" action="progress" progress={0.4} />
+            </div>
+          </div>
+        </div>
+      </div>
+      <figcaption>
+        The card as it was drawn on those three screens. The order never changes: artwork, name and mode,
+        one line of detail, then the action. The grouped Home list is an exploration; the prototype uses a
+        single list.
+      </figcaption>
+    </figure>
+  </section>
+
+  <!-- 5. Card states -->
+  <section class="sec">
+    <div class="sec-head">
+      <h2>{drawn} states of one card</h2>
+      <div>
+        <p>
+          The same card serves three kinds of content: classic chapters, the daily puzzle and live events.
+          Each moves through up to five states, and the action on the right changes with it: play, play with
+          puzzle progress, complete, or a countdown to what comes next.
+        </p>
+        <p>
+          The whole card works as a play button, something to be validated in testing. Its design follows the
+          card on the pre-game selection screen.
+        </p>
+      </div>
+    </div>
+
+    <figure class="fig" data-fig>
+      <div class="tile">
+        <div class="frame player" data-player={JSON.stringify(families)}>
+          <div class="player-stage">
+            <PuzzleCard size="lg" {...first} />
+            <p class="player-name" data-player-name aria-live="polite">{first.label}</p>
+          </div>
+          <div class="player-ctl">
+            <div class="fam" role="group" aria-label="Kind of content">
+              {families.map((f, n) => <button type="button" data-fam={n} aria-pressed={n === 0 ? 'true' : 'false'}>{f.name}</button>)}
+            </div>
+            <ol class="steps">
+              {stages.map((s, n) => (
+                <li>
+                  <button type="button" data-stage={n} aria-pressed={n === 0 ? 'true' : 'false'} disabled={!families[0].states[n]}>
+                    <i aria-hidden="true" />{s}
+                  </button>
+                </li>
+              ))}
+            </ol>
+          </div>
+        </div>
+      </div>
+      <figcaption>The card plays through its states on its own. Choose a kind of content or a state to step through by hand.</figcaption>
+    </figure>
+
+    <figure class="fig" data-fig>
+      <div class="tile">
+        <div class="matrix-scroll" tabindex="0" role="group" aria-label="All card states, scrolls sideways on small screens">
+          <table class="matrix">
+            <thead>
+              <tr>{stages.map((s) => <th scope="col">{s}</th>)}</tr>
+            </thead>
+            {families.map((f) => (
+              <tbody>
+                <tr><th class="fam-name" colspan={stages.length} scope="rowgroup">{f.name}</th></tr>
+                <tr>
+                  {f.states.map((s) => (
+                    <td>
+                      {s ? (
+                        <PuzzleCard size="sm" class="pc-bare" {...s} />
+                      ) : (
+                        <span class="none"><span class="visually-hidden">Not drawn</span></span>
+                      )}
+                    </td>
+                  ))}
+                </tr>
+              </tbody>
+            ))}
+          </table>
+        </div>
+      </div>
+      <figcaption>
+        Every state in the file. Classic has no countdown and the daily puzzle has no first-time card; a
+        completed classic chapter is an exception state.
+      </figcaption>
+    </figure>
+
+    <div class="notes">
+      <div>
+        <h3>Keep consistent</h3>
+        <ul>
+          <li>The hierarchy of information on the cards</li>
+          <li>The visuals through the game</li>
+          <li>How game-mode icons are presented across screens</li>
+        </ul>
+      </div>
+      <div>
+        <h3>Left open</h3>
+        <ul>
+          <li>The card’s size can change slightly with artistic needs</li>
+          <li>The size of the game-mode icon is up for exploration</li>
+          <li>Whether the whole card as a play button holds up in testing</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- 6. The card on Home -->
+  <section class="sec">
+    <div class="sec-head">
+      <h2>The card on Home</h2>
+      <div>
+        <p>
+          On Home, the card for the last game waits above the tab bar. Pulling it up opens the recent games
+          list, and the tab bar gives way to Find more games. With nothing in progress the card stays and
+          says so. The prototype at the top of this page is built to these measurements.
+        </p>
+      </div>
+    </div>
+    <figure class="fig" data-fig>
+      <div class="tile">
+        <div class="frame heights">
+          {sheets.map((s, n) => (
+            <div class="h-item">
+              <div
+                class:list={['h-phone', { still: s.n <= 1, none: s.n === 0 }]}
+                style={`--rest:${px(589)}; --open:${px(s.top)}; --lift:${px(88 + 28)}; --bar:${px(88)}; --delay:${n * 90}ms`}
+              >
+                <span class="h-sheet">
+                  {Array.from({ length: Math.max(s.n, 1) }).map((_, i) => (
+                    <i style={`top:${px(49 + i * 94)}; height:${px(86)}; left:${px(22)}; right:${px(22)}`} />
+                  ))}
+                </span>
+                <span class="h-bar" />
+                {s.n > 1 && <span class="h-mark">y {s.top}</span>}
+              </div>
+              <p><b>{s.title}</b>{s.note}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+      <figcaption>
+        Drawn to scale from a 393 × 852 screen. The file specifies the resting card (top edge at y 589) and
+        the five-game list (y 242); two and four games use the same row size.
+      </figcaption>
+    </figure>
+  </section>
+
+  <!-- 7. Questions -->
+  <section class="sec">
+    <div class="sec-head">
+      <h2>Questions the design had to answer</h2>
+      <div>
+        <p>
+          The file ends on a list of questions and rules. The prototype answers three of them; the rest are
+          still open.
+        </p>
+      </div>
+    </div>
+    <ul class="ledger" role="list">
+      {questions.map((x) => (
+        <li data-done={x.done ? '' : undefined}>
+          <p class="q">{x.q}</p>
+          <p class="a">
+            <span class="chip">{x.done ? 'Prototyped' : 'Open'}</span>
+            {x.a}
+          </p>
+        </li>
+      ))}
+    </ul>
+  </section>
+</article>
+
+<script>
+  type St = { mode?: string; game?: string; sub?: string; tag?: string; action?: string; timer?: string; progress?: number; bar?: boolean; label?: string; meter?: number };
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const EASE = 'cubic-bezier(0.16, 1, 0.3, 1)';
+  const $$ = <T extends HTMLElement>(sel: string, root: ParentNode = document) => [...root.querySelectorAll<T>(sel)];
+
+  // Figures animate only while they are on screen.
+  const io = new IntersectionObserver((es) => es.forEach((e) => e.target.toggleAttribute('data-live', e.isIntersecting)), { threshold: 0.15 });
+  $$('[data-fig]').forEach((f) => io.observe(f));
+  const live = (el: Element) => !reduce && !document.hidden && !!el.closest('[data-live]');
+
+  function swap(el: HTMLElement | null, text = '') {
+    if (!el || el.textContent === text) return;
+    el.textContent = text;
+    if (!reduce) el.animate([{ opacity: 0, transform: 'translateY(4px)' }, { opacity: 1, transform: 'none' }], { duration: 360, easing: EASE });
+  }
+  // Move a puzzle card to another state: text swaps, CSS morphs the action.
+  function applyCard(card: HTMLElement, s: St) {
+    swap(card.querySelector('.pc-mode'), s.mode ?? '');
+    swap(card.querySelector('.pc-game'), s.game ?? 'Sudoku');
+    swap(card.querySelector('.pc-sub'), s.sub ?? '');
+    const tag = card.querySelector<HTMLElement>('.pc-tag')!;
+    tag.textContent = s.tag ?? '';
+    tag.hidden = !s.tag;
+    const timer = card.querySelector<HTMLElement>('.pc-timer')!;
+    if (s.timer) card.querySelector('.pc-timer-t')!.textContent = s.timer;
+    timer.hidden = !s.timer;
+    card.dataset.action = s.action ?? 'play';
+    card.toggleAttribute('data-bar', !!s.bar);
+    card.style.setProperty('--prog', String(s.progress ?? 0));
+  }
+
+  // Small cards beside the UX drivers: step through a few states.
+  $$('[data-cycle]').forEach((box) => {
+    const states: St[] = JSON.parse(box.dataset.cycle!);
+    const card = box.querySelector<HTMLElement>('.pc')!;
+    let i = 0;
+    setInterval(() => {
+      if (!live(box)) return;
+      i = (i + 1) % states.length;
+      applyCard(card, states[i]);
+      swap(box.querySelector('[data-cycle-label]'), states[i].label);
+      const meter = box.querySelector<HTMLElement>('[data-cycle-meter]');
+      if (meter) meter.dataset.on = String(states[i].meter);
+    }, 2600);
+  });
+
+  // Anatomy: one part lit at a time; choosing one holds it.
+  $$('[data-anatomy]').forEach((fig) => {
+    const buttons = $$<HTMLButtonElement>('.ana-list button', fig);
+    let i = 0, hold = 0;
+    const show = (k: number) => {
+      i = k;
+      $$('.pc [data-k]', fig).forEach((p) => p.classList.toggle('on', p.dataset.k === String(k)));
+      buttons.forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.k === String(k))));
+    };
+    buttons.forEach((b) => {
+      const pick = () => { hold = Date.now() + 9000; show(Number(b.dataset.k)); };
+      b.addEventListener('click', pick);
+      b.addEventListener('pointerenter', pick);
+      b.addEventListener('focus', pick);
+    });
+    show(1);
+    setInterval(() => { if (live(fig) && Date.now() > hold) show((i % buttons.length) + 1); }, 2200);
+  });
+
+  // Navigation flow: the journey lights up one screen at a time, then the card docks.
+  $$('[data-flow]').forEach((flow) => {
+    const nodes = $$('.node', flow), links = $$('.link', flow), loop = flow.querySelector<HTMLElement>('.loop')!;
+    let step = 0, wait = 0;
+    const paint = () => {
+      nodes.forEach((n, k) => n.classList.toggle('on', step < 5 ? k === step : k === 0));
+      links.forEach((l, k) => l.classList.toggle('on', k < step));
+      loop.classList.toggle('on', step >= 5);
+      nodes[0].classList.toggle('docked', step >= 6);
+    };
+    if (reduce) { step = 6; paint(); return; }
+    paint();
+    setInterval(() => {
+      if (!live(flow)) return;
+      if (wait > 0) { wait--; return; }
+      step = step >= 6 ? 0 : step + 1;
+      if (step === 5) wait = 1;   // the dock line takes two beats to draw
+      if (step === 6) wait = 2;   // rest on Home with the card docked
+      paint();
+    }, 1100);
+  });
+
+  // Card states: plays each kind of content through its states.
+  $$('[data-player]').forEach((box) => {
+    const fams: { states: (St | null)[] }[] = JSON.parse(box.dataset.player!);
+    const card = box.querySelector<HTMLElement>('.pc')!;
+    const famBtns = $$<HTMLButtonElement>('[data-fam]', box), stageBtns = $$<HTMLButtonElement>('[data-stage]', box);
+    let f = 0, s = 0, hold = 0;
+    const show = (nf: number, ns: number) => {
+      f = nf; s = ns;
+      const st = fams[f].states[s]!;
+      applyCard(card, st);
+      swap(box.querySelector('[data-player-name]'), st.label);
+      famBtns.forEach((b, k) => b.setAttribute('aria-pressed', String(k === f)));
+      stageBtns.forEach((b, k) => { b.disabled = !fams[f].states[k]; b.setAttribute('aria-pressed', String(k === s)); });
+    };
+    const firstOf = (nf: number) => fams[nf].states.findIndex(Boolean);
+    const next = () => {
+      const later = fams[f].states.findIndex((x, k) => k > s && x);
+      if (later > -1) show(f, later);
+      else { const nf = (f + 1) % fams.length; show(nf, firstOf(nf)); }
+    };
+    famBtns.forEach((b, k) => b.addEventListener('click', () => { hold = Date.now() + 10000; show(k, fams[k].states[s] ? s : firstOf(k)); }));
+    stageBtns.forEach((b, k) => b.addEventListener('click', () => { hold = Date.now() + 10000; show(f, k); }));
+    setInterval(() => { if (live(box) && Date.now() > hold) next(); }, 2400);
+  });
+</script>
+
+<style>
+  .case {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: clamp(72px, 9vw, 128px);
+    margin-top: clamp(56px, 7vw, 96px);
+  }
+  .sec {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: clamp(24px, 3vw, 40px);
+  }
+  .sec-head {
+    display: grid;
+    grid-template-columns: minmax(10rem, 1fr) minmax(0, 2fr);
+    gap: 16px clamp(32px, 6vw, 96px);
+  }
+  .sec-head h2 {
+    font-size: clamp(1.5rem, 2.2vw, 2rem);
+  }
+  .sec-head p {
+    max-width: 64ch;
+    font-size: 1.125rem;
+  }
+  .sec-head p + p {
+    margin-top: 0.8em;
+  }
+  .fig {
+    margin: 0;
+  }
+  .tile {
+    padding: 8px;
+    border-radius: var(--radius-lg);
+    background: var(--surface);
+    box-shadow: var(--shadow-tile);
+  }
+  /* Project imagery sits in a frame in the product's own blue */
+  .frame {
+    border-radius: var(--radius-md);
+    background:
+      radial-gradient(80% 60% at 80% 0%, #ffffff 0%, rgb(255 255 255 / 0) 60%),
+      linear-gradient(160deg, #eef5ff 0%, #dcebff 100%);
+    color: #0b1a30;
+  }
+  figcaption {
+    max-width: 72ch;
+    margin-top: 14px;
+    color: var(--ink-2);
+    font-size: 0.9375rem;
+  }
+
+  /* ---------- Anatomy ---------- */
+  .ana {
+    display: grid;
+    grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr);
+    align-items: center;
+    gap: 32px clamp(32px, 5vw, 72px);
+    padding: clamp(40px, 5vw, 72px) clamp(24px, 5vw, 72px);
+  }
+  .ana-card {
+    width: min(100%, 460px);
+    justify-self: center;
+    padding: 12px 0 0 12px; /* room for the number badges */
+  }
+  .ana-list {
+    display: grid;
+    gap: 2px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .ana-list button,
+  .ana-list .tbd {
+    display: grid;
+    grid-template-columns: 24px 1fr;
+    align-items: center;
+    gap: 14px;
+    width: 100%;
+    min-height: 52px;
+    padding: 6px 14px 6px 10px;
+    border: 0;
+    border-radius: 14px;
+    background: transparent;
+    text-align: left;
+    cursor: pointer;
+    transition: background-color var(--t-fast) var(--ease-out);
+  }
+  .ana-list .tbd {
+    cursor: default;
+  }
+  .ana-list button[aria-pressed='true'] {
+    background: #fff;
+  }
+  .num {
+    width: 24px;
+    height: 24px;
+    display: grid;
+    place-items: center;
+    border-radius: 50%;
+    background: #16171a;
+    color: #fff;
+    font-size: 0.75rem;
+    font-weight: 600;
+    transition: background-color var(--t-fast) var(--ease-out);
+  }
+  .ana-list button[aria-pressed='true'] .num {
+    background: #1a5fd0;
+  }
+  .tbd .num {
+    background: transparent;
+    color: #45546c;
+    box-shadow: 0 0 0 1.5px #8fa3bf inset;
+  }
+  .what {
+    display: grid;
+    line-height: 1.3;
+  }
+  .what b {
+    font-weight: 600;
+  }
+  .what span {
+    color: #45546c;
+    font-size: 0.875rem;
+  }
+
+  /* ---------- Player stories ---------- */
+  .stories-tile {
+    padding: clamp(24px, 3.4vw, 48px);
+  }
+  .stories-top {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: end;
+    justify-content: space-between;
+    gap: 16px 32px;
+    padding-bottom: clamp(20px, 2.4vw, 32px);
+  }
+  .stories-lead {
+    font-family: var(--font-display);
+    font-size: clamp(1.5rem, 2.6vw, 2.25rem);
+    font-weight: 600;
+    letter-spacing: -0.03em;
+    line-height: 1.1;
+  }
+  .tally {
+    display: grid;
+    gap: 8px;
+    color: var(--ink-2);
+    font-size: 0.9375rem;
+  }
+  .tally-bar {
+    display: grid;
+    grid-template-columns: repeat(5, 40px);
+    gap: 4px;
+  }
+  .tally-bar i {
+    height: 6px;
+    border-radius: 3px;
+    background: var(--ink);
+  }
+  .tally-bar i[data-s='notyet'] {
+    background: var(--line);
+  }
+  .stories {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    counter-reset: story;
+  }
+  .stories li {
+    display: grid;
+    grid-template-columns: 2.5rem minmax(0, 1fr) auto;
+    align-items: baseline;
+    gap: 8px 16px;
+    padding: 18px 0;
+    border-top: 1px solid var(--line);
+    counter-increment: story;
+  }
+  .stories li::before {
+    content: counter(story);
+    color: var(--ink-2);
+    font-weight: 500;
+  }
+  .stories p {
+    max-width: 68ch;
+    font-size: 1.0625rem;
+  }
+  .status {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.9375rem;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+  .status i {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    box-shadow: 0 0 0 1.5px var(--ink) inset;
+    background: linear-gradient(90deg, var(--ink) 50%, transparent 50%);
+  }
+  .status[data-s='notyet'] {
+    color: var(--ink-2);
+    font-weight: 500;
+  }
+  .status[data-s='notyet'] i {
+    background: none;
+    box-shadow: 0 0 0 1.5px var(--ink-2) inset;
+  }
+
+  /* ---------- UX drivers ---------- */
+  .drivers {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    border-bottom: 1px solid var(--line);
+  }
+  .drivers li {
+    display: grid;
+    grid-template-columns: minmax(10rem, 1fr) minmax(0, 1.25fr) minmax(0, 0.95fr);
+    align-items: center;
+    gap: 16px clamp(24px, 4vw, 64px);
+    padding: clamp(16px, 2vw, 24px) 0;
+    border-top: 1px solid var(--line);
+  }
+  .drivers h3 {
+    font-size: clamp(1.125rem, 1.6vw, 1.375rem);
+    letter-spacing: -0.025em;
+    line-height: 1.15;
+  }
+  .drivers p {
+    max-width: 52ch;
+    color: var(--ink-2);
+  }
+  .mini {
+    display: grid;
+    align-content: center;
+    gap: 10px;
+    min-height: 148px;
+    padding: 18px 20px;
+    border-radius: var(--radius-md);
+    background: linear-gradient(160deg, #eef5ff 0%, #dcebff 100%);
+    color: #0b1a30;
+  }
+  .mini-label {
+    justify-self: start;
+    padding: 4px 10px;
+    border-radius: var(--pill);
+    background: #fff;
+    font-size: 0.75rem;
+    font-weight: 600;
+  }
+  /* 1. every part outlined */
+  .d-all :global(.pc-name),
+  .d-all :global(.pc-tag),
+  .d-all :global(.pc-sub),
+  .d-all :global(.pc-act) {
+    outline: 1.5px dashed rgb(26 95 208 / 0.6);
+    outline-offset: 3px;
+    border-radius: 6px;
+  }
+  .d-all :global(.pc-act) {
+    border-radius: 50%;
+  }
+  /* 3. how many of the five details are on the card */
+  .meter {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: #45546c;
+    font-size: 0.75rem;
+    line-height: 1.3;
+  }
+  .meter-dots {
+    display: flex;
+    gap: 4px;
+    flex: none;
+  }
+  .meter-dots i {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #b9cfee;
+    transition: background-color var(--t-med) var(--ease-out);
+  }
+  .meter-dots[data-on='1'] i:nth-child(-n + 1),
+  .meter-dots[data-on='4'] i:nth-child(-n + 4) {
+    background: #1a5fd0;
+  }
+  /* 4. two cards, one set of columns */
+  .d-same {
+    position: relative;
+    gap: 8px;
+  }
+  .d-same::before,
+  .d-same::after {
+    content: '';
+    position: absolute;
+    top: 8px;
+    bottom: 8px;
+    border-left: 1.5px dashed rgb(26 95 208 / 0.55);
+  }
+  .d-same::before {
+    left: 80px; /* frame padding 20 + card padding 10 + thumb 40 + gap 10 */
+  }
+  .d-same::after {
+    right: 72px; /* frame padding 20 + card padding 10 + action 32 + gap 10 */
+  }
+  /* 5. a pin that is not decided yet */
+  .pin-wrap {
+    position: relative;
+  }
+  .pin {
+    position: absolute;
+    top: -8px;
+    left: -8px;
+    width: 26px;
+    height: 26px;
+    display: grid;
+    place-items: center;
+    border-radius: 50%;
+    background: #fff;
+    color: #b9cfee;
+    box-shadow: 0 0 0 1.5px #b9cfee inset;
+  }
+  [data-live] .pin {
+    animation: pin 3.2s var(--ease-out) infinite;
+  }
+  @keyframes pin {
+    0%, 40% { color: #b9cfee; box-shadow: 0 0 0 1.5px #b9cfee inset; transform: none; }
+    50% { transform: scale(1.18); }
+    55%, 92% { color: #f0651a; box-shadow: 0 0 0 1.5px #f0651a inset; transform: none; }
+    100% { color: #b9cfee; box-shadow: 0 0 0 1.5px #b9cfee inset; }
+  }
+
+  /* ---------- Navigation flow ---------- */
+  .flow-scroll,
+  .matrix-scroll {
+    position: relative; /* contains absolutely placed children, so they scroll with it */
+    overflow-x: auto;
+    border-radius: var(--radius-md);
+    scrollbar-width: thin;
+    scrollbar-color: #b9bdc5 transparent;
+  }
+  .flow {
+    display: grid;
+    grid-template-columns: auto 0.8fr auto 1fr auto 1.5fr auto 0.8fr auto;
+    align-items: center;
+    min-width: 900px;
+    padding: clamp(28px, 3.4vw, 48px) clamp(28px, 4vw, 56px) clamp(24px, 3vw, 40px);
+    --node: 96px;
+  }
+  .node {
+    display: grid;
+    justify-items: center;
+    gap: 12px;
+    width: var(--node);
+    color: var(--ink-2);
+    font-size: 0.875rem;
+    font-weight: 500;
+    line-height: 1.25;
+    text-align: center;
+    transition: color var(--t-med) var(--ease-out);
+  }
+  .node-name {
+    min-height: 2.5em;
+  }
+  .node.on {
+    color: var(--ink);
+    font-weight: 600;
+  }
+  /* A screen, drawn small: grey blocks are content, the blue block is the puzzle card */
+  .ph {
+    position: relative;
+    display: block;
+    width: var(--node);
+    height: 196px;
+    border-radius: 20px;
+    background: var(--surface);
+    box-shadow: 0 0 0 2px var(--line) inset;
+    transition: box-shadow var(--t-med) var(--ease-out), transform var(--t-med) var(--ease-out);
+  }
+  .node.on .ph {
+    box-shadow: 0 0 0 2px var(--ink) inset;
+    transform: translateY(-4px);
+  }
+  .ph > * {
+    position: absolute;
+    border-radius: 5px;
+    background: var(--surface-2);
+  }
+  .ph b {
+    background: #cfe2ff;
+    transition: background-color var(--t-med) var(--ease-out), transform var(--t-med) var(--ease-out);
+  }
+  .node.on .ph b {
+    background: #1a5fd0;
+  }
+  .ph u {
+    left: 10px; right: 10px; bottom: 10px; height: 16px;
+  }
+  .ph-home i { top: 20px; width: 20px; height: 20px; }
+  .ph-home i:nth-child(1) { left: 12px; }
+  .ph-home i:nth-child(2) { left: 38px; }
+  .ph-home i:nth-child(3) { left: 64px; }
+  .ph-home b { left: 10px; right: 10px; bottom: 34px; height: 30px; border-radius: 8px; }
+  .node.docked .ph b { animation: dock 700ms var(--ease-out); }
+  @keyframes dock {
+    0% { transform: translateY(26px) scale(0.86); opacity: 0; }
+    100% { transform: none; opacity: 1; }
+  }
+  .ph-select i { width: 33px; height: 44px; }
+  .ph-select i:nth-child(1) { left: 12px; top: 28px; }
+  .ph-select i:nth-child(2) { right: 12px; top: 28px; }
+  .ph-select i:nth-child(3) { left: 12px; top: 80px; }
+  .ph-select i:nth-child(4) { right: 12px; top: 80px; }
+  .ph-pre i { left: 26px; right: 26px; top: 24px; height: 10px; }
+  .ph-pre b { left: 10px; right: 10px; height: 30px; border-radius: 8px; }
+  .ph-pre b:nth-of-type(1) { top: 48px; }
+  .ph-pre b:nth-of-type(2) { top: 84px; }
+  .ph-pre b:nth-of-type(3) { top: 120px; }
+  .ph-game i { left: 26px; right: 26px; top: 22px; height: 8px; }
+  .ph-game em {
+    left: 10px; right: 10px; top: 46px; height: 76px;
+    background:
+      linear-gradient(var(--surface) 0 0) 33.3% 0 / 2px 100% no-repeat,
+      linear-gradient(var(--surface) 0 0) 66.6% 0 / 2px 100% no-repeat,
+      linear-gradient(var(--surface) 0 0) 0 33.3% / 100% 2px no-repeat,
+      linear-gradient(var(--surface) 0 0) 0 66.6% / 100% 2px no-repeat,
+      var(--surface-2);
+  }
+  .ph-end i:nth-child(1) { left: 18px; right: 18px; top: 26px; height: 12px; }
+  .ph-end i:nth-child(2) { left: 28px; right: 28px; top: 46px; height: 8px; }
+  .ph-end b { left: 10px; right: 10px; top: 92px; height: 30px; border-radius: 8px; }
+  .ph-end i:nth-child(4) { left: 10px; right: 10px; top: 132px; height: 18px; }
+  .ph-end i:nth-child(5) { left: 10px; right: 10px; top: 156px; height: 18px; }
+
+  .link {
+    position: relative;
+    display: grid;
+    justify-items: center;
+    gap: 10px;
+    align-self: start;
+    margin-top: 62px;
+    padding: 0 10px;
+    color: var(--ink-2);
+    font-size: 0.875rem;
+    line-height: 1.25;
+    text-align: center;
+  }
+  .link.both {
+    margin-top: 88px;
+  }
+  .go {
+    min-height: 2.5em;
+    display: grid;
+    align-items: end;
+    font-weight: 600;
+    color: var(--ink);
+  }
+  .line {
+    position: relative;
+    width: 100%;
+    height: 2px;
+    border-radius: 1px;
+    background: var(--line);
+  }
+  .line::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 1px;
+    background: var(--ink);
+    transform: scaleX(0);
+    transform-origin: 0 50%;
+    transition: transform 700ms var(--ease-out);
+  }
+  .link.on .line::before {
+    transform: scaleX(1);
+  }
+  .line::after,
+  .both .line i {
+    content: '';
+    position: absolute;
+    right: -1px;
+    top: -4px;
+    width: 10px;
+    height: 10px;
+    border-top: 2px solid var(--line);
+    border-right: 2px solid var(--line);
+    transform: rotate(45deg);
+    transition: border-color var(--t-med) var(--ease-out) 300ms;
+  }
+  .both .line i {
+    left: -1px;
+    right: auto;
+    transform: rotate(-135deg);
+  }
+  .link.on .line::after,
+  .link.on .line i {
+    border-color: var(--ink);
+  }
+  .loop {
+    position: relative;
+    grid-column: 1 / -1;
+    height: 52px;
+    margin: 6px calc(var(--node) / 2) 0;
+  }
+  .loop-line,
+  .loop-fill {
+    position: absolute;
+    inset: 0;
+    border: 2px solid var(--line);
+    border-top: 0;
+    border-radius: 0 0 18px 18px;
+  }
+  .loop-fill {
+    border-color: #1a5fd0;
+    clip-path: inset(0 0 0 100%);
+    transition: clip-path 0s;
+  }
+  .loop.on .loop-fill {
+    clip-path: inset(0 0 0 0);
+    transition: clip-path 1500ms cubic-bezier(0.5, 0, 0.2, 1);
+  }
+  .loop-name {
+    position: absolute;
+    left: 50%;
+    bottom: -0.7em;
+    transform: translateX(-50%);
+    padding: 0 12px;
+    background: var(--surface);
+    color: var(--ink);
+    font-size: 0.875rem;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+  .loop::before {
+    content: '';
+    position: absolute;
+    left: -4px;
+    top: -1px;
+    width: 10px;
+    height: 10px;
+    border-top: 2px solid var(--line);
+    border-left: 2px solid var(--line);
+    transform: rotate(45deg);
+    z-index: 1;
+    transition: border-color var(--t-med) var(--ease-out) 1300ms;
+  }
+  .loop.on::before {
+    border-color: #1a5fd0;
+  }
+  .back {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.75rem;
+  }
+  .back::before {
+    content: '';
+    width: 6px;
+    height: 6px;
+    border-left: 1.5px solid currentColor;
+    border-bottom: 1.5px solid currentColor;
+    transform: rotate(45deg);
+  }
+
+  /* ---------- One card, three screens ---------- */
+  .screens {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    align-items: start;
+    gap: 24px clamp(16px, 2.4vw, 32px);
+    padding: clamp(24px, 3.4vw, 48px);
+  }
+  .scr {
+    display: grid;
+    gap: 12px;
+  }
+  .scr-name {
+    font-weight: 600;
+    font-size: 0.9375rem;
+  }
+  .scr-body {
+    display: grid;
+    align-content: start;
+    gap: 8px;
+    min-height: 100%;
+    padding: 20px 14px 16px;
+    border-radius: 24px;
+    background: #f7fbff;
+    box-shadow: 0 0 0 1px rgb(11 26 48 / 0.08);
+  }
+  .scr-title {
+    padding-bottom: 6px;
+    font-family: var(--font-display);
+    font-size: 1.25rem;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    line-height: 1.15;
+    text-align: center;
+  }
+  .scr-title span {
+    display: block;
+    margin-top: 4px;
+    color: #45546c;
+    font-family: var(--font-ui);
+    font-size: 0.875rem;
+    font-weight: 400;
+    letter-spacing: 0;
+  }
+  .scr-seg {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    padding: 3px;
+    border-radius: 10px;
+    background: #dcebff;
+    color: #45546c;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-align: center;
+  }
+  .scr-seg span {
+    padding: 6px 0;
+    border-radius: 8px;
+  }
+  .scr-seg .on {
+    background: #fff;
+    color: #0b1a30;
+  }
+  .scr-label {
+    padding: 8px 4px 6px;
+    color: #45546c;
+    font-size: 0.75rem;
+    font-weight: 600;
+  }
+  .scr-end {
+    padding-top: 28px;
+  }
+  .scr-end .scr-title {
+    padding-bottom: 14px;
+  }
+  .scr-btn {
+    display: grid;
+    place-items: center;
+    min-height: 40px;
+    border-radius: 14px;
+    background: #fff;
+    box-shadow: 0 0 0 1px rgb(11 26 48 / 0.08);
+    font-size: 0.875rem;
+    font-weight: 600;
+  }
+
+  /* ---------- Card states: player ---------- */
+  .player {
+    display: grid;
+    grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+    align-items: center;
+    gap: 32px clamp(32px, 5vw, 72px);
+    padding: clamp(40px, 5vw, 72px) clamp(24px, 5vw, 72px);
+  }
+  .player-stage {
+    display: grid;
+    gap: 18px;
+    width: min(100%, 480px);
+    justify-self: center;
+  }
+  .player-name {
+    min-height: 1.5em;
+    color: #45546c;
+    font-size: 0.9375rem;
+  }
+  .player-ctl {
+    display: grid;
+    gap: 16px;
+  }
+  .fam {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 4px;
+    padding: 4px;
+    border-radius: var(--pill);
+    background: rgb(255 255 255 / 0.7);
+  }
+  .fam button {
+    min-height: 44px;
+    border: 0;
+    border-radius: var(--pill);
+    background: transparent;
+    color: #45546c;
+    font-weight: 600;
+    font-size: 0.9375rem;
+    cursor: pointer;
+    transition: background-color var(--t-fast) var(--ease-out), color var(--t-fast) var(--ease-out);
+  }
+  .fam button[aria-pressed='true'] {
+    background: #0b1a30;
+    color: #fff;
+  }
+  .steps {
+    display: grid;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .steps button {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+    min-height: 44px;
+    padding: 0 12px;
+    border: 0;
+    border-radius: 12px;
+    background: transparent;
+    color: #45546c;
+    font-weight: 500;
+    text-align: left;
+    cursor: pointer;
+    transition: background-color var(--t-fast) var(--ease-out), color var(--t-fast) var(--ease-out);
+  }
+  .steps i {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    box-shadow: 0 0 0 1.5px currentColor inset;
+    transition: background-color var(--t-fast) var(--ease-out);
+  }
+  .steps button[aria-pressed='true'] {
+    background: #fff;
+    color: #0b1a30;
+    font-weight: 600;
+  }
+  .steps button[aria-pressed='true'] i {
+    background: #1a5fd0;
+    box-shadow: none;
+  }
+  .steps button:disabled {
+    color: #8fa3bf;
+    cursor: default;
+    text-decoration: line-through;
+  }
+
+  /* ---------- Card states: matrix ---------- */
+  .matrix {
+    width: 100%;
+    min-width: 1040px;
+    border-collapse: separate;
+    border-spacing: 10px 0;
+    padding: clamp(14px, 2vw, 28px) clamp(10px, 1.6vw, 20px) clamp(20px, 2.4vw, 32px);
+    table-layout: fixed;
+  }
+  .matrix thead th {
+    padding: 4px 4px 6px;
+    color: var(--ink-2);
+    font-size: 0.875rem;
+    font-weight: 500;
+    text-align: left;
+  }
+  .matrix .fam-name {
+    padding: 22px 4px 4px;
+    font-family: var(--font-display);
+    font-size: 1.0625rem;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    text-align: left;
+  }
+  .matrix td {
+    padding: 0;
+    vertical-align: middle;
+  }
+  .matrix tbody td {
+    padding-top: 10px; /* room for the event timer above a card */
+  }
+  .none {
+    display: block;
+    height: 56px;
+    border-radius: 16px;
+    border: 1.5px dashed var(--line);
+  }
+  .notes {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px clamp(32px, 6vw, 96px);
+    padding-top: 8px;
+  }
+  .notes h3 {
+    font-size: 1.125rem;
+    letter-spacing: -0.02em;
+    line-height: 1.2;
+  }
+  .notes ul {
+    margin: 12px 0 0;
+    padding: 0;
+    list-style: none;
+    border-bottom: 1px solid var(--line);
+  }
+  .notes li {
+    padding: 11px 0;
+    border-top: 1px solid var(--line);
+    color: var(--ink-2);
+  }
+
+  /* ---------- The Home sheet, to scale ---------- */
+  .heights {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 32px clamp(12px, 2vw, 32px);
+    padding: clamp(32px, 4.4vw, 64px) clamp(20px, 4vw, 56px);
+  }
+  .h-item {
+    display: grid;
+    justify-items: center;
+    align-content: start;
+    gap: 16px;
+    text-align: center;
+  }
+  .h-item p {
+    max-width: 22ch;
+    color: #45546c;
+    font-size: 0.875rem;
+    line-height: 1.4;
+  }
+  .h-item b {
+    display: block;
+    color: #0b1a30;
+    font-family: var(--font-display);
+    font-size: 1.125rem;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+  }
+  .h-phone {
+    position: relative;
+    width: 138.4px;
+    height: 300px;
+    border-radius: 20px;
+    background: #f7fbff;
+    box-shadow: 0 0 0 2px #b9cfee;
+    overflow: hidden;
+  }
+  .h-sheet {
+    position: absolute;
+    top: var(--rest);
+    left: 3px;
+    right: 3px;
+    bottom: var(--lift);
+    border-radius: 10px;
+    background: #fff;
+    box-shadow: 0 0 0 1px rgb(11 26 48 / 0.1);
+  }
+  .h-sheet i {
+    position: absolute;
+    border-radius: 6px;
+    background: #cfe2ff;
+  }
+  .h-sheet i:first-child {
+    background: #1a5fd0;
+  }
+  .h-sheet i:not(:first-child) {
+    opacity: 0;
+  }
+  .h-phone.none .h-sheet i {
+    background: none;
+    border: 1.5px dashed #7fa5e0;
+  }
+  .h-bar {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: var(--bar);
+    background: #fff;
+    box-shadow: 0 -1px 0 rgb(11 26 48 / 0.1);
+  }
+  .h-mark {
+    position: absolute;
+    top: calc(var(--open) - 20px);
+    right: 6px;
+    padding: 2px 6px;
+    border-radius: 6px;
+    background: #0b1a30;
+    color: #fff;
+    font-size: 0.75rem;
+    font-weight: 600;
+    opacity: 0;
+  }
+  /* Open and close on a loop while in view; the single card never opens */
+  [data-live] .h-phone:not(.still) .h-sheet {
+    animation: h-open 5.6s cubic-bezier(0.5, 0, 0.2, 1) var(--delay) infinite;
+  }
+  [data-live] .h-phone:not(.still) .h-sheet i:not(:first-child) {
+    animation: h-rows 5.6s cubic-bezier(0.5, 0, 0.2, 1) var(--delay) infinite;
+  }
+  [data-live] .h-phone:not(.still) .h-mark {
+    animation: h-rows 5.6s cubic-bezier(0.5, 0, 0.2, 1) var(--delay) infinite;
+  }
+  @keyframes h-open {
+    0%, 14% { top: var(--rest); left: 3px; right: 3px; bottom: var(--lift); border-radius: 10px; }
+    34%, 82% { top: var(--open); left: 0; right: 0; bottom: 0; border-radius: 12px 12px 0 0; }
+    100% { top: var(--rest); left: 3px; right: 3px; bottom: var(--lift); border-radius: 10px; }
+  }
+  @keyframes h-rows {
+    0%, 20% { opacity: 0; }
+    38%, 80% { opacity: 1; }
+    94%, 100% { opacity: 0; }
+  }
+
+  /* ---------- Questions ---------- */
+  .ledger {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    border-bottom: 1px solid var(--line);
+  }
+  .ledger li {
+    display: grid;
+    grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr);
+    align-items: baseline;
+    gap: 10px clamp(32px, 6vw, 96px);
+    padding: 18px 0;
+    border-top: 1px solid var(--line);
+  }
+  .q {
+    max-width: 56ch;
+    font-size: 1.125rem;
+  }
+  .a {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 6px 12px;
+    color: var(--ink-2);
+  }
+  .chip {
+    padding: 3px 10px;
+    border-radius: var(--pill);
+    box-shadow: 0 0 0 1px var(--line) inset;
+    color: var(--ink-2);
+    font-size: 0.75rem;
+    font-weight: 600;
+  }
+  [data-done] .chip {
+    background: var(--btn-bg);
+    box-shadow: none;
+    color: var(--btn-ink);
+  }
+  [data-done] .a {
+    color: var(--ink);
+  }
+
+  /* Mid widths: the driver's name and text stack, so its card keeps a readable width */
+  @media (max-width: 1180px) {
+    .screens {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+    .drivers li {
+      grid-template-columns: minmax(0, 1fr) minmax(300px, 0.8fr);
+      row-gap: 8px;
+    }
+    .drivers h3 {
+      grid-column: 1;
+      align-self: end;
+    }
+    .drivers p {
+      grid-column: 1;
+      grid-row: 2;
+      align-self: start;
+    }
+    .mini {
+      grid-column: 2;
+      grid-row: 1 / span 2;
+    }
+  }
+  @media (max-width: 860px) {
+    .drivers h3,
+    .drivers p,
+    .mini {
+      grid-column: auto;
+      grid-row: auto;
+    }
+    .sec-head,
+    .ana,
+    .player,
+    .notes,
+    .screens,
+    .ledger li {
+      grid-template-columns: 1fr;
+    }
+    .drivers li {
+      grid-template-columns: 1fr;
+      gap: 10px;
+    }
+    .mini {
+      margin-top: 6px;
+    }
+    .heights {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+    .stories li {
+      grid-template-columns: 1.75rem minmax(0, 1fr);
+    }
+    .status {
+      grid-column: 2;
+    }
+  }
+  @media (max-width: 560px) {
+    .ana,
+    .player {
+      padding: 44px 14px 18px;
+    }
+    .ana-card {
+      padding: 0;
+    }
+    .heights {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      padding-inline: 12px;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .h-phone:not(.still) .h-sheet {
+      top: var(--open);
+      left: 0;
+      right: 0;
+      bottom: 0;
+      border-radius: 12px 12px 0 0;
+    }
+    .h-phone:not(.still) .h-sheet i,
+    .h-phone:not(.still) .h-mark {
+      opacity: 1;
+    }
+  }
+</style>

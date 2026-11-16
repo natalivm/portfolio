@@ -1,0 +1,415 @@
+---
+/**
+ * The puzzle card from the Next Games case study, drawn in the product's own blue.
+ * Every action glyph is in the markup; `data-action` picks one, so a script can move
+ * a card between states by changing attributes and text, and CSS does the morph.
+ */
+export interface CardState {
+  mode?: string;
+  game?: string;
+  sub: string;
+  tag?: string;
+  action?: 'play' | 'progress' | 'done' | 'clock';
+  timer?: string;
+  /** 0 to 1: how far through the current puzzle (ring) or chapter (bar) */
+  progress?: number;
+  bar?: boolean;
+}
+interface Props extends CardState {
+  size?: 'sm' | 'md' | 'lg';
+  /** Which game's artwork: the same drawings the prototype uses */
+  art?: 'sudoku' | 'tangram';
+  /** Number the five pieces of information for the anatomy figure */
+  marks?: boolean;
+  class?: string;
+}
+const {
+  mode = '',
+  game = 'Sudoku',
+  sub,
+  tag = '',
+  action = 'play',
+  timer = '',
+  progress = 0,
+  bar = false,
+  size = 'md',
+  marks = false,
+  art = 'sudoku',
+  class: cls,
+} = Astro.props;
+const k = (n: number) => (marks ? n : undefined);
+---
+
+<div class:list={['pc', `pc-${size}`, cls]} data-action={action} data-bar={bar ? '' : undefined} style={`--prog:${progress}`}>
+  <span class="pc-timer" data-k={k(5)} hidden={!timer}>
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9" /><path d="M12 7v5l3 2" /></svg>
+    <span class="pc-timer-t">{timer}</span>
+  </span>
+  <span class="pc-thumb" aria-hidden="true">
+    {art === 'tangram' ? (
+      <svg viewBox="0 0 38 38"><path d="M2 2h34L19 19z" fill="#3a8dff" /><path d="M2 2v34l17-17z" fill="#7cc0ff" /><path d="M36 2v17l-8.5-8.5z" fill="#bfe0ff" /><path d="M19 19l8.5 8.5L19 36 10.5 27.5z" fill="#9fd0ff" /><path d="M2 36h17l-8.5-8.5z" fill="#1f6fe5" /><path d="M36 19v17H19z" fill="#5aa8ff" /></svg>
+    ) : (
+      <svg viewBox="0 0 38 38"><rect x="1" y="1" width="36" height="36" rx="7" fill="#f1f7ff" stroke="#bcd8ff" /><path d="M13 1v36M25 1v36M1 13h36M1 25h36" stroke="#9cc6ff" stroke-width="1.4" /><g font-size="7" font-weight="700" text-anchor="middle" font-family="-apple-system,Inter,sans-serif"><text x="7" y="10.5" fill="#1f6fe5">5</text><text x="19" y="22.5" fill="#0b1a30">3</text><text x="31" y="34.5" fill="#1f6fe5">8</text><text x="31" y="10.5" fill="#0b1a30">1</text></g></svg>
+    )}
+  </span>
+  <span class="pc-text">
+    <span class="pc-title">
+      <span class="pc-name"><span class="pc-mode" data-k={k(2)}>{mode}</span><span class="pc-game" data-k={k(1)}>{game}</span></span>
+      <span class="pc-tag" data-k={k(3)} hidden={!tag}>{tag}</span>
+    </span>
+    <span class="pc-sub" data-k={k(4)}>{sub}</span>
+    <span class="pc-bar" aria-hidden="true"><i></i></span>
+  </span>
+  <span class="pc-act" aria-hidden="true">
+    <svg class="pc-ring" viewBox="0 0 44 44"><circle cx="22" cy="22" r="20" pathLength="1" /></svg>
+    <svg class="pc-i pc-play" viewBox="0 0 24 24" fill="currentColor"><path d="M7 4.8v14.4c0 .8.9 1.3 1.6.8l11-7.2c.6-.4.6-1.2 0-1.6l-11-7.2C7.9 3.5 7 4 7 4.8z" /></svg>
+    <svg class="pc-i pc-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5" pathLength="1" /></svg>
+    <svg class="pc-i pc-clock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9" /><path d="M12 12V7" /><path class="pc-hand" d="M12 12l3.2 2" /></svg>
+  </span>
+</div>
+
+<style is:global>
+  .pc {
+    --pc-blue: #1a5fd0;
+    --pc-soft: #e6f1ff;
+    --pc-ink: #0b1a30;
+    --pc-ink-2: #45546c;
+    --pc-green: #17824a;
+    --pc-thumb: 52px;
+    --pc-act: 40px;
+    --pc-ease: cubic-bezier(0.16, 1, 0.3, 1);
+    position: relative;
+    display: grid;
+    grid-template-columns: var(--pc-thumb) minmax(0, 1fr) var(--pc-act);
+    align-items: center;
+    gap: 12px;
+    min-height: 76px;
+    padding: 12px;
+    border-radius: 20px;
+    background: #fff;
+    box-shadow: 0 0 0 1px rgb(11 26 48 / 0.08);
+    color: var(--pc-ink);
+    font-family: var(--font-ui);
+    text-align: left;
+  }
+  .pc-thumb {
+    width: var(--pc-thumb);
+    height: var(--pc-thumb);
+    display: grid;
+    place-items: center;
+    border-radius: 14px;
+    background: #f6faff;
+    box-shadow: 0 0 0 1px rgb(11 26 48 / 0.08) inset;
+  }
+  .pc-thumb svg {
+    width: 64%;
+    height: 64%;
+  }
+  .pc-text {
+    display: grid;
+    gap: 2px;
+    min-width: 0;
+  }
+  .pc-title {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 4px 8px;
+    min-width: 0;
+  }
+  .pc-name {
+    min-width: 0;
+    white-space: nowrap;
+    font: 600 1rem/1.2 var(--font-display);
+    letter-spacing: -0.015em;
+  }
+  .pc-mode,
+  .pc-game {
+    display: inline-block;
+  }
+  .pc-mode {
+    margin-right: 0.28em;
+  }
+  .pc-mode:empty {
+    display: none;
+  }
+  .pc-tag {
+    flex: none;
+    padding: 3px 7px;
+    border-radius: 999px;
+    background: var(--pc-soft);
+    color: var(--pc-blue);
+    font: 600 0.625rem/1 var(--font-ui);
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+  .pc-sub {
+    justify-self: start;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    color: var(--pc-ink-2);
+    font-size: 0.8125rem;
+    line-height: 1.3;
+  }
+  .pc-bar {
+    display: none;
+    height: 5px;
+    margin-top: 5px;
+    border-radius: 3px;
+    background: #dcebff;
+    overflow: hidden;
+  }
+  .pc[data-bar] .pc-bar {
+    display: block;
+  }
+  .pc-bar i {
+    display: block;
+    width: calc(var(--prog) * 100%);
+    height: 100%;
+    border-radius: 3px;
+    background: linear-gradient(90deg, #7cc0ff, #3a8dff);
+    transition: width 900ms var(--pc-ease);
+  }
+  .pc-timer {
+    position: absolute;
+    top: -9px;
+    right: 12px;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 8px 4px 6px;
+    border-radius: 999px;
+    background: var(--pc-ink);
+    color: #fff;
+    font: 600 0.6875rem/1 var(--font-ui);
+  }
+
+  /* The action: play, play with a progress ring, complete, or waiting */
+  .pc-act {
+    position: relative;
+    width: var(--pc-act);
+    height: var(--pc-act);
+    border-radius: 50%;
+    background: var(--pc-soft);
+    color: var(--pc-blue);
+    box-shadow: 0 0 0 1.5px transparent inset;
+    transition: background-color 320ms var(--pc-ease), color 320ms var(--pc-ease), box-shadow 320ms var(--pc-ease);
+  }
+  .pc-ring {
+    position: absolute;
+    inset: -4px;
+    width: calc(100% + 8px);
+    height: calc(100% + 8px);
+    transform: rotate(-90deg);
+    opacity: 0;
+    transition: opacity 240ms var(--pc-ease);
+  }
+  .pc-ring circle {
+    fill: none;
+    stroke: var(--pc-blue);
+    stroke-width: 2.6;
+    stroke-linecap: round;
+    stroke-dasharray: 1;
+    stroke-dashoffset: calc(1 - var(--prog));
+    transition: stroke-dashoffset 900ms var(--pc-ease);
+  }
+  .pc-i {
+    position: absolute;
+    inset: 0;
+    width: 42%;
+    height: 42%;
+    margin: auto;
+    opacity: 0;
+    transform: scale(0.5);
+    transition: opacity 220ms var(--pc-ease), transform 420ms var(--pc-ease);
+  }
+  .pc-clock {
+    width: 62%;
+    height: 62%;
+  }
+  .pc-check path {
+    stroke-dasharray: 1;
+    stroke-dashoffset: 1;
+    transition: stroke-dashoffset 420ms var(--pc-ease) 120ms;
+  }
+  .pc[data-action='play'] .pc-play,
+  .pc[data-action='progress'] .pc-play,
+  .pc[data-action='done'] .pc-check,
+  .pc[data-action='clock'] .pc-clock {
+    opacity: 1;
+    transform: none;
+  }
+  .pc[data-action='progress'] .pc-ring {
+    opacity: 1;
+  }
+  .pc[data-action='done'] .pc-act {
+    background: var(--pc-green);
+    color: #fff;
+  }
+  .pc[data-action='done'] .pc-check path {
+    stroke-dashoffset: 0;
+  }
+  .pc[data-action='clock'] .pc-act {
+    background: transparent;
+    color: var(--pc-ink);
+  }
+  .pc-hand {
+    transform-origin: 12px 12px;
+    animation: pc-hand 6s linear infinite paused;
+  }
+  [data-live] .pc-hand {
+    animation-play-state: running;
+  }
+  @keyframes pc-hand {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+
+  /* Sizes */
+  .pc-sm {
+    --pc-thumb: 40px;
+    --pc-act: 32px;
+    gap: 10px;
+    min-height: 60px;
+    padding: 10px;
+    border-radius: 16px;
+  }
+  .pc-sm .pc-thumb {
+    border-radius: 11px;
+  }
+  .pc-sm .pc-name {
+    font-size: 0.875rem;
+    white-space: nowrap;
+  }
+  .pc-sm .pc-sub {
+    font-size: 0.75rem;
+    white-space: nowrap;
+  }
+  /* In the states table the card drops its artwork to fit five across */
+  .pc-bare {
+    grid-template-columns: minmax(0, 1fr) var(--pc-act);
+    min-height: 56px;
+    padding: 10px 10px 10px 14px;
+  }
+  .pc-bare .pc-thumb {
+    display: none;
+  }
+  .pc-sm .pc-tag {
+    font-size: 0.5625rem;
+    padding: 3px 6px;
+  }
+  .pc-lg {
+    --pc-thumb: 72px;
+    --pc-act: 56px;
+    gap: 18px;
+    min-height: 108px;
+    padding: 18px;
+    border-radius: 28px;
+  }
+  .pc-lg .pc-thumb {
+    border-radius: 20px;
+  }
+  .pc-lg .pc-name {
+    font-size: 1.375rem;
+    letter-spacing: -0.02em;
+  }
+  .pc-lg .pc-sub {
+    font-size: 1rem;
+  }
+  .pc-lg .pc-tag {
+    font-size: 0.6875rem;
+    padding: 4px 9px;
+  }
+  .pc-lg .pc-bar {
+    height: 7px;
+    margin-top: 8px;
+  }
+  .pc-lg .pc-timer {
+    top: -11px;
+    right: 20px;
+    padding: 5px 10px 5px 8px;
+    font-size: 0.8125rem;
+  }
+
+  /* Anatomy: numbered parts, one lit at a time */
+  .pc [data-k] {
+    position: relative;
+    border-radius: 6px;
+    outline: 2px solid transparent;
+    outline-offset: 2px;
+    transition: outline-color 240ms var(--pc-ease), opacity 240ms var(--pc-ease);
+  }
+  .pc .pc-timer[data-k] {
+    position: absolute;
+    border-radius: 999px;
+  }
+  .pc [data-k]::after {
+    content: attr(data-k);
+    position: absolute;
+    top: -27px;
+    left: calc(50% - 10px);
+    width: 20px;
+    height: 20px;
+    display: grid;
+    place-items: center;
+    border-radius: 50%;
+    background: #16171a;
+    color: #fff;
+    font: 600 0.6875rem/1 var(--font-ui);
+    letter-spacing: 0;
+    text-transform: none;
+    transition: transform 320ms var(--pc-ease), background-color 240ms var(--pc-ease);
+  }
+  .pc .pc-tag[data-k]::after,
+  .pc .pc-sub[data-k]::after {
+    top: calc(50% - 10px);
+    left: auto;
+    right: -30px;
+  }
+  .pc .pc-timer[data-k]::after {
+    top: calc(50% - 10px);
+    left: -28px;
+  }
+  .pc [data-k].on {
+    outline-color: var(--pc-blue);
+  }
+  .pc [data-k].on::after {
+    background: var(--pc-blue);
+    transform: scale(1.15);
+  }
+
+  /* On a phone the large card steps down a size */
+  @media (max-width: 560px) {
+    .pc-lg {
+      --pc-thumb: 52px;
+      --pc-act: 44px;
+      gap: 12px;
+      min-height: 84px;
+      padding: 14px;
+      border-radius: 22px;
+    }
+    .pc-lg .pc-thumb {
+      border-radius: 15px;
+    }
+    .pc-lg .pc-name {
+      font-size: 1.125rem;
+    }
+    .pc-lg .pc-sub {
+      font-size: 0.875rem;
+    }
+    .pc-lg .pc-timer {
+      right: 14px;
+    }
+    .pc .pc-timer[data-k]::after {
+      top: -25px;
+      left: calc(50% - 10px);
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .pc-hand {
+      animation: none;
+    }
+  }
+</style>

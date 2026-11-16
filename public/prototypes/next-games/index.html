@@ -40,7 +40,7 @@
 
     /* Device metrics: a 393 x 852 screen inside an 11px bezel */
     --s: 1;            /* scale that fits the device to its viewport, set by script */
-    --tab: 92px;       /* tab bar height */
+    --tab: 88px;       /* bottom bar height, as in the Figma frame */
     --sheet-top: 64px; /* how close to the top a full sheet may rise */
     --home-top: 76px;
     color-scheme: light;
@@ -274,28 +274,26 @@
   /* ---------- Sheet ---------- */
   .sheet {
     position: absolute;
-    left: 8px; right: 8px;
+    left: 0; right: 0;
     bottom: 0;
     height: calc(100% - var(--sheet-top));
     z-index: 20;
     display: flex;
     flex-direction: column;
-    border-radius: 34px 34px 0 0;
     background: #fff;
-    box-shadow: 0 0 0 1px rgba(11,26,48,.07), 0 -1px 2px rgba(11,26,48,.04);
+    /* Its outline is a clip-path set per frame: a floating card at rest, a full-width sheet when open */
     transform: translate3d(0, 100%, 0);
-    will-change: transform;
+    will-change: transform, clip-path;
     touch-action: none;
   }
   .grab {
     flex: none;
-    padding: 8px 20px 12px;
+    padding: 8px 26px 10px;
     cursor: grab;
-    border-radius: 34px 34px 0 0;
   }
   .grab:active { cursor: grabbing; }
   .sheet.single .grab { cursor: default; }
-  .grabber { width: 40px; height: 5px; border-radius: 3px; background: #c9d3e0; margin: 0 auto 12px; transition: opacity .2s; }
+  .grabber { width: 40px; height: 5px; border-radius: 3px; background: #c9d3e0; margin: 0 auto 10px; transition: opacity .2s; }
   .sheet.single .grabber { opacity: 0; }
   .sheet-head {
     display: flex; align-items: center; justify-content: space-between;
@@ -315,22 +313,17 @@
     flex: 1;
     min-height: 0;
     overflow: hidden;
-    padding: 0 12px calc(var(--tab) + 84px);
+    padding: 0 22px calc(var(--tab) + 11px);
     scrollbar-width: none;
     overscroll-behavior: contain;
   }
-  /* A list taller than the screen scrolls, and fades out behind Find more games */
-  .list.scrolls {
-    overflow-y: auto; touch-action: pan-y;
-    -webkit-mask-image: linear-gradient(#000 calc(100% - var(--tab) - 104px), transparent calc(100% - var(--tab) - 62px));
-    mask-image: linear-gradient(#000 calc(100% - var(--tab) - 104px), transparent calc(100% - var(--tab) - 62px));
-  }
+  .list.scrolls { overflow-y: auto; touch-action: pan-y; } /* only when taller than the screen */
   .list::-webkit-scrollbar { display: none; }
 
   .row {
     position: relative;
-    height: 88px;
-    margin-bottom: 10px;
+    height: 86px;
+    margin-bottom: 8px;
     border-radius: 22px;
     overflow: hidden;
     isolation: isolate;
@@ -397,13 +390,49 @@
   .play:active, .play.tap { transform: scale(.88); }
   .row.hero .play { background: var(--blue-deep); color: #fff; }
 
+  /* Nothing in progress: the card stays and says so */
+  .none-yet {
+    position: absolute;
+    left: 22px; right: 22px;
+    height: 86px;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 44px;
+    align-items: center;
+    gap: 14px;
+    padding: 0 14px 0 18px;
+    border-radius: 22px;
+    background-color: #f8fbff;
+    box-shadow: 0 0 0 1px var(--hairline) inset;
+    text-align: left;
+  }
+  .none-yet[hidden] { display: none; }
+  .none-yet:focus-visible { border-radius: 22px; }
+  .none-text { display: grid; gap: 4px; }
+  .none-text b { font: 600 17px/1.2 var(--font-display); letter-spacing: -0.015em; }
+  .none-text span { font: 600 13px/1.25 var(--font); color: var(--blue-deep); }
+  .none-go { width: 44px; height: 44px; border-radius: 50%; display: grid; place-items: center; background: var(--blue-soft); color: var(--blue-deep); transition: transform 200ms var(--ease-out); }
+  .none-yet:active .none-go { transform: scale(.88); }
+
+  /* ---------- Tab bar ---------- */
+  .tabbar {
+    position: absolute; left: 0; right: 0; bottom: 0;
+    height: var(--tab);
+    z-index: 25;
+    padding: 8px 18px 28px;
+    background: #fbfdff;
+    box-shadow: 0 -1px 0 var(--hairline);
+  }
+  .tabs { display: grid; grid-template-columns: repeat(3, 1fr); height: 100%; }
+  /* With the list open, the bar's tabs give way to Find more games */
   .more {
     position: absolute;
-    left: 12px; right: 12px; bottom: calc(var(--tab) + 16px);
-    z-index: 3;
-    display: flex; align-items: center; justify-content: center; gap: 8px;
+    top: 10px; left: 0; right: 0;
+    margin: 0 auto;
+    width: min(295px, calc(100% - 40px));
     height: 52px;
-    border-radius: 18px;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 6px 0 26px;
+    border-radius: 26px;
     background: var(--blue-soft);
     color: var(--blue-deep);
     font: 600 16px/1 var(--font-display);
@@ -412,21 +441,11 @@
     will-change: transform;
   }
   .more.live { pointer-events: auto; }
-  .more:focus-visible { border-radius: 18px; }
-  .more svg { transition: transform 240ms var(--ease-out); }
-  .more:active svg { transform: translateX(3px); }
-
-  /* ---------- Tab bar ---------- */
-  .tabbar {
-    position: absolute; left: 0; right: 0; bottom: 0;
-    height: var(--tab);
-    z-index: 25;
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    padding: 8px 18px 28px;
-    background: #fbfdff;
-    box-shadow: 0 -1px 0 var(--hairline);
-  }
+  .more:focus-visible { border-radius: 26px; }
+  .more-label { display: flex; align-items: center; gap: 8px; }
+  .more-label svg { transition: transform 240ms var(--ease-out); }
+  .more:active .more-label svg { transform: translateX(3px); }
+  .more-icon { width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center; background: #fff; }
   .tab {
     display: grid; justify-items: center; align-content: center; gap: 4px;
     font: 500 11px/1 var(--font);
@@ -538,7 +557,7 @@
           <div class="home-content" id="homeContent">
             <div class="top">
               <div>
-                <p class="greet-date" id="today">Monday 16 Nov</p>
+                <p class="greet-date" id="today">Monday, Nov 16</p>
                 <p class="greet-title">Puzzled</p>
               </div>
               <button class="round-btn" type="button" aria-label="Settings">
@@ -589,13 +608,14 @@
             </div>
           </div>
           <div class="list" id="list" role="list"></div>
-          <button class="more" id="more" type="button" tabindex="-1">
-            Find more games
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+          <button class="none-yet" id="noneYet" type="button" hidden>
+            <span class="none-text"><b>No games in progress yet</b><span>Find more games</span></span>
+            <span class="none-go" aria-hidden="true"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>
           </button>
         </section>
 
         <nav class="tabbar" id="tabbar" aria-label="Tabs">
+          <div class="tabs" id="tabs">
           <button class="tab" type="button">
             <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="4" width="7" height="7" rx="2"/><rect x="13" y="4" width="7" height="7" rx="2"/><rect x="4" y="13" width="7" height="7" rx="2"/><rect x="13" y="13" width="7" height="7" rx="2"/></svg>
             Games
@@ -607,6 +627,13 @@
           <button class="tab" type="button">
             <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0z"/><path d="M17 5h3v2a3 3 0 0 1-3 3M7 5H4v2a3 3 0 0 0 3 3"/></svg>
             Trophies
+          </button>
+          </div>
+          <button class="more" id="more" type="button" tabindex="-1">
+            <span class="more-label">Find more games
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+            </span>
+            <span class="more-icon" aria-hidden="true"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><rect x="4" y="4" width="7" height="7" rx="2"/><rect x="13" y="4" width="7" height="7" rx="2"/><rect x="4" y="13" width="7" height="7" rx="2"/><rect x="13" y="13" width="7" height="7" rx="2"/></svg></span>
           </button>
         </nav>
         <div class="home-indicator" aria-hidden="true"></div>
@@ -652,23 +679,27 @@
   const phone = matchMedia('(max-width: 500px)');
   const $ = (s) => document.querySelector(s);
   const screen = $('#screen'), homeContent = $('#homeContent'), sheet = $('#sheet'), list = $('#list'),
-        dim = $('#dim'), grab = $('#grab'), more = $('#more'), count = $('#count'), tabbar = $('#tabbar'),
-        titleClosed = $('#titleClosed'), titleOpen = $('#titleOpen'), island = $('#island');
+        dim = $('#dim'), grab = $('#grab'), more = $('#more'), count = $('#count'), tabbar = $('#tabbar'), tabs = $('#tabs'),
+        titleClosed = $('#titleClosed'), titleOpen = $('#titleOpen'), island = $('#island'), noneYet = $('#noneYet');
   const clamp = (v, a = 0, b = 1) => Math.min(Math.max(v, a), b);
   const sleep = (ms) => new Promise((r) => setTimeout(r, reduce ? 0 : ms));
 
   // ---------- Data ----------
+  // As in the design file: chapter games show their puzzle and a chapter meter; the daily
+  // puzzle and a game with no chapter show a date. Dates follow today's, like the header.
+  const today = new Date();
+  const longDate = (d) => d.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
   const ALL = [
-    { id: 'sudoku', name: 'Sudoku', level: 'Hard', chapter: 1, puzzle: 6, of: 30, art: 'sudoku' },
+    { id: 'sudoku', name: 'Classic Sudoku', level: 'Hard', chapter: 1, puzzle: 6, of: 30, art: 'sudoku' },
     { id: 'nanogram', name: 'Nanogram', chapter: 1, puzzle: 12, of: 30, art: 'nano' },
-    { id: 'sudoku-classic', name: 'Classic Sudoku', level: 'Hard', chapter: 1, puzzle: 15, of: 30, art: 'sudoku' },
-    { id: 'tangram', name: 'Tangram', played: 'Yesterday', art: 'tangram' },
+    { id: 'sudoku-daily', name: 'Daily Sudoku', level: 'Hard', date: longDate(today), art: 'sudoku' },
+    { id: 'tangram', name: 'Tangram', date: longDate(new Date(today.getTime() - 864e5)), art: 'tangram' },
     { id: 'wordly', name: 'Wordly', level: 'Hard', chapter: 1, puzzle: 9, of: 30, art: 'word' },
   ];
   const hintFor = (n) =>
-    n === 0 ? 'Nothing in progress: the card leaves Home. Reset to bring the games back.'
+    n === 0 ? 'Nothing in progress: the card stays and says so, with a way to find more games.'
     : n === 1 ? 'One game: a single continue card. No handle, nothing to expand.'
-    : n === 2 ? 'Two games: the sheet opens just tall enough for both, with Find more games below.'
+    : n === 2 ? 'Two games: the sheet opens just tall enough for both, and the tab bar becomes Find more games.'
     : `${n === 5 ? 'All five' : n === 4 ? 'Four' : 'Three'} games: the sheet grows with the list and Home steps back behind it. Swipe a game left to remove it.`;
 
   const art = {
@@ -678,9 +709,8 @@
     word: `<svg width="38" height="38" viewBox="0 0 38 38" aria-hidden="true">${['W','O','R','D'].map((l, i) => `<rect x="${1 + (i%2)*19}" y="${1 + ((i/2)|0)*19}" width="17" height="17" rx="4" fill="${i===1||i===2 ? '#3a8dff' : '#e1eeff'}"/><text x="${9.5 + (i%2)*19}" y="${13.5 + ((i/2)|0)*19}" font-size="10" font-weight="700" text-anchor="middle" fill="${i===1||i===2 ? '#fff' : '#1f6fe5'}" font-family="-apple-system,Inter,sans-serif">${l}</text>`).join('')}</svg>`,
   };
 
-  $('#shelf').innerHTML = ['sudoku', 'nanogram', 'tangram', 'wordly']
-    .map((id) => ALL.find((g) => g.id === id))
-    .map((g) => `<button class="game" type="button"><span class="game-art">${art[g.art]}</span>${g.name}</button>`)
+  $('#shelf').innerHTML = [['Sudoku', 'sudoku'], ['Nanogram', 'nano'], ['Tangram', 'tangram'], ['Wordly', 'word']]
+    .map(([name, a]) => `<button class="game" type="button"><span class="game-art">${art[a]}</span>${name}</button>`)
     .join('');
 
   // ---------- Fit the device to its viewport ----------
@@ -717,24 +747,30 @@
   });
 
   // ---------- Sheet layout ----------
-  // The sheet is as tall as the screen allows and slides down by `y`.
-  // Open, it shows the header, every row, and Find more games above the tab bar;
-  // only when that is taller than the screen does it stop at the top and scroll.
-  const ROW = 88, GAP = 10, FOOT = 16 + 52 + 16;
+  // Measured from the Figma frame (393 x 852): the resting card's top edge is at y 589 and it
+  // floats 28px above the bottom bar; with five games the open sheet's top is at y 242, its rows
+  // end 11px above the bar, and the bar itself shows Find more games in place of the tabs.
+  // The sheet is as tall as the screen allows and slides down by `y`; open, it is sized to its
+  // rows, and only when that is taller than the screen does it stop at the top and scroll.
+  const ROW = 86, GAP = 8, PAD = 12, LIFT = 28, END = 11;
   let games = [], y = 0, stop = () => {}, expanded = false;
   // Sizes are measured once per layout and the row list once per change, so a frame of
   // animation only writes styles and never forces layout.
-  let M = { H: 0, grab: 0, tab: 0 }, rowCache = null, closing = 0;
-  const measure = () => { M = { H: sheet.offsetHeight, grab: grab.offsetHeight, tab: tabbar.offsetHeight }; };
+  let M = { H: 0, grab: 0, tab: 0 }, rowCache = null;
+  const measure = () => {
+    M = { H: sheet.offsetHeight, grab: grab.offsetHeight, tab: tabbar.offsetHeight };
+    noneYet.style.top = M.grab + 'px';
+  };
   const rows = () => rowCache || (rowCache = [...list.querySelectorAll('.row:not(.gone)')]);
   const H = () => M.H;
   const TAB = () => M.tab;
-  const restY = () => H() - (M.grab + ROW + 14 + TAB()); // one card showing
-  const collapsedY = () => (games.length ? restY() : H());
+  const cardH = () => M.grab + ROW + PAD;                 // the resting card: header and one game
+  const restY = () => H() - (cardH() + LIFT + TAB());
+  const collapsedY = () => restY(); // with no games the card stays, showing its empty state
   const expandedY = () => {
     const n = games.length;
     if (n <= 1) return collapsedY();
-    return Math.max(0, H() - (M.grab + n * ROW + (n - 1) * GAP + FOOT + TAB()));
+    return Math.max(0, H() - (M.grab + n * ROW + (n - 1) * GAP + END + TAB()));
   };
   // How open the sheet is, 0 to 1. `span` remembers the last open travel, so the dim and the
   // titles still fade smoothly when the last-but-one game is removed and there is nothing to open.
@@ -757,13 +793,16 @@
       r.style.opacity = t;
       r.style.transform = t === 1 ? '' : `translate3d(0, ${(1 - t) * 16}px, 0)`;
     });
-    // Find more games sits right under the last row (a row that is closing still counts),
-    // so it travels with the sheet and slips behind the tab bar on the way down.
-    // When the list is taller than the screen it stays pinned above the tab bar instead.
-    const n = games.length;
-    const under = M.grab + n * ROW + Math.max(n - 1, 0) * GAP + closing + 16;
-    more.style.opacity = clamp((p - 0.25) / 0.4);
-    more.style.transform = `translate3d(0, ${Math.min(0, under - (H() - TAB() - 68))}px, 0)`;
+    // Outline: at rest a card inset 8px with its bottom edge 28px above the bar; as it opens,
+    // the sides reach the screen edges and the bottom edge sinks behind the bar.
+    const q = clamp(p / 0.3);
+    const bottom = y >= restY() ? cardH() : H() - TAB() - LIFT + 60 * q - y;
+    sheet.style.clipPath = `inset(0 ${8 * (1 - q)}px ${Math.max(0, H() - bottom)}px ${8 * (1 - q)}px round 34px 34px 30px 30px)`;
+    // The bar's tabs give way to Find more games
+    const tm = clamp((p - 0.45) / 0.45);
+    tabs.style.opacity = clamp(1 - p / 0.5);
+    more.style.opacity = tm;
+    more.style.transform = `translate3d(0, ${(1 - tm) * 6}px, 0)`;
     sheet.classList.toggle('opened', p > 0.5);
   }
 
@@ -780,6 +819,7 @@
     dim.classList.toggle('live', expanded);
     more.classList.toggle('live', expanded);
     more.tabIndex = expanded ? 0 : -1;
+    tabs.inert = expanded;
     rows().forEach((r, i) => { r.inert = !expanded && i > 0; });
     if (!expanded) { closeRows(); list.scrollTop = 0; }
     list.classList.toggle('scrolls', expanded && to === 0 && list.scrollHeight > list.clientHeight + 1);
@@ -794,7 +834,7 @@
   // ---------- Rows ----------
   function rowHTML(g) {
     const pct = g.of ? Math.round((g.puzzle / g.of) * 100) : 0;
-    const sub = g.of ? `Chapter ${g.chapter} · Puzzle ${g.puzzle}/${g.of}` : `Played ${g.played.toLowerCase()}`;
+    const sub = g.of ? `Chapter ${g.chapter} · Puzzle ${g.puzzle}/${g.of}` : g.date;
     return `
       <div class="row" role="listitem" data-id="${g.id}">
         <div class="card">
@@ -819,25 +859,29 @@
     const n = games.length;
     rows().forEach((r, i) => r.classList.toggle('hero', i === 0));
     sheet.classList.toggle('single', n <= 1);
-    grab.setAttribute('aria-label', n > 1 ? 'Show all recent games' : 'Continue playing');
+    grab.setAttribute('aria-label', n > 1 ? 'Show all recent games' : n ? 'Continue playing' : 'Recent games');
+    titleClosed.textContent = n ? 'Continue playing' : 'Recent games';
     if (n > 1) count.textContent = `${n} in progress`; // left as it was while it fades out
     $('#hint').textContent = hintFor(n);
   }
 
-  let buildId = 0;
+  let buildId = 0, built = false;
   // Swap in a fresh list: the old sheet drops away, the new one rises.
   async function build(n) {
     const id = ++buildId;
-    if (list.childElementCount && y < H()) {
+    if (built && y < H()) {
       stop();
       expanded = false;
       dim.classList.remove('live');
       await new Promise((res) => { stop = spring(y, H(), 0, render, res, 520, 44); });
       if (id !== buildId) return;
     }
+    built = true;
     games = ALL.slice(0, n);
+    noneYet.hidden = n > 0;
+    noneYet.style.opacity = '';
     list.innerHTML = games.map(rowHTML).join('');
-    rowCache = null; closing = 0;
+    rowCache = null;
     measure();
     rows().forEach(wireRow);
     sync();
@@ -880,21 +924,26 @@
     if (games.length <= 1 && was > 0) span = Math.max((restY() - y) / was, 1);
     sync();
     // The card leaves to the left while the row closes. The row and the sheet share one spring,
-    // so the rows below and Find more games hold still instead of bobbing.
+    // so the rows below hold still instead of bobbing.
     const card = row.firstElementChild, h0 = row.offsetHeight, o0 = Number(row.style.opacity || 1);
     if (!reduce) {
       card.style.transition = 'transform 300ms cubic-bezier(.4, 0, .9, .5)';
       card.style.transform = 'translate3d(-110%, 0, 0)';
     }
+    // The last game does not close up: the empty card fades in where it was
+    const last = games.length === 0;
+    if (last) { noneYet.hidden = false; noneYet.style.opacity = '0'; }
     let done = false;
     settle(expanded, 0, (u) => {
-      closing = (h0 + GAP) * (1 - u);
-      row.style.height = `${h0 * (1 - u)}px`;
-      row.style.marginBottom = `${GAP * (1 - u)}px`;
+      if (last) noneYet.style.opacity = clamp((u - 0.25) / 0.6);
+      else {
+        row.style.height = `${h0 * (1 - u)}px`;
+        row.style.marginBottom = `${GAP * (1 - u)}px`;
+      }
       row.style.opacity = o0 * clamp(1 - u * 1.6);
       done = u === 1;
     }).then(() => {
-      closing = 0;
+      if (last) noneYet.style.opacity = '';
       if (done || reduce) return row.remove();
       // Interrupted part-way (another drag or removal): close what is left quickly
       row.style.transition = 'height 160ms ease-out, margin 160ms ease-out, opacity 120ms';
@@ -908,7 +957,7 @@
   // A vertical drag moves the sheet; a horizontal drag on a game swipes it.
   let g = null;
   sheet.addEventListener('pointerdown', (e) => {
-    if (e.button || e.target.closest('.play, .delete, .more')) return;
+    if (e.button || e.target.closest('.play, .delete, .none-yet')) return;
     g = { id: e.pointerId, x0: e.clientX, y0: e.clientY, s0: y, lock: null, v: 0, t: performance.now(), last: e.clientY,
           row: e.target.closest('.row'), grab: !!e.target.closest('.grab') };
     if (g.row) g.base = g.row._dx;
@@ -1028,10 +1077,9 @@
   $('#reset').addEventListener('click', () => pick(5));
 
   // ---------- Live details ----------
-  const now = new Date();
-  $('#today').textContent = now.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'short' });
-  $('#calMonth').textContent = now.toLocaleDateString('en-GB', { month: 'short' });
-  $('#calDay').textContent = now.getDate();
+  $('#today').textContent = today.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' });
+  $('#calMonth').textContent = today.toLocaleDateString('en-US', { month: 'short' });
+  $('#calDay').textContent = today.getDate();
   const eventEnd = Date.now() + ((9 * 24 + 7) * 60 + 12) * 60000;
   const tick = () => {
     const m = Math.max(0, Math.floor((eventEnd - Date.now()) / 60000));
@@ -1050,7 +1098,8 @@
   pick(5);
 
   // ---------- Walk-through (?demo=1) ----------
-  // Plays the flow on a loop with a touch indicator, through the same code a real finger drives.
+  // Plays three steps on a loop with a touch indicator, through the same code a real finger
+  // drives: open the sheet, remove a game, go back to Home. Resuming a game stays hands-on only.
   if (!params.has('demo') || reduce) return;
 
   const touch = document.createElement('div');
@@ -1106,27 +1155,36 @@
         await ok(tween(460, (t) => { const d = -116 * t; setX(target, d < -REVEAL ? -REVEAL + (d + REVEAL) * 0.45 : d); place(cx + d, cy); }));
         touch.classList.remove('down');
         setX(target, -REVEAL, true);
-        await ok(sleep(480));
+        // The finger lifts and comes down on Remove, rather than sliding across the play button
+        touch.classList.remove('on');
+        await ok(sleep(520));
         const del = target.querySelector('.delete');
         const [dx, dy] = at(del);
-        await ok(move(dx, dy, 360));
+        place(dx, dy);
+        touch.classList.add('on');
+        await ok(sleep(380));
         await ok(press(del));
         remove(target);
-        await ok(sleep(1150));
+        // Lift the finger at once: the row above slides its play button into this very spot,
+        // and a finger resting there reads as tapping play.
+        touch.classList.remove('on');
+        await ok(sleep(1250));
       }
 
-      // 3. Resume a game: it rises to the top and the Dynamic Island shows progress
-      const next = rows()[1];
-      if (next) {
-        const play = next.querySelector('.play');
-        const [px, py] = at(play);
-        await ok(move(px, py, 620));
-        await ok(press(play));
-        resume(next);
-        await ok(sleep(500));
-      }
+      // 3. Drag the sheet back down: Home returns
+      const [hx, hy] = at(grab, 0.5, 0.4);
+      place(hx, hy);
+      touch.classList.add('on');
+      await ok(sleep(420));
+      touch.classList.add('down');
+      stop();
+      const c = y, d = collapsedY() - 24;
+      await ok(tween(620, (t) => { const yy = c + (d - c) * t; render(yy); place(hx, hy + (yy - c)); }));
+      touch.classList.remove('down');
+      settle(false, 700);
+      await ok(sleep(350));
       touch.classList.remove('on');
-      await ok(sleep(4200));
+      await ok(sleep(2600));
       tour(id);
     } catch (e) { if (e !== STOP) throw e; }
   }
