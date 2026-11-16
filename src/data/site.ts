@@ -1,4 +1,4 @@
-/** Your details. The name and what you do are real; the email and socials are still placeholders. */
+/** Your details. The name and what you do are real; the Instagram link is still a placeholder. */
 export const site = {
   name: 'Natalia Petrovska',
   initials: 'NP',
@@ -27,12 +27,13 @@ export const site = {
   headline: ['Art direction and full‑scale art production,', 'with an AI gen pipeline on demand.'],
   intro:
     'I help game studios with art direction, AI production, UI/UX design and mentoring.',
-  email: 'hello@example.com',
+  email: 'petrovska_natalka@yahoo.com',
   available: true,
   availability: 'Available for new projects',
   socials: [
     { label: 'LinkedIn', href: 'https://www.linkedin.com/in/natka/' },
-    { label: 'Instagram', href: 'https://www.instagram.com/' },  ],
+    { label: 'Instagram', href: 'https://www.instagram.com/' },
+  ],
   /** Shows a thin banner saying the projects are sample content. */
   showSampleNotice: true,
 };
