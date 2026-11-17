@@ -33,10 +33,11 @@ const popups = [
   { name: 'Card Stars', alt: 'Card Stars popup hosted by the corgi: duplicates give Card Stars to redeem chests for 200, 300 and 400 stars' },
 ];
 const packs = ['no-star', '1-star', '2-star', '3-star', '4-star', '5-star'];
+// Chest and pedestal are separate layers, placed as in the Figma group (% of a 242.51-wide box)
 const chests = [
-  { img: 'chest-1', price: 200, alt: 'A wooden chest with a silver star' },
-  { img: 'chest-2', price: 300, alt: 'A red quilted chest with a gold star' },
-  { img: 'chest-3', price: 400, alt: 'A gold-trimmed chest with a red star' },
+  { img: 'chest-1', price: 200, alt: 'A wooden chest with a silver star', x: 18.61, w: 75.55, top: 44.53, gh: 218.62, iw: 366, ih: 303 },
+  { img: 'chest-2', price: 300, alt: 'A red quilted chest with a gold star', x: 20.07, w: 73.72, top: 44.08, gh: 216.85, iw: 358, ih: 306 },
+  { img: 'chest-3', price: 400, alt: 'A gold-trimmed chest with a red star', x: 18.98, w: 75.18, top: 44.08, gh: 216.85, iw: 365, ih: 301 },
 ];
 const cardStates = [
   { img: 'card-locked1', w: 188, label: 'Locked', alt: 'A locked card' },
@@ -209,11 +210,12 @@ const principles = [
     </div>
     <figure class="fig sets" data-fig data-albums role="img" aria-label="Twenty-seven album covers drawn as small framed books, each with its own colour and holiday scene">
       <img class="torn" src={`${base}/cases/sort-journey/bg-sets.svg`} width="1295" height="878" alt="" loading="lazy" decoding="async" />
-      <ul class="albums rise" role="list">
+      <ul class="albums" role="list">
         {Array.from({ length: 27 }, (_, i) => (
           <li><img src={art(`album-${String(i + 1).padStart(2, '0')}`)} width="180" height="217" alt="" loading="lazy" decoding="async" draggable="false" /></li>
         ))}
       </ul>
+      <canvas class="spell" aria-hidden="true"></canvas>
     </figure>
     <ul class="notes cols" role="list">
       <li><h3>One subject a cover</h3><p>Each scene has one clear subject, centred and bright against its frame, so a cover still reads at the size of a thumbnail.</p></li>
@@ -265,7 +267,11 @@ const principles = [
         </div>
         <ul class="chests" role="list">
           {chests.map((c, i) => (
-            <li class="rise" style={`--k:${i + 2}`}><img src={art(c.img)} width="485" height="436" alt={c.alt} loading="lazy" decoding="async" /></li>
+            <li class="chest rise" style={`--k:${i + 2};--i:${i};--x:${c.x}%;--w:${c.w}%;--top:${c.top}%;--gh:${c.gh}`} data-chest>
+              <img class="ped" src={art('pedestal')} width="485" height="243" alt="" loading="lazy" decoding="async" />
+              <img class="shade" src={art('pedestal-shade')} width="485" height="243" alt="" loading="lazy" decoding="async" />
+              <img class="box" src={art(c.img)} width={c.iw} height={c.ih} alt={c.alt} loading="lazy" decoding="async" />
+            </li>
           ))}
         </ul>
         <ul class="buttons" role="list">
@@ -591,9 +597,9 @@ const principles = [
   const shelf = document.querySelector<HTMLElement>('[data-albums]');
   const list = shelf?.querySelector<HTMLElement>('.albums');
   if (shelf && list && !reduce) {
-    type Body = { el: HTMLElement; cx: number; cy: number; w: number; x: number; y: number; a: number; vx: number; vy: number; va: number; k: number; lean: number };
+    type Body = { el: HTMLElement; cx: number; cy: number; w: number; x: number; y: number; a: number; vx: number; vy: number; va: number; k: number; lean: number; fly: boolean };
     const bodies: Body[] = [...list.querySelectorAll<HTMLElement>('li')].map((el, i) => ({
-      el, cx: 0, cy: 0, w: 1, x: 0, y: 0, a: 0, vx: 0, vy: 0, va: 0,
+      el, cx: 0, cy: 0, w: 1, x: 0, y: 0, a: 0, vx: 0, vy: 0, va: 0, fly: false,
       k: 0.82 + ((i * 53) % 7) * 0.06, // stiffness differs a little, so neighbours fall out of step
       lean: ((i * 37) % 11) / 5 - 1, // and each has its own way of turning, -1..1
     }));
@@ -625,6 +631,7 @@ const principles = [
       const h = span / n;
       let busy = false;
       for (const b of bodies) {
+        if (b.fly) continue; // the spell moves it until it lands
         for (let s = 0; s < n; s++) {
           b.va += (-KA * b.k * b.a - DA * b.va) * h;
           b.a += b.va * h;
@@ -677,6 +684,7 @@ const principles = [
       if (dist < 0.5) return;
       const boost = Math.min(1.8, 0.5 + speed);
       for (const b of bodies) {
+        if (b.fly) continue;
         const rx = x - b.cx;
         const ry = y - b.cy;
         const reach = b.w * 0.9;
@@ -693,6 +701,7 @@ const principles = [
       measure();
       const [x, y] = local(e);
       for (const b of bodies) {
+        if (b.fly) continue;
         const rx = x - b.cx;
         const ry = y - b.cy;
         if (Math.abs(rx) > b.w * 0.6 || Math.abs(ry) > b.w * 0.75) continue;
@@ -700,6 +709,257 @@ const principles = [
         kick(b, (rx / b.w) * 520 + b.lean * 90, 0, 70);
       }
       wake();
+    });
+    // The spell. A wand stroke sweeps across the paper; as it passes each column the albums
+    // fly out of it to their places, trailing sparks, and land with a wobble and a little burst.
+    const canvas = shelf.querySelector<HTMLCanvasElement>('.spell');
+    const g = canvas?.getContext('2d');
+    if (canvas && g) {
+      shelf.setAttribute('data-spell', '');
+      const TINTS = ['255 216 120', '255 240 214', '255 168 226', '168 234 255', '255 216 120'];
+      const sprite = (tint: string, star: boolean) => {
+        const c = document.createElement('canvas');
+        c.width = c.height = 64;
+        const x = c.getContext('2d')!;
+        const rg = x.createRadialGradient(32, 32, 0, 32, 32, 32);
+        rg.addColorStop(0, 'rgb(255 255 255 / 0.85)');
+        rg.addColorStop(star ? 0.12 : 0.2, `rgb(${tint} / 0.85)`);
+        rg.addColorStop(star ? 0.45 : 1, `rgb(${tint} / ${star ? 0.25 : 0})`);
+        rg.addColorStop(1, `rgb(${tint} / 0)`);
+        x.fillStyle = rg;
+        x.fillRect(0, 0, 64, 64);
+        if (star) {
+          // a four-pointed glint, in its own tint rather than white
+          x.fillStyle = `rgb(${tint} / 0.85)`;
+          x.beginPath();
+          x.moveTo(32, 1);
+          x.quadraticCurveTo(34.5, 29.5, 63, 32);
+          x.quadraticCurveTo(34.5, 34.5, 32, 63);
+          x.quadraticCurveTo(29.5, 34.5, 1, 32);
+          x.quadraticCurveTo(29.5, 29.5, 32, 1);
+          x.fill();
+        }
+        return c;
+      };
+      const glows = TINTS.map((t) => sprite(t, false));
+      const stars = TINTS.map((t) => sprite(t, true));
+
+      type Spark = { x: number; y: number; vx: number; vy: number; age: number; life: number; size: number; img: HTMLCanvasElement; rot: number; vr: number; star: boolean };
+      const sparks: Spark[] = [];
+      const rnd = (a: number, b: number) => a + Math.random() * (b - a);
+      const pick = <T,>(arr: T[]) => arr[Math.floor(Math.random() * arr.length)];
+      const emit = (x: number, y: number, speed: number, size: number, life: number) => {
+        const star = Math.random() < 0.45;
+        const ang = Math.random() * Math.PI * 2;
+        const v = speed * rnd(0.3, 1);
+        sparks.push({ x, y, vx: Math.cos(ang) * v, vy: Math.sin(ang) * v - speed * 0.2, age: 0, life: life * rnd(0.6, 1.2), size: size * rnd(0.5, 1.2) * (star ? 1.5 : 1), img: pick(star ? stars : glows), rot: Math.random() * Math.PI, vr: rnd(-3, 3), star });
+      };
+
+      // the wand's path, as fractions of the figure: a long S across the paper
+      const P = [[-0.03, 0.88], [0.3, -0.08], [0.62, 1.14], [1.03, 0.16]];
+      const bez = (t: number) => {
+        const u = 1 - t;
+        const k = [u * u * u, 3 * u * u * t, 3 * u * t * t, t * t * t];
+        return [k[0] * P[0][0] + k[1] * P[1][0] + k[2] * P[2][0] + k[3] * P[3][0], k[0] * P[0][1] + k[1] * P[1][1] + k[2] * P[2][1] + k[3] * P[3][1]];
+      };
+      const SWEEP = 1300, FLIGHT = 640, TRAIL = 420;
+      const glide = (t: number) => 0.5 - Math.cos(Math.PI * Math.min(Math.max(t, 0), 1)) / 2;
+      const outCubic = (t: number) => 1 - (1 - t) ** 3;
+      const outBack = (t: number) => 1 + 2.4 * (t - 1) ** 3 + 1.4 * (t - 1) ** 2;
+
+      const cast = () => {
+        measure();
+        const W = shelf.clientWidth;
+        const H = shelf.clientHeight;
+        const dpr = Math.min(devicePixelRatio || 1, 2);
+        canvas.width = Math.round(canvas.clientWidth * dpr);
+        canvas.height = Math.round(canvas.clientHeight * dpr);
+        const oy = -canvas.offsetTop; // canvas is taller than the figure
+        const ox = list.offsetLeft;
+        const ly = list.offsetTop;
+        const head = (ms: number) => { const [fx, fy] = bez(glide(ms / SWEEP)); return [fx * W, fy * H]; };
+        // when the wand passes each column
+        const passAt = (x: number) => {
+          for (let ms = 0; ms <= SWEEP; ms += 8) if (head(ms)[0] >= x) return ms;
+          return SWEEP;
+        };
+        type Flight = { b: Body; at: number; sx: number; sy: number; tx: number; ty: number; mx: number; my: number; rot: number; started: boolean; done: boolean };
+        const flights: Flight[] = bodies.map((b, i) => {
+          const tx = ox + b.cx;
+          const ty = ly + b.cy;
+          const row = Math.floor(i / 9);
+          return { b, at: passAt(tx) + row * 70, sx: 0, sy: 0, tx, ty, mx: 0, my: 0, rot: (b.lean >= 0 ? 1 : -1) * rnd(25, 55), started: false, done: false };
+        });
+        const trail: { x: number; y: number; t: number }[] = [];
+        const size = Math.max(5, W * 0.011);
+        let t0 = 0;
+        let prev = 0;
+
+        const frame = (now: number) => {
+          if (!t0) t0 = prev = now;
+          const t = now - t0;
+          const dt = Math.min((now - prev) / 1000, 0.05);
+          prev = now;
+
+          // the wand head, sampled finely so the stroke stays smooth
+          if (t <= SWEEP + 16) {
+            const from = trail.length ? trail[trail.length - 1].t - t0 : 0;
+            for (let k = 1; k <= 5; k++) {
+              const ms = Math.min(from + ((t - from) * k) / 5, SWEEP);
+              const [x, y] = head(ms);
+              trail.push({ x, y, t: t0 + ms });
+            }
+            const [hx, hy] = head(Math.min(t, SWEEP));
+            for (let k = 0; k < 2; k++) emit(hx + rnd(-6, 6), hy + rnd(-6, 6), size * 8, size * 0.85, 900);
+          }
+          while (trail.length && now - trail[0].t > TRAIL) trail.shift();
+
+          // the albums
+          let flying = false;
+          for (const f of flights) {
+            if (f.done) continue;
+            flying = true;
+            if (t < f.at) continue;
+            if (!f.started) {
+              f.started = true;
+              const [hx, hy] = head(Math.min(t, SWEEP));
+              f.sx = hx; f.sy = hy;
+              // curve out to one side on the way
+              const dx = f.tx - hx, dy = f.ty - hy;
+              const side = f.b.lean >= 0 ? 1 : -1;
+              f.mx = (hx + f.tx) / 2 - dy * 0.35 * side;
+              f.my = (hy + f.ty) / 2 + dx * 0.35 * side;
+              f.b.fly = true;
+              f.b.el.classList.add('in');
+            }
+            const p = Math.min((t - f.at) / FLIGHT, 1);
+            const e = outCubic(p);
+            const u = 1 - e;
+            const x = u * u * f.sx + 2 * u * e * f.mx + e * e * f.tx;
+            const y = u * u * f.sy + 2 * u * e * f.my + e * e * f.ty;
+            const s = 0.2 + 0.8 * outBack(p);
+            f.b.el.style.opacity = String(Math.min(1, p * 4));
+            f.b.el.style.transform = `translate(${(x - f.tx).toFixed(2)}px, ${(y - f.ty).toFixed(2)}px) rotate(${(f.rot * (1 - e)).toFixed(2)}deg) scale(${s.toFixed(3)})`;
+            if (p < 0.9 && Math.random() < 0.8) emit(x + rnd(-f.b.w, f.b.w) * 0.3, y + rnd(-f.b.w, f.b.w) * 0.3, size * 4, size * 0.8, 600);
+            if (p >= 1) {
+              f.done = true;
+              const b = f.b;
+              b.fly = false;
+              b.el.style.opacity = '';
+              b.x = b.y = b.a = 0;
+              b.vx = b.vy = b.va = 0;
+              kick(b, b.lean * 120 + (b.lean >= 0 ? 50 : -50), 0, 90);
+              wake();
+              for (let k = 0; k < 10; k++) emit(f.tx + rnd(-0.4, 0.4) * b.w, f.ty + rnd(-0.5, 0.5) * b.w, size * 14, size * 0.9, 700);
+            }
+          }
+
+          // sparks
+          for (let i = sparks.length - 1; i >= 0; i--) {
+            const p = sparks[i];
+            p.age += dt * 1000;
+            if (p.age >= p.life) { sparks.splice(i, 1); continue; }
+            p.vx *= 1 - 2.2 * dt;
+            p.vy = p.vy * (1 - 2.2 * dt) + 40 * dt; // they drift and settle a little
+            p.x += p.vx * dt;
+            p.y += p.vy * dt;
+            p.rot += p.vr * dt;
+          }
+
+          // draw
+          g.setTransform(dpr, 0, 0, dpr, 0, 0);
+          g.clearRect(0, 0, canvas.width, canvas.height);
+          g.translate(0, oy);
+          if (trail.length > 2) {
+            // a light, see-through stroke: thin, fading out along its tail, never pure white
+            const tail = trail[0], tip = trail[trail.length - 1];
+            const ribbon = (scale: number, rgb: string, alpha: number) => {
+              const left: number[][] = [], right: number[][] = [];
+              for (let i = 0; i < trail.length; i++) {
+                const a = trail[Math.max(0, i - 1)], c = trail[Math.min(trail.length - 1, i + 1)];
+                let nx = -(c.y - a.y), ny = c.x - a.x;
+                const l = Math.hypot(nx, ny) || 1;
+                nx /= l; ny /= l;
+                const life = 1 - (now - trail[i].t) / TRAIL;
+                const hw = Math.max(0, life) ** 1.2 * size * scale;
+                left.push([trail[i].x + nx * hw, trail[i].y + ny * hw]);
+                right.push([trail[i].x - nx * hw, trail[i].y - ny * hw]);
+              }
+              g.beginPath();
+              g.moveTo(left[0][0], left[0][1]);
+              for (const [x, y] of left) g.lineTo(x, y);
+              for (let i = right.length - 1; i >= 0; i--) g.lineTo(right[i][0], right[i][1]);
+              g.closePath();
+              const fade = g.createLinearGradient(tail.x, tail.y, tip.x, tip.y);
+              fade.addColorStop(0, `rgb(${rgb} / 0)`);
+              fade.addColorStop(0.55, `rgb(${rgb} / ${alpha * 0.45})`);
+              fade.addColorStop(1, `rgb(${rgb} / ${alpha})`);
+              g.fillStyle = fade;
+              g.fill();
+            };
+            ribbon(2.2, '255 226 170', 0.1);
+            ribbon(1, '255 238 205', 0.22);
+            ribbon(0.32, '255 250 238', 0.5);
+          }
+          g.globalCompositeOperation = 'lighter';
+          if (t <= SWEEP) {
+            const [hx, hy] = head(t);
+            const r = size * 3.6;
+            g.globalAlpha = 0.4;
+            g.drawImage(glows[0], hx - r, hy - r, r * 2, r * 2);
+            g.globalAlpha = 0.55;
+            g.drawImage(stars[1], hx - r * 0.55, hy - r * 0.55, r * 1.1, r * 1.1);
+          }
+          for (const p of sparks) {
+            const k = p.age / p.life;
+            g.globalAlpha = 0.85 * Math.min(1, k * 8) * (1 - k) ** 1.5;
+            const r = p.size * (p.star ? 0.8 + 0.35 * Math.sin(p.age / 60 + p.rot * 5) : 1);
+            if (p.star) {
+              g.save();
+              g.translate(p.x, p.y);
+              g.rotate(p.rot * 0.3);
+              g.drawImage(p.img, -r, -r, r * 2, r * 2);
+              g.restore();
+            } else {
+              g.drawImage(p.img, p.x - r, p.y - r, r * 2, r * 2);
+            }
+          }
+          g.globalAlpha = 1;
+          g.globalCompositeOperation = 'source-over';
+
+          if (flying || sparks.length || trail.length || t <= SWEEP) {
+            requestAnimationFrame(frame);
+          } else {
+            g.clearRect(0, 0, canvas.width, canvas.height);
+            canvas.width = canvas.height = 0;
+            shelf.removeAttribute('data-spell');
+            bodies.forEach((b) => b.el.classList.remove('in'));
+          }
+        };
+        requestAnimationFrame(frame);
+      };
+
+      const watch = new IntersectionObserver((es) => {
+        if (!es.some((e) => e.isIntersecting)) return;
+        watch.disconnect();
+        cast();
+      }, { threshold: 0.45 });
+      watch.observe(shelf);
+    }
+  }
+
+  // Chests: once each has popped onto its pedestal, pointing at it or tapping it makes it hop.
+  if (!reduce) {
+    document.querySelectorAll<HTMLElement>('[data-chest]').forEach((c) => {
+      c.addEventListener('animationend', (e) => {
+        if (e.animationName.includes('chest-ring')) c.classList.add('popped');
+        if (e.animationName.includes('chest-hop')) c.classList.remove('hop');
+      });
+      const hop = () => {
+        if (c.classList.contains('popped')) c.classList.add('hop');
+      };
+      c.addEventListener('pointerenter', hop);
+      c.addEventListener('click', hop);
     });
   }
 </script>
@@ -1383,6 +1643,17 @@ const principles = [
     transform-origin: 50% 45%;
     will-change: transform;
   }
+  /* before the spell is cast the albums are not there yet; each one shows as it is called in */
+  .sets[data-spell] .albums li:not(.in) {
+    opacity: 0;
+  }
+  .spell {
+    position: absolute;
+    inset: -8% 0;
+    width: 100%;
+    height: 116%;
+    pointer-events: none;
+  }
   .albums img {
     display: block;
     width: 100%;
@@ -1487,11 +1758,136 @@ const principles = [
     gap: clamp(8px, 1.4vw, 18px);
     padding: 0 4%;
   }
-  .chests img,
+  .chests .ped,
   .buttons img,
   .panel img {
     filter: drop-shadow(0 10px 14px rgb(11 26 48 / 0.25));
   }
+  /* Chest on its pedestal: three layers, so the chest can jump and its shadow can follow */
+  .chest {
+    position: relative;
+    aspect-ratio: 242.51 / var(--gh);
+    cursor: pointer;
+  }
+  .kit .chest img {
+    position: absolute;
+  }
+  .kit .chest .ped,
+  .kit .chest .shade {
+    left: 0;
+    top: var(--top);
+    width: 100%;
+  }
+  .shade {
+    transform-origin: 50% 36%;
+  }
+  .kit .chest .box {
+    left: var(--x);
+    top: 0;
+    width: var(--w);
+    transform-origin: 50% 94%;
+  }
+  /* a ring of light and a few sparks where it lands */
+  .chest::before,
+  .chest::after {
+    content: '';
+    position: absolute;
+    left: 12%;
+    width: 88%;
+    top: calc(var(--top) + 1%);
+    height: 33%;
+    border-radius: 50%;
+    pointer-events: none;
+    opacity: 0;
+  }
+  .chest::before {
+    border: 3px solid rgb(255 246 214 / 0.9);
+    box-shadow: 0 0 14px rgb(255 226 140 / 0.9), inset 0 0 10px rgb(255 226 140 / 0.6);
+  }
+  .chest::after {
+    top: calc(var(--top) - 18%);
+    height: 64%;
+    background:
+      radial-gradient(circle, #fff 0 2px, rgb(255 220 120 / 0.8) 3px, transparent 6px) 6% 62% / 14px 14px no-repeat,
+      radial-gradient(circle, #fff 0 2px, rgb(255 220 120 / 0.8) 3px, transparent 6px) 20% 10% / 14px 14px no-repeat,
+      radial-gradient(circle, #fff 0 1.5px, rgb(255 220 120 / 0.8) 2.5px, transparent 5px) 50% 0% / 12px 12px no-repeat,
+      radial-gradient(circle, #fff 0 2px, rgb(255 220 120 / 0.8) 3px, transparent 6px) 80% 8% / 14px 14px no-repeat,
+      radial-gradient(circle, #fff 0 2px, rgb(255 220 120 / 0.8) 3px, transparent 6px) 96% 58% / 14px 14px no-repeat,
+      radial-gradient(circle, #fff 0 1.5px, rgb(255 220 120 / 0.8) 2.5px, transparent 5px) 66% 96% / 12px 12px no-repeat;
+  }
+  [data-armed]:not(.seen) .chest .box,
+  [data-armed]:not(.seen) .chest .shade {
+    opacity: 0;
+  }
+  /* once in view, each chest pops out of its pedestal, one after another */
+  [data-armed].seen .chest {
+    --pop-at: calc(520ms + var(--i) * 240ms);
+  }
+  [data-armed].seen .chest .box {
+    animation: chest-pop 980ms var(--pop-at) both;
+  }
+  [data-armed].seen .chest .shade {
+    animation: shade-pop 980ms var(--pop-at) both;
+  }
+  [data-armed].seen .chest::before {
+    animation: chest-ring 620ms calc(var(--pop-at) + 700ms) ease-out both;
+  }
+  [data-armed].seen .chest::after {
+    animation: chest-sparks 700ms calc(var(--pop-at) + 680ms) cubic-bezier(0.2, 0.7, 0.3, 1) both;
+  }
+  [data-armed].seen .chest.popped .box,
+  [data-armed].seen .chest.popped .shade,
+  [data-armed].seen .chest.popped::before,
+  [data-armed].seen .chest.popped::after {
+    animation: none;
+  }
+  /* pointed at or tapped: a little hop */
+  [data-armed].seen .chest.popped.hop .box {
+    animation: chest-hop 640ms both;
+  }
+  [data-armed].seen .chest.popped.hop .shade {
+    animation: shade-hop 640ms both;
+  }
+  @keyframes chest-pop {
+    0% { opacity: 0; transform: translateY(4%) scale(0.25); animation-timing-function: cubic-bezier(0.2, 0.7, 0.4, 1); }
+    14% { opacity: 1; }
+    40% { transform: translateY(-38%) scale(0.92, 1.12); animation-timing-function: cubic-bezier(0.3, 0, 0.6, 0.4); }
+    54% { transform: translateY(-44%) scale(1.02, 0.98); animation-timing-function: cubic-bezier(0.5, 0, 0.9, 0.5); }
+    72% { transform: translateY(0) scale(1.14, 0.83); animation-timing-function: cubic-bezier(0.2, 0.6, 0.4, 1); }
+    85% { transform: translateY(-5%) scale(0.96, 1.05); animation-timing-function: ease-in-out; }
+    100% { opacity: 1; transform: none; }
+  }
+  @keyframes shade-pop {
+    0% { opacity: 0; transform: scale(0.4); }
+    40% { opacity: 0.3; transform: scale(0.72); }
+    54% { opacity: 0.25; transform: scale(0.68); }
+    72% { opacity: 1; transform: scale(1.06); }
+    85% { opacity: 0.9; transform: scale(0.98); }
+    100% { opacity: 1; transform: none; }
+  }
+  @keyframes chest-ring {
+    0% { opacity: 0.95; transform: scale(0.55); }
+    100% { opacity: 0; transform: scale(1.3); }
+  }
+  @keyframes chest-sparks {
+    0% { opacity: 0; transform: scale(0.35); }
+    25% { opacity: 1; }
+    100% { opacity: 0; transform: scale(1.25) translateY(-6%); }
+  }
+  @keyframes chest-hop {
+    0% { transform: none; animation-timing-function: ease-out; }
+    16% { transform: scale(1.08, 0.9); animation-timing-function: cubic-bezier(0.2, 0.7, 0.4, 1); }
+    44% { transform: translateY(-20%) scale(0.95, 1.07); animation-timing-function: cubic-bezier(0.5, 0, 0.9, 0.5); }
+    68% { transform: translateY(0) scale(1.08, 0.9); animation-timing-function: cubic-bezier(0.2, 0.6, 0.4, 1); }
+    84% { transform: translateY(-3%) scale(0.98, 1.02); }
+    100% { transform: none; }
+  }
+  @keyframes shade-hop {
+    0%, 100% { opacity: 1; transform: none; }
+    44% { opacity: 0.45; transform: scale(0.78); }
+    68% { opacity: 1; transform: scale(1.04); }
+  }
+
   .buttons {
     display: grid;
     grid-template-columns: 1.55fr 1fr 1fr;
