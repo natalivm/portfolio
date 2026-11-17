@@ -617,18 +617,22 @@ const principles = [
 
   // Albums: each one hangs on its own spring. The pointer pushes and twists the ones it passes;
   // where it meets an album and which way it travels decide the direction, faster means harder,
-  // and every album settles back on its own rhythm. A tap or click flicks the one underneath.
+  // and every album settles back on its own rhythm. Pointing at an album sends a ripple out
+  // through all of them, and a click (or tap) casts the spell again.
   const shelf = document.querySelector<HTMLElement>('[data-albums]');
   const list = shelf?.querySelector<HTMLElement>('.albums');
   if (shelf && list && !reduce) {
-    type Body = { el: HTMLElement; cx: number; cy: number; w: number; x: number; y: number; a: number; vx: number; vy: number; va: number; k: number; lean: number; fly: boolean };
+    type Body = { el: HTMLElement; cx: number; cy: number; w: number; x: number; y: number; a: number; z: number; vx: number; vy: number; va: number; vz: number; k: number; lean: number; fly: boolean };
     const bodies: Body[] = [...list.querySelectorAll<HTMLElement>('li')].map((el, i) => ({
-      el, cx: 0, cy: 0, w: 1, x: 0, y: 0, a: 0, vx: 0, vy: 0, va: 0, fly: false,
+      el, cx: 0, cy: 0, w: 1, x: 0, y: 0, a: 0, z: 0, vx: 0, vy: 0, va: 0, vz: 0, fly: false,
       k: 0.82 + ((i * 53) % 7) * 0.06, // stiffness differs a little, so neighbours fall out of step
       lean: ((i * 37) % 11) / 5 - 1, // and each has its own way of turning, -1..1
     }));
     const KA = 170, DA = 7.5, KT = 230, DT = 15; // rotation and position springs: bouncy, then still
-    const MAX_A = 18, MAX_VA = 260, MAX_T = 10, MAX_VT = 160;
+    const KZ = 260, DZ = 14; // and scale, for the ripple's swell
+    const MAX_A = 18, MAX_VA = 260, MAX_T = 10, MAX_VT = 160, MAX_Z = 0.14;
+    // a ripple reaches each album after a delay; kicks wait here until it is their turn
+    const waves: { b: Body; at: number; va: number; vy: number; vz: number }[] = [];
 
     let measuredAt = -1;
     const measure = () => {
@@ -653,7 +657,15 @@ const principles = [
       last = t;
       const n = Math.max(1, Math.round(span * 120));
       const h = span / n;
-      let busy = false;
+      let busy = waves.length > 0;
+      for (let i = waves.length - 1; i >= 0; i--) {
+        const w = waves[i];
+        if (t < w.at) continue;
+        waves.splice(i, 1);
+        if (w.b.fly) continue;
+        kick(w.b, w.va, 0, w.vy);
+        w.b.vz += w.vz;
+      }
       for (const b of bodies) {
         if (b.fly) continue; // the spell moves it until it lands
         for (let s = 0; s < n; s++) {
@@ -663,16 +675,19 @@ const principles = [
           b.x += b.vx * h;
           b.vy += (-KT * b.y - DT * b.vy) * h;
           b.y += b.vy * h;
+          b.vz += (-KZ * b.z - DZ * b.vz) * h;
+          b.z += b.vz * h;
         }
         b.a = clamp(b.a, MAX_A);
         b.x = clamp(b.x, MAX_T);
         b.y = clamp(b.y, MAX_T);
-        const moving = Math.abs(b.a) > 0.03 || Math.abs(b.va) > 0.5 || Math.abs(b.x) + Math.abs(b.y) > 0.05 || Math.abs(b.vx) + Math.abs(b.vy) > 0.5;
+        b.z = clamp(b.z, MAX_Z);
+        const moving = Math.abs(b.a) > 0.03 || Math.abs(b.va) > 0.5 || Math.abs(b.x) + Math.abs(b.y) > 0.05 || Math.abs(b.vx) + Math.abs(b.vy) > 0.5 || Math.abs(b.z) > 0.0005 || Math.abs(b.vz) > 0.005;
         if (moving) {
           busy = true;
-          b.el.style.transform = `translate(${b.x.toFixed(2)}px, ${b.y.toFixed(2)}px) rotate(${b.a.toFixed(2)}deg)`;
+          b.el.style.transform = `translate(${b.x.toFixed(2)}px, ${b.y.toFixed(2)}px) rotate(${b.a.toFixed(2)}deg) scale(${(1 + b.z).toFixed(4)})`;
         } else if (b.el.style.transform) {
-          b.a = b.va = b.x = b.y = b.vx = b.vy = 0;
+          b.a = b.va = b.x = b.y = b.vx = b.vy = b.z = b.vz = 0;
           b.el.style.transform = '';
         }
       }
@@ -689,14 +704,39 @@ const principles = [
       b.vy = clamp(b.vy + vy, MAX_VT);
     };
 
+    // The ripple: from the album pointed at, a swell runs out through the shelf. Each album lifts,
+    // grows a touch and leans away from where it started, a little less the further it is.
+    const ripple = (src: Body) => {
+      const now = performance.now();
+      const span = list.offsetWidth;
+      for (const b of bodies) {
+        const dx = b.cx - src.cx;
+        const dy = b.cy - src.cy;
+        const d = Math.hypot(dx, dy);
+        const f = Math.max(0.3, 1 - (d / span) * 0.9);
+        waves.push({ b, at: now + (d / span) * 700, va: (d ? (dx / d) * 90 : b.lean * 40) * f, vy: -2.6 * b.w * f, vz: 1.6 * f });
+      }
+      wake();
+    };
+    const under = (x: number, y: number) => bodies.find((b) => Math.abs(x - b.cx) < b.w / 2 && Math.abs(y - b.cy - b.w * 0.06) < b.w * 0.6);
+
     let px = NaN;
     let py = NaN;
     let pt = 0;
-    shelf.addEventListener('pointerleave', () => { px = py = NaN; });
+    let over: Body | undefined;
+    let rippledAt = -1e9;
+    shelf.addEventListener('pointerleave', () => { px = py = NaN; over = undefined; });
     shelf.addEventListener('pointermove', (e) => {
       const [x, y] = local(e);
+      if (Number.isNaN(px)) measure();
+      // a ripple each time the pointer comes onto another album, at most one every half second
+      const now = under(x, y);
+      if (now && now !== over && !now.fly && e.timeStamp - rippledAt > 450) {
+        rippledAt = e.timeStamp;
+        ripple(now);
+      }
+      over = now;
       if (Number.isNaN(px)) {
-        measure();
         px = x; py = y; pt = e.timeStamp;
         return;
       }
@@ -718,19 +758,6 @@ const principles = [
         // the turn: where it is met against the way the pointer moves, plus a little of its own lean
         const turn = ((rx * dy - ry * dx) / (b.w * b.w)) * 900 + (b.lean * dist / b.w) * 240;
         kick(b, turn * f, dx * 2.5 * f, dy * 2.5 * f);
-      }
-      wake();
-    });
-    shelf.addEventListener('pointerdown', (e) => {
-      measure();
-      const [x, y] = local(e);
-      for (const b of bodies) {
-        if (b.fly) continue;
-        const rx = x - b.cx;
-        const ry = y - b.cy;
-        if (Math.abs(rx) > b.w * 0.6 || Math.abs(ry) > b.w * 0.75) continue;
-        // pressed on its right side it turns clockwise, on the left the other way
-        kick(b, (rx / b.w) * 520 + b.lean * 90, 0, 70);
       }
       wake();
     });
@@ -791,8 +818,16 @@ const principles = [
       const outCubic = (t: number) => 1 - (1 - t) ** 3;
       const outBack = (t: number) => 1 + 2.4 * (t - 1) ** 3 + 1.4 * (t - 1) ** 2;
 
-      const cast = () => {
+      let casting = false;
+      const GATHER = 560; // with a replay, the albums first vanish, left to right, then the wand comes
+      const cast = (gather = false) => {
+        casting = true;
+        waves.length = 0;
         measure();
+        shelf.setAttribute('data-spell', '');
+        if (gather) bodies.forEach((b) => { b.fly = true; b.el.classList.add('in'); });
+        const T0 = gather ? GATHER : 0;
+        const gone = bodies.map(() => !gather);
         const W = shelf.clientWidth;
         const H = shelf.clientHeight;
         const dpr = Math.min(devicePixelRatio || 1, 2);
@@ -821,12 +856,30 @@ const principles = [
 
         const frame = (now: number) => {
           if (!t0) t0 = prev = now;
-          const t = now - t0;
+          const t = now - t0 - T0;
           const dt = Math.min((now - prev) / 1000, 0.05);
           prev = now;
 
+          // a replay: each album shrinks away into a few sparks, column by column
+          if (gather) {
+            bodies.forEach((b, i) => {
+              if (gone[i]) return;
+              const p = Math.min(Math.max((now - t0 - (i % 9) * 28 - Math.floor(i / 9) * 12) / 260, 0), 1);
+              const e = p * p;
+              b.el.style.opacity = String(1 - e);
+              b.el.style.transform = `translate(${b.x.toFixed(2)}px, ${(b.y - 8 * e).toFixed(2)}px) rotate(${(b.a + b.lean * 25 * e).toFixed(2)}deg) scale(${((1 + b.z) * (1 - 0.85 * e)).toFixed(3)})`;
+              if (p < 1) return;
+              gone[i] = true;
+              b.el.classList.remove('in');
+              b.el.style.opacity = '';
+              b.el.style.transform = '';
+              b.x = b.y = b.a = b.z = b.vx = b.vy = b.va = b.vz = 0;
+              for (let k = 0; k < 6; k++) emit(ox + b.cx + rnd(-0.3, 0.3) * b.w, ly + b.cy + rnd(-0.3, 0.3) * b.w, size * 7, size * 0.8, 600);
+            });
+          }
+
           // the wand head, sampled finely so the stroke stays smooth
-          if (t <= SWEEP + 16) {
+          if (t >= 0 && t <= SWEEP + 16) {
             const from = trail.length ? trail[trail.length - 1].t - t0 : 0;
             for (let k = 1; k <= 5; k++) {
               const ms = Math.min(from + ((t - from) * k) / 5, SWEEP);
@@ -926,7 +979,7 @@ const principles = [
             ribbon(0.32, '255 250 238', 0.5);
           }
           g.globalCompositeOperation = 'lighter';
-          if (t <= SWEEP) {
+          if (t >= 0 && t <= SWEEP) {
             const [hx, hy] = head(t);
             const r = size * 3.6;
             g.globalAlpha = 0.4;
@@ -958,17 +1011,32 @@ const principles = [
             canvas.width = canvas.height = 0;
             shelf.removeAttribute('data-spell');
             bodies.forEach((b) => b.el.classList.remove('in'));
+            casting = false;
           }
         };
         requestAnimationFrame(frame);
       };
 
+      let cast0 = false;
       const watch = new IntersectionObserver((es) => {
-        if (!es.some((e) => e.isIntersecting)) return;
+        if (cast0 || !es.some((e) => e.isIntersecting)) return;
+        cast0 = true;
         watch.disconnect();
         cast();
       }, { threshold: 0.45 });
       watch.observe(shelf);
+      // a click or tap casts it again (once the one in progress has finished)
+      shelf.style.cursor = 'pointer';
+      shelf.addEventListener('click', () => {
+        if (casting) return;
+        if (!cast0) {
+          cast0 = true;
+          watch.disconnect();
+          cast();
+          return;
+        }
+        cast(true);
+      });
     }
   }
 
