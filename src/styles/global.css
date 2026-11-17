@@ -207,6 +207,13 @@ button {
   overflow: clip;
 }
 
+/* A header image that does not animate in: shown at once, over the page's cross-fade.
+   Leaving the page, it fades out with everything else. */
+::view-transition-group(hero-still),
+::view-transition-new(hero-still) {
+  animation: none;
+}
+
 @media (prefers-reduced-motion: reduce) {
   @view-transition {
     navigation: none;
