@@ -207,9 +207,13 @@ const principles = [
     <div class="sec-head" data-fig>
       <h2 class="ribbon"><span>Albums</span></h2>
     </div>
-    <figure class="fig sets" data-fig>
+    <figure class="fig sets" data-fig data-albums role="img" aria-label="Twenty-seven album covers drawn as small framed books, each with its own colour and holiday scene">
       <img class="torn" src={`${base}/cases/sort-journey/bg-sets.svg`} width="1295" height="878" alt="" loading="lazy" decoding="async" />
-      <img class="rise covers" src={art('sets')} width="2400" height="953" alt="Twenty-seven set covers drawn as small framed books, each with its own colour and holiday scene" loading="lazy" decoding="async" />
+      <ul class="albums rise" role="list">
+        {Array.from({ length: 27 }, (_, i) => (
+          <li><img src={art(`album-${String(i + 1).padStart(2, '0')}`)} width="180" height="217" alt="" loading="lazy" decoding="async" draggable="false" /></li>
+        ))}
+      </ul>
     </figure>
     <ul class="notes cols" role="list">
       <li><h3>One subject a cover</h3><p>Each scene has one clear subject, centred and bright against its frame, so a cover still reads at the size of a thumbnail.</p></li>
@@ -579,6 +583,124 @@ const principles = [
     document.querySelectorAll('[data-fig]').forEach((f) => f.classList.add('seen'));
   } else {
     document.querySelectorAll('[data-fig]').forEach((f) => { f.setAttribute('data-armed', ''); io.observe(f); });
+  }
+
+  // Albums: each one hangs on its own spring. The pointer pushes and twists the ones it passes;
+  // where it meets an album and which way it travels decide the direction, faster means harder,
+  // and every album settles back on its own rhythm. A tap or click flicks the one underneath.
+  const shelf = document.querySelector<HTMLElement>('[data-albums]');
+  const list = shelf?.querySelector<HTMLElement>('.albums');
+  if (shelf && list && !reduce) {
+    type Body = { el: HTMLElement; cx: number; cy: number; w: number; x: number; y: number; a: number; vx: number; vy: number; va: number; k: number; lean: number };
+    const bodies: Body[] = [...list.querySelectorAll<HTMLElement>('li')].map((el, i) => ({
+      el, cx: 0, cy: 0, w: 1, x: 0, y: 0, a: 0, vx: 0, vy: 0, va: 0,
+      k: 0.82 + ((i * 53) % 7) * 0.06, // stiffness differs a little, so neighbours fall out of step
+      lean: ((i * 37) % 11) / 5 - 1, // and each has its own way of turning, -1..1
+    }));
+    const KA = 170, DA = 7.5, KT = 230, DT = 15; // rotation and position springs: bouncy, then still
+    const MAX_A = 18, MAX_VA = 260, MAX_T = 10, MAX_VT = 160;
+
+    let measuredAt = -1;
+    const measure = () => {
+      if (list.offsetWidth === measuredAt) return;
+      measuredAt = list.offsetWidth;
+      for (const b of bodies) {
+        b.w = b.el.offsetWidth;
+        b.cx = b.el.offsetLeft + b.w / 2;
+        b.cy = b.el.offsetTop + b.el.offsetHeight * 0.45;
+      }
+    };
+    const local = (e: PointerEvent) => {
+      const r = list.getBoundingClientRect();
+      return [e.clientX - r.left, e.clientY - r.top];
+    };
+    const clamp = (v: number, m: number) => Math.max(-m, Math.min(m, v));
+
+    let raf = 0;
+    let last = 0;
+    const step = (t: number) => {
+      const span = last ? Math.min((t - last) / 1000, 0.05) : 1 / 60;
+      last = t;
+      const n = Math.max(1, Math.round(span * 120));
+      const h = span / n;
+      let busy = false;
+      for (const b of bodies) {
+        for (let s = 0; s < n; s++) {
+          b.va += (-KA * b.k * b.a - DA * b.va) * h;
+          b.a += b.va * h;
+          b.vx += (-KT * b.x - DT * b.vx) * h;
+          b.x += b.vx * h;
+          b.vy += (-KT * b.y - DT * b.vy) * h;
+          b.y += b.vy * h;
+        }
+        b.a = clamp(b.a, MAX_A);
+        b.x = clamp(b.x, MAX_T);
+        b.y = clamp(b.y, MAX_T);
+        const moving = Math.abs(b.a) > 0.03 || Math.abs(b.va) > 0.5 || Math.abs(b.x) + Math.abs(b.y) > 0.05 || Math.abs(b.vx) + Math.abs(b.vy) > 0.5;
+        if (moving) {
+          busy = true;
+          b.el.style.transform = `translate(${b.x.toFixed(2)}px, ${b.y.toFixed(2)}px) rotate(${b.a.toFixed(2)}deg)`;
+        } else if (b.el.style.transform) {
+          b.a = b.va = b.x = b.y = b.vx = b.vy = 0;
+          b.el.style.transform = '';
+        }
+      }
+      raf = busy ? requestAnimationFrame(step) : 0;
+    };
+    const wake = () => {
+      if (raf) return;
+      last = 0;
+      raf = requestAnimationFrame(step);
+    };
+    const kick = (b: Body, va: number, vx: number, vy: number) => {
+      b.va = clamp(b.va + va, MAX_VA);
+      b.vx = clamp(b.vx + vx, MAX_VT);
+      b.vy = clamp(b.vy + vy, MAX_VT);
+    };
+
+    let px = NaN;
+    let py = NaN;
+    let pt = 0;
+    shelf.addEventListener('pointerleave', () => { px = py = NaN; });
+    shelf.addEventListener('pointermove', (e) => {
+      const [x, y] = local(e);
+      if (Number.isNaN(px)) {
+        measure();
+        px = x; py = y; pt = e.timeStamp;
+        return;
+      }
+      const dx = x - px;
+      const dy = y - py;
+      const dist = Math.hypot(dx, dy);
+      const speed = dist / Math.max(4, e.timeStamp - pt); // px per ms
+      px = x; py = y; pt = e.timeStamp;
+      if (dist < 0.5) return;
+      const boost = Math.min(1.8, 0.5 + speed);
+      for (const b of bodies) {
+        const rx = x - b.cx;
+        const ry = y - b.cy;
+        const reach = b.w * 0.9;
+        const d = Math.hypot(rx, ry);
+        if (d > reach) continue;
+        const f = (1 - d / reach) ** 2 * boost;
+        // the turn: where it is met against the way the pointer moves, plus a little of its own lean
+        const turn = ((rx * dy - ry * dx) / (b.w * b.w)) * 900 + (b.lean * dist / b.w) * 240;
+        kick(b, turn * f, dx * 2.5 * f, dy * 2.5 * f);
+      }
+      wake();
+    });
+    shelf.addEventListener('pointerdown', (e) => {
+      measure();
+      const [x, y] = local(e);
+      for (const b of bodies) {
+        const rx = x - b.cx;
+        const ry = y - b.cy;
+        if (Math.abs(rx) > b.w * 0.6 || Math.abs(ry) > b.w * 0.75) continue;
+        // pressed on its right side it turns clockwise, on the left the other way
+        kick(b, (rx / b.w) * 520 + b.lean * 90, 0, 70);
+      }
+      wake();
+    });
   }
 </script>
 
@@ -1198,7 +1320,6 @@ const principles = [
     transform: translateY(18px);
   }
   .phones img,
-  .sets .covers,
   .popups img {
     filter: drop-shadow(0 22px 28px rgb(11 26 48 / 0.28));
   }
@@ -1243,12 +1364,32 @@ const principles = [
     width: 100%;
     height: 100%;
   }
-  .sets .covers {
+  /* 27 albums on the same grid the shelf art used: 9 x 3, gaps measured from the source */
+  .sets .albums {
     position: absolute;
     left: 6.8%;
     top: 24%;
     width: 86.9%;
+    container-type: inline-size;
+    display: grid;
+    grid-template-columns: repeat(9, 1fr);
+    column-gap: 2.76cqw;
+    row-gap: 4.18cqw;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .albums li {
+    transform-origin: 50% 45%;
+    will-change: transform;
+  }
+  .albums img {
+    display: block;
+    width: 100%;
     height: auto;
+    filter: drop-shadow(0 10px 12px rgb(11 26 48 / 0.3));
+    user-select: none;
+    -webkit-user-drag: none;
   }
   .notes.cols {
     display: grid;
