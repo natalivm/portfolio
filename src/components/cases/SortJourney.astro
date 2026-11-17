@@ -968,4 +968,25 @@ const principles = [
       border-radius: 15px;
     }
   }
+
+  /* On the purple page the art sits straight on the ground, without a white tile */
+  :global(html[data-theme='purple']) .art,
+  :global(html[data-theme='purple']) .season-tile {
+    padding: 0;
+    background: none;
+    box-shadow: none;
+  }
+  :global(html[data-theme='purple']) .art img,
+  :global(html[data-theme='purple']) .season {
+    box-shadow: 0 30px 60px -30px rgb(18 4 48 / 0.8);
+  }
+  /* The diagrams sit on a lighter purple, so the game's blue is kept for the game's own art */
+  :global(html[data-theme='purple']) .vis,
+  :global(html[data-theme='purple']) .season {
+    background: rgb(255 255 255 / 0.09);
+    box-shadow: 0 0 0 1px rgb(255 255 255 / 0.14) inset;
+  }
+  :global(html[data-theme='purple']) .stage.on .vis {
+    box-shadow: 0 0 0 3px var(--accent);
+  }
 </style>

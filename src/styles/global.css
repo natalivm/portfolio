@@ -219,3 +219,39 @@ button {
     scroll-behavior: auto !important;
   }
 }
+
+/* ---------- Page theme: purple ----------
+   For a case study whose art lives on the game's purple (Sort Journey). The page ground and the
+   text on it turn purple and light; anything that sits on a white surface (tiles, light pills,
+   round buttons, dialogs) keeps the site's dark ink. */
+html[data-theme='purple'] {
+  --bg: #45208f;
+  --surface-2: rgb(255 255 255 / 0.1);
+  --ink: #ffffff;
+  --ink-2: #ddd0ff; /* 8.3:1 on the ground */
+  --ink-3: #c7b2ff; /* large text only */
+  --line: rgb(255 255 255 / 0.18);
+  --accent: #ffd447; /* state colour that reads on purple: focus, selection, current */
+  --accent-ink: #2a1160;
+  --shadow-tile: 0 1px 2px rgb(18 4 48 / 0.3), 0 18px 40px -18px rgb(18 4 48 / 0.65);
+  --shadow-lift: 0 2px 4px rgb(18 4 48 / 0.3), 0 26px 50px -20px rgb(18 4 48 / 0.75);
+  scrollbar-color: #8a6ad6 var(--bg);
+}
+html[data-theme='purple'] body {
+  background:
+    radial-gradient(90% 55% at 70% 0%, rgb(137 74 218 / 0.75) 0%, rgb(137 74 218 / 0) 70%),
+    var(--bg);
+}
+html[data-theme='purple'] .site-header {
+  background: rgb(69 32 143 / 0.82);
+}
+html[data-theme='purple'] :is(.tile, .ptile, .pager-card, .pill-light, .round, .back, .find, .jump) {
+  --ink: #16171a;
+  --ink-2: #5d6169;
+  --ink-3: #767a82;
+  --line: #dcdfe4;
+  --surface-2: #e8eaee;
+  --accent: #3346d3;
+  --accent-ink: #ffffff;
+  color: var(--ink);
+}
