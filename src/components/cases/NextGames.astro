@@ -175,20 +175,19 @@ const rules = [
     <ol class="drivers">
       <li data-fig>
         <h3>Clear information display</h3>
-        <p>Present the essential puzzle details: name, mode, difficulty level, progression, and the timer for time-limited events.</p>
         <div class="mini d-all"><PuzzleCard size="sm" {...homeCard} /></div>
+        <p>Present the essential puzzle details: name, mode, difficulty level, progression, and the timer for time-limited events.</p>
       </li>
       <li data-fig>
         <h3>Contextual relevance</h3>
-        <p>Tailor what the card says to where the player meets it, so they get the most pertinent details at that point in the game.</p>
         <div class="mini" data-cycle={JSON.stringify(contexts)}>
           <span class="mini-label" data-cycle-label>{contexts[0].label}</span>
           <PuzzleCard size="sm" {...contexts[0]} />
         </div>
+        <p>Tailor what the card says to where the player meets it, so they get the most pertinent details at that point in the game.</p>
       </li>
       <li data-fig>
         <h3>Cognitive load management</h3>
-        <p>Balance the amount and complexity of information so players are not overwhelmed and can take in the puzzle details easily.</p>
         <div class="mini" data-cycle={JSON.stringify(loads)}>
           <PuzzleCard size="sm" sub={loads[0].sub} />
           <span class="meter">
@@ -196,19 +195,19 @@ const rules = [
             <span data-cycle-label>{loads[0].label}</span>
           </span>
         </div>
+        <p>Balance the amount and complexity of information so players are not overwhelmed and can take in the puzzle details easily.</p>
       </li>
       <li data-fig>
         <h3>Consistent information format</h3>
-        <p>Keep one presentation of puzzle information across the game, to aid recognition and comprehension.</p>
         <div class="mini d-same">
           <p class="cols" aria-hidden="true"><span>Art</span><span>Name, then one line of detail</span><span>Action</span></p>
           <PuzzleCard size="sm" mode="Classic" sub="Chapter 1 · Puzzle 15/30" action="progress" progress={0.4} />
           <PuzzleCard size="sm" mode="Daily" sub="November 24, 2023" action="done" />
         </div>
+        <p>Keep one presentation of puzzle information across the game, to aid recognition and comprehension.</p>
       </li>
       <li data-fig>
         <h3>Customisation options</h3>
-        <p>Give players more control over their games, such as pinning one as a favourite.</p>
         <div class="mini d-pin">
           <div class="pin-wrap">
             <PuzzleCard size="sm" mode="Classic" sub="Chapter 1 · Puzzle 15/30" />
@@ -217,6 +216,7 @@ const rules = [
             </span>
           </div>
         </div>
+        <p>Give players more control over their games, such as pinning one as a favourite.</p>
       </li>
     </ol>
   </section>
@@ -761,27 +761,36 @@ const rules = [
     font-size: 1.0625rem;
   }
   /* ---------- UX drivers ---------- */
+  /* Three to a row, the last two centred under them. Each driver is its title, the card that
+     shows it, then the text; subgrid lines those three up across a row. */
   .drivers {
+    display: grid;
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    gap: 14px clamp(20px, 2.4vw, 32px);
     margin: 0;
     padding: 0;
     list-style: none;
-    border-bottom: 1px solid var(--line);
   }
   .drivers li {
     display: grid;
-    grid-template-columns: minmax(10rem, 1fr) minmax(0, 1.25fr) minmax(0, 0.95fr);
-    align-items: center;
-    gap: 16px clamp(24px, 4vw, 64px);
-    padding: clamp(16px, 2vw, 24px) 0;
-    border-top: 1px solid var(--line);
+    grid-column: span 2;
+    grid-row: span 3;
+    grid-template-rows: subgrid;
+    gap: 14px;
+  }
+  .drivers li:nth-child(4) {
+    grid-column: 2 / span 2;
   }
   .drivers li > h3 {
+    align-self: end;
     font-size: clamp(1.125rem, 1.6vw, 1.375rem);
     letter-spacing: -0.025em;
     line-height: 1.15;
   }
   .drivers li > p {
+    align-self: start;
     max-width: 52ch;
+    margin-bottom: clamp(26px, 3vw, 40px);
     color: var(--ink-2);
   }
   .mini {
@@ -1498,31 +1507,18 @@ const rules = [
     .screens {
       grid-template-columns: repeat(2, minmax(0, 1fr));
     }
-    .drivers li {
-      grid-template-columns: minmax(0, 1fr) minmax(300px, 0.8fr);
-      row-gap: 8px;
+    /* two to a row, the fifth centred */
+    .drivers {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
     }
-    .drivers li > h3 {
-      grid-column: 1;
-      align-self: end;
+    .drivers li:nth-child(4) {
+      grid-column: span 2;
     }
-    .drivers li > p {
-      grid-column: 1;
-      grid-row: 2;
-      align-self: start;
-    }
-    .mini {
-      grid-column: 2;
-      grid-row: 1 / span 2;
+    .drivers li:nth-child(5) {
+      grid-column: 2 / span 2;
     }
   }
   @media (max-width: 860px) {
-    .drivers li > h3,
-    .drivers li > p,
-    .mini {
-      grid-column: auto;
-      grid-row: auto;
-    }
     .sec-head,
     .ana,
     .player,
@@ -1531,12 +1527,8 @@ const rules = [
     .ledger li {
       grid-template-columns: 1fr;
     }
-    .drivers li {
-      grid-template-columns: 1fr;
-      gap: 10px;
-    }
-    .mini {
-      margin-top: 6px;
+    .drivers li:nth-child(n) {
+      grid-column: 1 / -1;
     }
     .heights {
       grid-template-columns: repeat(3, minmax(0, 1fr));
