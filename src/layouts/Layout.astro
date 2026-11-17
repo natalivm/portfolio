@@ -9,12 +9,12 @@ interface Props {
   title?: string;
   description?: string;
   current?: 'home' | 'work' | 'case';
-  /** A page theme from global.css, such as 'purple' */
+  /** A page theme from global.css, such as 'blue' */
   theme?: string;
 }
 
 const { title, description = site.intro, current, theme } = Astro.props;
-const themeColor = theme === 'purple' ? '#45208f' : '#f2f3f5';
+const themeColor = theme === 'blue' ? '#4c96ff' : '#f2f3f5';
 const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 const pageTitle = title ? `${title} · ${site.name}` : `${site.name}, ${site.role}`;
 ---
