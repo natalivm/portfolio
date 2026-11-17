@@ -68,6 +68,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
         <a class="pill pill-dark lb-case" data-lb-case hidden>
           Read the case study <span class="arrow"><Icon name="arrow-right" size={14} /></span>
         </a>
+        <a class="pill pill-light lb-case" data-lb-link target="_blank" rel="noopener" hidden></a>
         <div class="lb-nav">
           <button class="round" type="button" data-lb-prev aria-label="Previous project"><Icon name="arrow-left" /></button>
           <p class="lb-pos" data-lb-pos></p>
@@ -80,7 +81,8 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 
   {projects.map((p) => (
     <template data-tpl={p.slug}>
-      <Cover project={p} variant={1} ratio="4/3" />
+      {/* A real image shows whole in the quick view; a placeholder poster keeps 4:3 */}
+      <Cover project={p} variant={1} ratio={p.cover ? 'natural' : '4/3'} />
     </template>
   ))}
   <script
@@ -90,7 +92,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
       Object.fromEntries(
         projects.map((p) => [
           p.slug,
-          { t: p.title, c: p.client, y: p.year, d: p.disciplines.join(' · '), s: p.summary, cs: p.caseStudy, href: `${base}/work/${p.slug}/` },
+          { t: p.title, c: p.client, y: p.year, d: p.disciplines.join(' · '), s: p.summary, cs: p.caseStudy, href: `${base}/work/${p.slug}/`, l: p.link ?? null },
         ]),
       ),
     )}
@@ -98,7 +100,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 </Layout>
 
 <script>
-  type P = { t: string; c: string; y: number; d: string; s: string; cs: boolean; href: string };
+  type P = { t: string; c: string; y: number; d: string; s: string; cs: boolean; href: string; l: { label: string; href: string } | null };
   const data: Record<string, P> = JSON.parse(document.getElementById('work-data')!.textContent || '{}');
   const grid = document.querySelector<HTMLUListElement>('[data-grid]')!;
   const items = [...grid.querySelectorAll<HTMLLIElement>('li[data-slug]')];
@@ -226,6 +228,9 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
     const cs = q<HTMLAnchorElement>('[data-lb-case]');
     cs.hidden = !p.cs;
     cs.href = p.href;
+    const out = q<HTMLAnchorElement>('[data-lb-link]');
+    out.hidden = !p.l;
+    if (p.l) { out.href = p.l.href; out.textContent = p.l.label; }
     const tpl = document.querySelector<HTMLTemplateElement>(`template[data-tpl="${slug}"]`);
     const media = q('[data-lb-media]');
     media.replaceChildren(tpl ? tpl.content.cloneNode(true) : '');

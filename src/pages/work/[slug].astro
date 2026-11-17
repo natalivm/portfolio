@@ -4,6 +4,7 @@ import Cover from '../../components/Cover.astro';
 import Tile from '../../components/Tile.astro';
 import Icon from '../../components/Icon.astro';
 import NextGames from '../../components/cases/NextGames.astro';
+import SortJourney from '../../components/cases/SortJourney.astro';
 import { caseStudies, related, slugify, type Project } from '../../data/projects';
 
 export function getStaticPaths() {
@@ -87,6 +88,8 @@ const href = (x: Project) => (x.caseStudy ? `${base}/work/${x.slug}/` : `${base}
 
   {p.slug === 'next-games' ? (
     <NextGames />
+  ) : p.slug === 'sort-journey' ? (
+    <SortJourney project={p} />
   ) : (
   <article class="wrap story">
     <p class="sample">Sample case study. Replace this text with your own write-up.</p>

@@ -22,7 +22,7 @@ const href = p.caseStudy ? `${base}/work/${p.slug}/` : `${base}/work/?p=${p.slug
   data-disciplines={p.disciplines.map(slugify).join(' ')}
 >
   <div class="frame" style={`view-transition-name: cover-${p.slug}; view-transition-class: cover`}>
-    <Cover project={p} eager={eager} />
+    <Cover project={p} eager={eager} ratio={size === 'large' ? '16/9' : '4/3'} />
   </div>
   <div class="text">
     <h3 class="title">{p.title}</h3>
