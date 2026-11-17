@@ -32,14 +32,15 @@ const popups = [
   { name: 'New Album', alt: 'New album popup: Summer Vibes!, 29 days left, with its rewards and a Show Me button' },
   { name: 'Card Stars', alt: 'Card Stars popup hosted by the corgi: duplicates give Card Stars to redeem chests for 200, 300 and 400 stars' },
 ];
-const packs = ['No stars', '1 star', '2 stars', '3 stars', '4 stars', '5 stars'];
+const packs = ['no-star', '1-star', '2-star', '3-star', '4-star', '5-star'];
 const chests = [
   { img: 'chest-1', price: 200, alt: 'A wooden chest with a silver star' },
   { img: 'chest-2', price: 300, alt: 'A red quilted chest with a gold star' },
   { img: 'chest-3', price: 400, alt: 'A gold-trimmed chest with a red star' },
 ];
 const cardStates = [
-  { img: 'card-locked1', w: 188, label: 'Locked', alt: 'A locked card showing one grey star' },
+  { img: 'card-locked1', w: 188, label: 'Locked', alt: 'A locked card' },
+  { img: 'card-locked2', w: 188, label: 'Locked', alt: 'A locked card showing one grey star' },
   { img: 'card-locked3', w: 188, label: 'Locked', alt: 'A locked card showing three grey stars' },
   { img: 'card-new', w: 193, label: 'New', alt: 'The Sun Cream card with a NEW ribbon and one star' },
   { img: 'card-dupe', w: 184, label: '+2 copies', alt: 'The Seashell card with three stars and a +2 duplicates badge' },
@@ -76,9 +77,6 @@ const demoFills = [
   'linear-gradient(160deg, #ffcf7a, #f0653a)',
 ];
 const palette = ['#f5913a', '#4c96ff', '#e96aa0', '#7cc36b', '#a98bf0'];
-const SETS = 20, CARDS = 9;
-// Set colours, taken from the album covers
-const setColours = ['#f5913a', '#a98bf0', '#f6c142', '#e96aa0', '#7cc36b', '#ffffff', '#e8504a', '#3fc1c9'];
 
 const principles = [
   { h: 'Souvenirs, not menus', t: 'Albums are stitched photo books, cards are holiday snapshots, packs are foil packets. The feature looks like things you would bring home from a trip.' },
@@ -189,23 +187,6 @@ const principles = [
       </figcaption>
     </figure>
 
-    <figure class="fig" data-fig data-season>
-      <div class="season-tile">
-        <div class="season" role="img" aria-label={`One season: ${SETS} sets of ${CARDS} cards, ${SETS * CARDS} cards in all`}>
-          <p class="axis-y" aria-hidden="true">{CARDS} cards a set</p>
-          <div class="grid" aria-hidden="true" style={`--sets:${SETS}`}>
-            {Array.from({ length: SETS }).map((_, c) => (
-              <span class="set" style={`--c:${c}; --col:${setColours[c % setColours.length]}`}>
-                {Array.from({ length: CARDS }).map((_, r) => <i style={`--r:${r}`} />)}
-              </span>
-            ))}
-          </div>
-          <p class="axis-x" aria-hidden="true">{SETS} sets a season</p>
-          <p class="total"><b data-n="season" data-to={SETS * CARDS}>{SETS * CARDS}</b> cards</p>
-        </div>
-      </div>
-      <figcaption>One season, one square per card. Each column is a set: one theme, nine prompts, rendered together.</figcaption>
-    </figure>
   </section>
 
   <section class="sec">
@@ -230,7 +211,8 @@ const principles = [
       <div><p>Every set is a book with its own colour and one scene from a trip.</p></div>
     </div>
     <figure class="fig sets" data-fig>
-      <img class="rise" src={art('sets')} width="2400" height="953" alt="Twenty-seven set covers drawn as small framed books, each with its own colour and holiday scene" loading="lazy" decoding="async" />
+      <img class="torn" src={`${base}/cases/sort-journey/bg-sets.svg`} width="1295" height="878" alt="" loading="lazy" decoding="async" />
+      <img class="rise covers" src={art('sets')} width="2400" height="953" alt="Twenty-seven set covers drawn as small framed books, each with its own colour and holiday scene" loading="lazy" decoding="async" />
     </figure>
     <ul class="notes cols" role="list">
       <li><h3>One subject a cover</h3><p>Each scene has one clear subject, centred and bright against its frame, so a cover still reads at the size of a thumbnail.</p></li>
@@ -267,65 +249,56 @@ const principles = [
       <div><p>Packs, chests, buttons and every state a card can be in.</p></div>
     </div>
 
-    <div class="shelf" data-fig data-packs>
-      <div class="shelf-text">
-        <h3>Packs</h3>
-        <p>Rarity in one language: packs climb from plain white through green, blue and pink to purple and red, adding a star at each step. Tap a pack to open it.</p>
+    <div class="kit" data-fig>
+      <div class="kit-main">
+        <div class="board" style={`--board:url(${art('bg-board')})`}>
+          <ul class="packs" role="list" aria-label="Card packs, closed">
+            {packs.map((pk, i) => (
+              <li class="rise" style={`--k:${i}`}><img src={art(`pack-${i}`)} width="231" height="280" alt={`A ${pk.replace('-', ' ')} card pack`} loading="lazy" decoding="async" /></li>
+            ))}
+          </ul>
+          <ul class="packs open" role="list" aria-label="Card packs, opened">
+            {packs.map((pk, i) => (
+              <li class="rise" style={`--k:${i + 4}`}><img src={art(`pack-${i}-open`)} width="216" height="216" alt={`The ${pk.replace('-', ' ')} pack, opened`} loading="lazy" decoding="async" /></li>
+            ))}
+          </ul>
+        </div>
+        <ul class="chests" role="list">
+          {chests.map((c, i) => (
+            <li class="rise" style={`--k:${i + 2}`}><img src={art(c.img)} width="485" height="436" alt={c.alt} loading="lazy" decoding="async" /></li>
+          ))}
+        </ul>
+        <ul class="buttons" role="list">
+          <li class="rise claim" style="--k:5"><img src={art('btn-claim')} width="320" height="128" alt="The yellow Claim button" loading="lazy" decoding="async" /></li>
+          <li class="rise" style="--k:6"><img src={art('btn-200')} width="209" height="112" alt="A green price button: 200 stars, can be paid" loading="lazy" decoding="async" /></li>
+          <li class="rise" style="--k:7"><img src={art('btn-400')} width="210" height="112" alt="A grey price button: 400 stars, not yet" loading="lazy" decoding="async" /></li>
+        </ul>
       </div>
-      <ul class="packs" role="list">
-        {packs.map((label, i) => (
-          <li>
-            <button class="pack" type="button" aria-pressed="false" aria-label={`Open the ${label.toLowerCase()} pack`}>
-              <img class="closed" src={art(`pack-${i}`)} width="231" height="280" alt="" loading="lazy" decoding="async" />
-              <img class="opened" src={art(`pack-${i}-open`)} width="216" height="216" alt="" loading="lazy" decoding="async" />
-            </button>
-            <span>{label}</span>
-          </li>
-        ))}
-      </ul>
+
+      <div class="panel">
+        <ul class="fans" role="list">
+          {[1, 2, 3].map((k) => (
+            <li class="rise" style={`--k:${k}`}><img src={art(`fan-${k}`)} width="235" height="220" alt="A fan of three collected cards" loading="lazy" decoding="async" /></li>
+          ))}
+        </ul>
+        <ul class="states" role="list">
+          {cardStates.map((c, i) => (
+            <li class="rise" style={`--k:${i + 2}`}><img src={art(c.img)} width={c.w} height="260" alt={c.alt} loading="lazy" decoding="async" /></li>
+          ))}
+        </ul>
+        <ul class="offers" role="list">
+          {offers.map((c, i) => (
+            <li class="rise" style={`--k:${i + 8}`}><img src={art(c.img)} width={c.w} height="280" alt={c.alt} loading="lazy" decoding="async" /></li>
+          ))}
+        </ul>
+      </div>
     </div>
 
-    <div class="shelf" data-fig>
-      <div class="shelf-text">
-        <h3>Chests</h3>
-        <p>Card Stars buy chests, and the chests climb the same way: wood and silver, then red, then gold.</p>
-      </div>
-      <ul class="chests" role="list">
-        {chests.map((c, i) => (
-          <li class="rise" style={`--k:${i}`}>
-            <img src={art(c.img)} width="485" height="436" alt={c.alt} loading="lazy" decoding="async" />
-            <span>{c.price} Card Stars</span>
-          </li>
-        ))}
-      </ul>
-    </div>
-
-    <div class="shelf" data-fig>
-      <div class="shelf-text">
-        <h3>Every card state</h3>
-        <p>Locked with its stars greyed, new, collected with duplicates counted, and two ways to finish a set: reroll a card or buy one more.</p>
-      </div>
-      <ul class="cards" role="list">
-        {[...cardStates, ...offers].map((c, i) => (
-          <li class="rise" style={`--k:${i}`}>
-            <img src={art(c.img)} width={c.w} height="260" alt={c.alt} loading="lazy" decoding="async" />
-            <span>{c.label}</span>
-          </li>
-        ))}
-      </ul>
-    </div>
-
-    <div class="shelf" data-fig>
-      <div class="shelf-text">
-        <h3>Prices you can read</h3>
-        <p>One yellow action per popup. Star prices sit on green buttons; the same price in grey means it cannot be paid yet.</p>
-      </div>
-      <ul class="buttons" role="list">
-        <li class="rise" style="--k:0"><img src={art('btn-claim')} width="320" height="128" alt="The yellow Claim button" loading="lazy" decoding="async" /><span>Action</span></li>
-        <li class="rise" style="--k:1"><img src={art('btn-200')} width="209" height="112" alt="A green price button: 200 stars" loading="lazy" decoding="async" /><span>Can pay</span></li>
-        <li class="rise" style="--k:2"><img src={art('btn-400')} width="210" height="112" alt="A grey price button: 400 stars" loading="lazy" decoding="async" /><span>Not yet</span></li>
-      </ul>
-    </div>
+    <ul class="notes cols" role="list">
+      <li><h3>Rarity in one language</h3><p>Packs climb from plain white through green, blue and pink to purple and red, adding a star at each step. Chests follow the same climb: wood and silver, then red, then gold.</p></li>
+      <li><h3>Every card state</h3><p>Locked with its stars greyed, new, collected with duplicates counted, and two ways to finish a set: reroll a card or buy one more.</p></li>
+      <li><h3>Prices you can read</h3><p>One yellow action per popup. Star prices sit on green buttons; the same price in grey means it cannot be paid yet.</p></li>
+    </ul>
   </section>
 
   <section class="sec">
@@ -394,25 +367,12 @@ const principles = [
     running = false;
   }
 
-  // Packs: tap to open and close; the first time the shelf is seen they open in turn, then close.
-  const packs = [...document.querySelectorAll<HTMLButtonElement>('.pack')];
-  const setPack = (b: HTMLButtonElement, open: boolean) => b.setAttribute('aria-pressed', String(open));
-  packs.forEach((b) => b.addEventListener('click', () => setPack(b, b.getAttribute('aria-pressed') !== 'true')));
-  const demoPacks = () => {
-    packs.forEach((b, i) => {
-      setTimeout(() => setPack(b, true), 300 + i * 140);
-      setTimeout(() => setPack(b, false), 1900 + i * 140);
-    });
-  };
-
   const io = new IntersectionObserver((es) => es.forEach((e) => {
     e.target.toggleAttribute('data-live', e.isIntersecting);
     if (!e.isIntersecting) return;
     if (e.target === proc) play();
     if (!e.target.classList.contains('seen')) {
-      e.target.classList.add('seen'); // things rise in, and the season grid fills, once
-      if (e.target.hasAttribute('data-packs')) demoPacks();
-      count(e.target.querySelector('[data-n="season"]'), 180, 1900);
+      e.target.classList.add('seen'); // things rise in, once
     }
   }), { threshold: 0.3 });
 
@@ -895,77 +855,6 @@ const principles = [
     transition-delay: 950ms;
   }
 
-  /* ---------- One season, one square per card ---------- */
-  .season-tile {
-    padding: 8px;
-    border-radius: var(--radius-lg);
-    background: var(--surface);
-    box-shadow: var(--shadow-tile);
-  }
-  .season {
-    display: grid;
-    grid-template-columns: auto minmax(0, 620px) auto;
-    justify-content: center;
-    grid-template-areas:
-      'y grid total'
-      '. x .';
-    align-items: center;
-    gap: 12px 20px;
-    padding: clamp(24px, 3.4vw, 48px);
-    border-radius: var(--radius-md);
-    background: #4c96ff;
-    color: #fff;
-  }
-  .grid {
-    grid-area: grid;
-    display: grid;
-    grid-template-columns: repeat(var(--sets), minmax(0, 1fr));
-    gap: clamp(4px, 0.6vw, 8px);
-  }
-  .set {
-    display: grid;
-    gap: clamp(3px, 0.4vw, 5px);
-  }
-  .set i {
-    aspect-ratio: 3 / 4;
-    border-radius: 3px;
-    background: var(--col);
-    box-shadow: 0 0 0 1.5px rgb(255 255 255 / 0.85) inset;
-    opacity: 0.25;
-    transform: scale(0.8);
-    transition: opacity 360ms var(--ease-out), transform 360ms var(--ease-out);
-    transition-delay: calc(var(--c) * 70ms + var(--r) * 18ms);
-  }
-  .seen .set i {
-    opacity: 1;
-    transform: none;
-  }
-  .axis-y {
-    grid-area: y;
-    writing-mode: vertical-rl;
-    transform: rotate(180deg);
-    font-size: 0.875rem;
-    font-weight: 600;
-  }
-  .axis-x {
-    grid-area: x;
-    text-align: center;
-    font-size: 0.875rem;
-    font-weight: 600;
-  }
-  .total {
-    grid-area: total;
-    display: grid;
-    font-size: 0.9375rem;
-    font-weight: 600;
-    line-height: 1.1;
-  }
-  .total b {
-    font-family: var(--font-display);
-    font-size: clamp(2.25rem, 4vw, 3.5rem);
-    letter-spacing: -0.04em;
-  }
-
   @media (max-width: 1100px) {
     .proc {
       grid-template-columns: 1fr;
@@ -1015,19 +904,6 @@ const principles = [
     .stage:not(:last-child)::after {
       display: none;
     }
-    .season {
-      grid-template-columns: auto minmax(0, 1fr);
-      grid-template-areas:
-        'y grid'
-        '. x'
-        '. total';
-      padding: 18px 14px;
-    }
-    .total {
-      display: flex;
-      align-items: baseline;
-      gap: 8px;
-    }
     .art {
       padding: 5px;
       border-radius: var(--radius-md);
@@ -1047,9 +923,8 @@ const principles = [
     opacity: 0;
     transform: translateY(18px);
   }
-  .art-shadow,
   .phones img,
-  .sets img,
+  .sets .covers,
   .popups img {
     filter: drop-shadow(0 22px 28px rgb(11 26 48 / 0.28));
   }
@@ -1072,24 +947,33 @@ const principles = [
     height: auto;
     margin: 0 auto 18px;
   }
-  .phones h3,
-  .shelf-text h3 {
+  .phones h3 {
     font-size: clamp(1.125rem, 1.6vw, 1.375rem);
     letter-spacing: -0.025em;
     line-height: 1.15;
   }
-  .phones p,
-  .shelf-text p {
+  .phones p {
     max-width: 44ch;
     color: var(--ink-2);
   }
 
+  /* Background 3: the torn purple paper the shelf of sets sits on */
   .sets {
+    position: relative;
     margin: 0;
+    aspect-ratio: 1295 / 878;
   }
-  .sets img {
-    display: block;
+  .sets .torn {
+    position: absolute;
+    inset: 0;
     width: 100%;
+    height: 100%;
+  }
+  .sets .covers {
+    position: absolute;
+    left: 6.8%;
+    top: 24%;
+    width: 86.9%;
     height: auto;
   }
   .notes.cols {
@@ -1136,111 +1020,109 @@ const principles = [
     filter: drop-shadow(0 18px 22px rgb(11 26 48 / 0.25));
   }
 
-  .shelf {
+  /* ---------- UI assets: background 1 (the stitched board) and 2 (the cream panel) ---------- */
+  .kit {
     display: grid;
-    grid-template-columns: minmax(10rem, 1fr) minmax(0, 2fr);
-    align-items: center;
-    gap: 20px clamp(32px, 6vw, 96px);
-    padding: clamp(24px, 3vw, 40px) 0;
-    border-top: 1px solid var(--line);
+    grid-template-columns: minmax(0, 2.06fr) minmax(0, 1fr);
+    align-items: start;
+    gap: clamp(20px, 2.6vw, 36px);
   }
-  .shelf-text {
-    display: grid;
-    gap: 8px;
-  }
-  .shelf ul {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: end;
-    gap: clamp(12px, 2vw, 28px);
+  .kit ul {
     margin: 0;
     padding: 0;
     list-style: none;
   }
-  .shelf li {
-    display: grid;
-    justify-items: center;
-    gap: 8px;
-  }
-  .shelf li span {
-    color: var(--ink-2);
-    font-size: 0.8125rem;
-    font-weight: 600;
-    text-align: center;
-  }
-  .shelf img {
-    height: auto;
-    filter: drop-shadow(0 12px 16px rgb(11 26 48 / 0.22));
-  }
-
-  /* packs: the closed pack gives way to the opened one */
-  .pack {
-    position: relative;
-    display: grid;
-    place-items: end center;
-    width: clamp(46px, 6.4vw, 96px);
-    aspect-ratio: 231 / 280;
-    padding: 0;
-    border: 0;
-    border-radius: 12px;
-    background: none;
-    cursor: pointer;
-    transition: transform var(--t-fast) var(--ease-out);
-  }
-  .pack:hover {
-    transform: translateY(-4px) rotate(-2deg);
-  }
-  .pack:active {
-    transform: scale(0.95);
-  }
-  .pack img {
-    position: absolute;
-    left: 50%;
-    bottom: 0;
-    transition: opacity 260ms var(--ease-out), transform 460ms cubic-bezier(0.3, 1.5, 0.5, 1);
-  }
-  .pack .closed {
+  .kit img {
+    display: block;
     width: 100%;
-    transform: translateX(-50%);
+    height: auto;
   }
-  .pack .opened {
-    width: 94%;
-    opacity: 0;
-    transform: translateX(-50%) scale(0.7);
+  .kit-main {
+    display: grid;
+    gap: clamp(12px, 2vw, 24px);
   }
-  .pack[aria-pressed='true'] .closed {
-    opacity: 0;
-    transform: translateX(-50%) scale(1.1) translateY(-6px);
+  .board {
+    display: grid;
+    align-content: center;
+    gap: clamp(10px, 1.6vw, 22px);
+    aspect-ratio: 1036 / 624;
+    padding: 4px clamp(4px, 1vw, 14px);
+    border: clamp(34px, 5vw, 62px) solid transparent;
+    border-image: var(--board) 96 fill / clamp(34px, 5vw, 62px) / 0 stretch;
   }
-  .pack[aria-pressed='true'] .opened {
-    opacity: 1;
-    transform: translateX(-50%);
+  .packs {
+    display: grid;
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    align-items: end;
+    gap: clamp(4px, 1vw, 12px);
   }
-
-  .chests img {
-    width: clamp(110px, 13vw, 200px);
+  .packs.open {
+    padding: 0 3%;
   }
-  .cards img {
-    width: clamp(52px, 6vw, 84px);
+  .packs img {
+    filter: drop-shadow(0 8px 10px rgb(11 26 48 / 0.3));
+    transition: transform var(--t-med) var(--ease-out);
   }
-  .shelf li span {
-    white-space: nowrap;
+  .packs li:hover img {
+    transform: translateY(-5px) rotate(-3deg);
   }
-  @media (min-width: 561px) {
-    .packs,
-    .cards {
-      flex-wrap: nowrap !important;
-      gap: clamp(8px, 1.4vw, 18px) !important;
-    }
+  .chests {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: clamp(8px, 1.4vw, 18px);
+    padding: 0 4%;
+  }
+  .chests img,
+  .buttons img,
+  .panel img {
+    filter: drop-shadow(0 10px 14px rgb(11 26 48 / 0.25));
   }
   .buttons {
-    align-items: center !important;
+    display: grid;
+    grid-template-columns: 1.55fr 1fr 1fr;
+    align-items: center;
+    gap: clamp(8px, 1.4vw, 18px);
+    width: min(100%, 560px);
   }
-  .buttons img {
-    width: clamp(90px, 11vw, 160px);
+
+  .panel {
+    --corner-tl: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 22.5 26'%3E%3Cpath d='M15 18C9.4 22.8 2.67 25.33 0 26C0 3.5 2.5 2 7 .5C10.6-.7 18.83 0 22.5.5C22.33 4.33 20.6 13.2 15 18Z' fill='%23F8E0C5'/%3E%3C/svg%3E");
+    --corner-tr: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 22.5 26'%3E%3Cpath d='M7.5 18C13.1 22.8 19.83 25.33 22.5 26C22.5 3.5 20 2 15.5 .5C11.9-.7 3.67 0 0 .5C.17 4.33 1.9 13.2 7.5 18Z' fill='%23F8E0C5'/%3E%3C/svg%3E");
+    --corner-bl: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 22.5 26'%3E%3Cpath d='M15 8C9.4 3.2 2.67.67 0 0C0 22.5 2.5 24 7 25.5C10.6 26.7 18.83 26 22.5 25.5C22.33 21.67 20.6 12.8 15 8Z' fill='%23F8E0C5'/%3E%3C/svg%3E");
+    --corner-br: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 22.5 26'%3E%3Cpath d='M7.5 8C13.1 3.2 19.83.67 22.5 0C22.5 22.5 20 24 15.5 25.5C11.9 26.7 3.67 26 0 25.5C.17 21.67 1.9 12.8 7.5 8Z' fill='%23F8E0C5'/%3E%3C/svg%3E");
+    display: grid;
+    gap: clamp(14px, 1.8vw, 22px);
+    padding: clamp(16px, 2vw, 26px) clamp(14px, 1.8vw, 22px);
+    border: 11px solid #f8e0c5;
+    border-radius: 18px;
+    background:
+      var(--corner-tl) top left / 22.5px 26px no-repeat,
+      var(--corner-tr) top right / 22.5px 26px no-repeat,
+      var(--corner-bl) bottom left / 22.5px 26px no-repeat,
+      var(--corner-br) bottom right / 22.5px 26px no-repeat,
+      #fff7e1;
+    background-origin: padding-box;
+    box-shadow:
+      inset 0 2px 2px #fff,
+      0 0 0 2px #2776e9,
+      0 4px 4px rgb(0 0 0 / 0.25),
+      5px 4px 10px rgb(0 0 0 / 0.25);
   }
-  .buttons li:first-child img {
-    width: clamp(120px, 14vw, 180px);
+  .fans,
+  .states,
+  .offers {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    align-items: end;
+    gap: clamp(8px, 1vw, 12px);
+  }
+  .states {
+    row-gap: clamp(10px, 1.4vw, 16px);
+  }
+  .offers {
+    grid-template-columns: 1fr 1fr;
+    gap: clamp(14px, 2vw, 26px);
+    padding: 0 6%;
   }
 
   @media (max-width: 1100px) {
@@ -1255,8 +1137,12 @@ const principles = [
     .phones img {
       width: min(70%, 300px);
     }
-    .shelf {
+    .kit {
       grid-template-columns: 1fr;
+    }
+    .panel {
+      width: min(100%, 440px);
+      justify-self: center;
     }
     .host {
       grid-template-columns: 1fr;
@@ -1271,16 +1157,18 @@ const principles = [
     .popups {
       grid-template-columns: repeat(2, minmax(0, 1fr));
     }
+    .board {
+      aspect-ratio: auto;
+      padding-block: 8px;
+    }
+    /* the shelf of sets runs edge to edge, so the covers stay readable */
+    .sets {
+      margin-inline: calc(-1 * var(--gutter));
+    }
   }
 
-  /* On the blue page the diagrams sit on a lighter panel and the art on the ground itself */
-  :global(html[data-theme='blue']) .season-tile {
-    padding: 0;
-    background: none;
-    box-shadow: none;
-  }
-  :global(html[data-theme='blue']) .vis,
-  :global(html[data-theme='blue']) .season {
+  /* On the blue page the process diagram sits on a lighter panel */
+  :global(html[data-theme='blue']) .vis {
     background: rgb(255 255 255 / 0.18);
     box-shadow: 0 0 0 1px rgb(255 255 255 / 0.32) inset;
     color: var(--ink);
