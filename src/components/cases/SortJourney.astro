@@ -92,7 +92,7 @@ const principles = [
 <article class="wrap case">
   <section class="sec">
     <div class="sec-head" data-fig>
-      <h2 class="ribbon" style="--tilt:-2deg"><span>Collections</span></h2>
+      <h2 class="ribbon"><span>Collections</span></h2>
       <div>
         <p>
           Collections is a feature of Sort Journey, a travel puzzle game by Bluetile Games. Players collect
@@ -119,7 +119,7 @@ const principles = [
 
   <section class="sec">
     <div class="sec-head" data-fig>
-      <h2 class="ribbon" style="--tilt:1.5deg"><span>How the cards were made</span></h2>
+      <h2 class="ribbon"><span>AI production</span></h2>
       <div>
         <p>
           A season runs to around 20 sets of nine cards: about 180 card illustrations, every season.
@@ -189,7 +189,7 @@ const principles = [
 
   <section class="sec">
     <div class="sec-head" data-fig>
-      <h2 class="ribbon" style="--tilt:-2deg"><span>Where it lives</span></h2>
+      <h2 class="ribbon"><span>Screens</span></h2>
       <div><p>Three screens carry the feature: Home, where it starts; the album; and a set opened card by card.</p></div>
     </div>
     <ol class="phones" role="list" data-fig>
@@ -205,7 +205,7 @@ const principles = [
 
   <section class="sec">
     <div class="sec-head" data-fig>
-      <h2 class="ribbon" style="--tilt:1.5deg"><span>Sets</span></h2>
+      <h2 class="ribbon"><span>Sets</span></h2>
       <div><p>Every set is a book with its own colour and one scene from a trip.</p></div>
     </div>
     <figure class="fig sets" data-fig>
@@ -220,7 +220,7 @@ const principles = [
 
   <section class="sec">
     <div class="sec-head" data-fig>
-      <h2 class="ribbon" style="--tilt:-2deg"><span>Popups</span></h2>
+      <h2 class="ribbon"><span>Popups</span></h2>
       <div><p>Five moments explain the feature as it happens: the rules, the packs, opening a pack, a new album and Card Stars.</p></div>
     </div>
     <ol class="popups" role="list" data-fig>
@@ -243,7 +243,7 @@ const principles = [
 
   <section class="sec">
     <div class="sec-head" data-fig>
-      <h2 class="ribbon" style="--tilt:1.5deg"><span>UI assets</span></h2>
+      <h2 class="ribbon"><span>UI assets</span></h2>
       <div><p>Packs, chests, buttons and every state a card can be in.</p></div>
     </div>
 
@@ -301,7 +301,7 @@ const principles = [
 
   <section class="sec">
     <div class="sec-head" data-fig>
-      <h2 class="ribbon" style="--tilt:-2deg"><span>Art direction notes</span></h2>
+      <h2 class="ribbon"><span>Art direction</span></h2>
       <div><p>The rules the whole feature was drawn to.</p></div>
     </div>
     <ol class="principles" role="list">
@@ -317,21 +317,23 @@ const principles = [
 </article>
 
 <script>
-  // Background: paws, bones and fish skeletons pressed into the game's blue, drawn by a fragment
-  // shader. Motifs are signed-distance shapes in four sizes, each size scattered over its own offset
-  // grid; a smaller one gives way to any larger one it would touch. They are tied to the page so they
-  // scroll with it, and each sways very slightly. Without WebGL the CSS pattern stays; with reduced
-  // motion the motifs hold still and only follow the scroll.
+  // Background: paws, bones and fish skeletons pressed into the game's blue. JavaScript places them
+  // (four sizes, each on its own offset grid; a smaller one gives way to any larger one it would
+  // touch) and hands the few on screen to a fragment shader, which draws each as a signed-distance
+  // shape: a darker blue pressed in, with a light edge underneath. They scroll with the page and sway
+  // very slightly. Without WebGL the CSS pattern stays; with reduced motion the motifs hold still.
   (() => {
     const canvas = document.querySelector<HTMLCanvasElement>('[data-sj-bg]');
     const gl = canvas?.getContext('webgl', { antialias: false, alpha: true, premultipliedAlpha: true });
     if (!canvas || !gl) return;
+    const MAX = 64;
 
     const vert = 'attribute vec2 a;void main(){gl_Position=vec4(a,0.,1.);}';
     const frag = `
       precision mediump float;
-      uniform vec2 uRes; uniform float uTime; uniform float uScroll; uniform float uDpr; uniform float uK;
-      float hash(vec2 p){ return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
+      uniform vec2 uRes; uniform float uDpr; uniform float uTime; uniform int uCount;
+      uniform vec4 uA[${MAX}];   // centre in CSS px (viewport), radius, scale
+      uniform vec4 uB[${MAX}];   // angle, kind, strength, phase
       mat2 rot(float a){ float c = cos(a), s = sin(a); return mat2(c, -s, s, c); }
       float sdEll(vec2 p, vec2 r){ float k0 = length(p / r); float k1 = length(p / (r * r)); return k0 * (k0 - 1.0) / k1; }
       float sdSeg(vec2 p, vec2 a, vec2 b){ vec2 pa = p - a, ba = b - a; float h = clamp(dot(pa, ba) / dot(ba, ba), 0.0, 1.0); return length(pa - ba * h); }
@@ -368,66 +370,24 @@ const principles = [
         return d;
       }
       float motif(vec2 p, float t){ return t < 0.56 ? paw(p) : (t < 0.78 ? bone(p) : fish(p)); }
-
-      // Four layers of motifs, large to small (two of them medium, to fill the gaps), each on its own
-      // offset grid with one motif per cell
-      const float R = 45.0; // a motif's radius at scale 1, with room for its lit edge
-      void layer(int l, out float cs, out vec2 o, out float s0, out float s1, out float pr, out float seed){
-        if (l == 0) { cs = 560.0; o = vec2(0.0, 0.0); s0 = 1.7; s1 = 2.6; pr = 0.5; seed = 1.0; }
-        else if (l == 1) { cs = 320.0; o = vec2(131.0, 77.0); s0 = 0.85; s1 = 1.3; pr = 0.8; seed = 37.0; }
-        else if (l == 2) { cs = 250.0; o = vec2(197.0, 143.0); s0 = 0.7; s1 = 1.05; pr = 0.85; seed = 53.0; }
-        else { cs = 180.0; o = vec2(59.0, 211.0); s0 = 0.38; s1 = 0.62; pr = 0.5; seed = 91.0; }
-        cs *= uK; o *= uK; s0 *= uK; s1 *= uK;
-      }
-      // a cell's motif: centre (xy) and radius (z, 0 when the cell is empty), scale (w)
-      vec4 placed(int l, vec2 cell){
-        float cs, s0, s1, pr, seed; vec2 o;
-        layer(l, cs, o, s0, s1, pr, seed);
-        float sc = mix(s0, s1, hash(cell + seed + 11.7));
-        float j = cs * 0.5 - R * s1 - 4.0;   // jitter that keeps any motif inside its own cell
-        vec2 c = (cell + 0.5) * cs + o + (vec2(hash(cell + seed), hash(cell + seed + 19.19)) - 0.5) * 2.0 * j;
-        float r = hash(cell + seed + 7.3) < pr ? R * sc : 0.0;
-        return vec4(c, r, sc);
-      }
-      // a smaller motif gives way to any larger one it would touch
-      bool crowded(int l, vec2 c, float r){
-        for (int e = 0; e < 3; e++) {
-          if (e >= l) break;
-          float cs, s0, s1, pr, seed; vec2 o;
-          layer(e, cs, o, s0, s1, pr, seed);
-          vec2 base = floor((c - o) / cs);
-          for (int i = -1; i <= 1; i++) {
-            for (int k = -1; k <= 1; k++) {
-              vec4 m = placed(e, base + vec2(float(i), float(k)));
-              if (m.z > 0.0 && length(m.xy - c) < m.z + r + 12.0 * uK) return true;
-            }
-          }
-        }
-        return false;
-      }
       void main(){
         vec2 frag = vec2(gl_FragCoord.x, uRes.y - gl_FragCoord.y) / uDpr;
-        vec2 world = frag + vec2(0.0, uScroll);
         vec4 col = vec4(0.0);
-        for (int l = 0; l < 4; l++) {
-          float cs, s0, s1, pr, seed; vec2 o;
-          layer(l, cs, o, s0, s1, pr, seed);
-          vec2 cell = floor((world - o) / cs);
-          vec4 m = placed(l, cell);
-          if (m.z <= 0.0) continue;
-          if (crowded(l, m.xy, m.z)) continue;
-          float kind = hash(cell + seed + 3.1);
-          if (l == 3) kind *= 0.77;          // the smallest are paws and bones: a fish's lines get too thin
-          float a = (hash(cell + seed + 23.0) - 0.5) * 2.2 + sin(uTime * 0.35 + kind * 40.0) * 0.08;
-          vec2 p = world - m.xy - vec2(0.0, sin(uTime * 0.45 + kind * 17.0) * 3.0 * uK);
-          float edge = 1.5 + 0.5 * m.w;    // the lit edge grows a little with the motif
-          float d = motif(rot(a) * (p / m.w), kind) * m.w;
-          float d2 = motif(rot(a) * ((p - vec2(0.0, edge)) / m.w), kind) * m.w;
+        for (int i = 0; i < ${MAX}; i++) {
+          if (i >= uCount) break;
+          vec4 a = uA[i];
+          vec2 p = frag - a.xy;
+          if (dot(p, p) > a.z * a.z) continue;          // nowhere near this motif
+          vec4 b = uB[i];
+          float sc = a.w;
+          p.y -= sin(uTime * 0.45 + b.w * 0.5) * 3.0;     // a slight bob
+          float ang = b.x + sin(uTime * 0.35 + b.w) * 0.08;
+          float edge = 1.5 + 0.5 * sc;                     // the lit edge grows a little with the motif
+          float d = motif(rot(ang) * (p / sc), b.y) * sc;
+          float d2 = motif(rot(ang) * ((p - vec2(0.0, edge)) / sc), b.y) * sc;
           float inside = 1.0 - smoothstep(-0.75, 0.75, d);
           float rim = (1.0 - smoothstep(-0.75, 0.75, d2)) * (1.0 - inside);
-          float strength = mix(0.7, 1.0, hash(cell + seed + 5.5));
-          // premultiplied: a darker blue pressed in, a light edge underneath
-          col += (vec4(0.184, 0.435, 0.839, 1.0) * 0.2 * inside + vec4(1.0) * 0.13 * rim) * strength;
+          col += (vec4(0.184, 0.435, 0.839, 1.0) * 0.2 * inside + vec4(1.0) * 0.13 * rim) * b.z;
         }
         gl_FragColor = col;
       }`;
@@ -451,23 +411,87 @@ const principles = [
     gl.enableVertexAttribArray(loc);
     gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
     const u = (n: string) => gl.getUniformLocation(prog, n);
-    const uRes = u('uRes'), uTime = u('uTime'), uScroll = u('uScroll'), uDpr = u('uDpr'), uK = u('uK');
+    const uRes = u('uRes'), uDpr = u('uDpr'), uTime = u('uTime'), uCount = u('uCount'), uA = u('uA'), uB = u('uB');
 
-    const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
-    let dpr = 1;
+    // ---- placement, in page coordinates (CSS px) ----
+    const R = 45; // a motif's radius at scale 1, with room for its lit edge
+    const LAYERS = [
+      { cs: 560, ox: 0, oy: 0, s0: 1.7, s1: 2.6, pr: 0.5, seed: 1 },      // large
+      { cs: 320, ox: 131, oy: 77, s0: 0.85, s1: 1.3, pr: 0.8, seed: 37 },  // medium
+      { cs: 250, ox: 197, oy: 143, s0: 0.7, s1: 1.05, pr: 0.85, seed: 53 }, // medium, filling the gaps
+      { cs: 180, ox: 59, oy: 211, s0: 0.38, s1: 0.62, pr: 0.5, seed: 91 }, // small: paws and bones only
+    ];
+    const hash = (x: number, y: number, k: number) => { const n = Math.sin(x * 127.1 + y * 311.7 + k * 74.7) * 43758.5453; return n - Math.floor(n); };
+    type M = { x: number; y: number; r: number; s: number; ang: number; kind: number; w: number; ph: number };
+    let K = 1;
+    // every motif whose cell overlaps a band of the page, larger sizes first
+    const placeBand = (top: number, bottom: number, width: number) => {
+      const kept: M[] = [];
+      LAYERS.forEach((L, l) => {
+        const cs = L.cs * K, ox = L.ox * K, oy = L.oy * K, s0 = L.s0 * K, s1 = L.s1 * K;
+        const j = cs * 0.5 - R * s1 - 4; // jitter that keeps a motif inside its own cell
+        for (let cy = Math.floor((top - oy) / cs); cy * cs + oy < bottom; cy++) {
+          for (let cx = Math.floor((-ox - cs) / cs); cx * cs + ox < width + cs; cx++) {
+            const k = L.seed;
+            if (hash(cx, cy, k + 7.3) >= L.pr) continue;
+            const s = s0 + (s1 - s0) * hash(cx, cy, k + 11.7);
+            const m: M = {
+              x: (cx + 0.5) * cs + ox + (hash(cx, cy, k) - 0.5) * 2 * j,
+              y: (cy + 0.5) * cs + oy + (hash(cx, cy, k + 19.19) - 0.5) * 2 * j,
+              r: R * s,
+              s,
+              ang: (hash(cx, cy, k + 23) - 0.5) * 2.2,
+              kind: hash(cx, cy, k + 3.1) * (l === 3 ? 0.77 : 1), // a fish's lines get too thin when small
+              w: 0.7 + 0.3 * hash(cx, cy, k + 5.5),
+              ph: hash(cx, cy, k + 29) * 40,
+            };
+            if (kept.some((o) => Math.hypot(o.x - m.x, o.y - m.y) < o.r + m.r + 12 * K)) continue;
+            kept.push(m);
+          }
+        }
+      });
+      return kept;
+    };
+
+    const A = new Float32Array(MAX * 4), B = new Float32Array(MAX * 4);
+    let dpr = 1, count = 0, band: { top: number; bottom: number; list: M[] } | null = null;
     const size = () => {
       dpr = Math.min(devicePixelRatio || 1, 1.5); // soft shapes stay smooth; keeps the cost down on dense screens
       canvas.width = Math.round(innerWidth * dpr);
       canvas.height = Math.round(innerHeight * dpr);
       gl.viewport(0, 0, canvas.width, canvas.height);
-      gl.uniform1f(uK, innerWidth < 600 ? 0.62 : 1); // smaller and closer together on phones
+      K = innerWidth < 600 ? 0.62 : 1; // smaller and closer together on phones
+      band = null;
     };
+    // motifs are placed for a band larger than the screen and re-placed only when the screen nears its edge
+    const visible = (y: number) => {
+      const pad = 700, H = innerHeight;
+      if (!band || y < band.top + pad / 2 || y + H > band.bottom - pad / 2) {
+        // start the band on a large-cell boundary, so placement never depends on where the band begins
+        const top = Math.floor((y - pad) / (560 * K)) * 560 * K - 560 * K, bottom = y + H + pad + 560 * K;
+        band = { top, bottom, list: placeBand(top, bottom, innerWidth) };
+      }
+      count = 0;
+      for (const m of band.list) {
+        if (count >= MAX) break;
+        const vy = m.y - y;
+        if (vy + m.r < -8 || vy - m.r > H + 8) continue;
+        A.set([m.x, vy, m.r + 6, m.s], count * 4);
+        B.set([m.ang, m.kind, m.w, m.ph], count * 4);
+        count++;
+      }
+    };
+
+    const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
     const t0 = performance.now();
     const draw = (now: number) => {
+      visible(scrollY);
       gl.uniform2f(uRes, canvas.width, canvas.height);
       gl.uniform1f(uDpr, dpr);
-      gl.uniform1f(uScroll, scrollY);
       gl.uniform1f(uTime, still ? 0 : (now - t0) / 1000);
+      gl.uniform1i(uCount, count);
+      gl.uniform4fv(uA, A);
+      gl.uniform4fv(uB, B);
       gl.drawArrays(gl.TRIANGLES, 0, 3);
     };
     size();
@@ -476,8 +500,14 @@ const principles = [
       addEventListener('scroll', () => draw(performance.now()), { passive: true });
       draw(performance.now());
     } else {
+      // full rate while the page scrolls; the slow sway alone only needs about 20 frames a second
+      let lastScroll = 0, lastDraw = 0;
+      addEventListener('scroll', () => { lastScroll = performance.now(); }, { passive: true });
       const loop = (now: number) => {
-        if (!document.hidden) draw(now);
+        if (!document.hidden && (now - lastScroll < 200 || now - lastDraw > 50)) {
+          draw(now);
+          lastDraw = now;
+        }
         requestAnimationFrame(loop);
       };
       requestAnimationFrame(loop);
@@ -592,13 +622,15 @@ const principles = [
     margin: 0 0.9em;
     font-size: clamp(1.25rem, 1.8vw, 1.6rem);
     line-height: 1.15;
-    transform: rotate(var(--tilt, -2deg));
   }
   .ribbon span {
     position: relative;
     z-index: 1;
     display: block;
-    padding: 0.38em 0.8em 0.46em;
+    width: 9.4em;                       /* every ribbon the same size, sized for the longest title */
+    padding: 0.38em 0.4em 0.46em;
+    text-align: center;
+    white-space: nowrap;
     border-radius: 0.3em;
     background: linear-gradient(#e8505e, #c42c3b);
     box-shadow:
@@ -630,17 +662,12 @@ const principles = [
     right: -0.95em;
     clip-path: polygon(0 0, 100% 0, 66% 50%, 100% 100%, 0 100%);
   }
-  @media (min-width: 1180px) {
-    .sec-head .ribbon {
-      white-space: nowrap;
-    }
-  }
   .ribbon:hover span {
-    transform: rotate(-1.5deg) scale(1.04);
+    transform: scale(1.04);
   }
   [data-armed]:not(.seen) .ribbon span {
     opacity: 0;
-    transform: scale(0.5) rotate(-8deg);
+    transform: scale(0.5);
   }
   [data-armed]:not(.seen) .ribbon::before,
   [data-armed]:not(.seen) .ribbon::after {
