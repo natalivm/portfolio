@@ -172,13 +172,13 @@ const rules = [
         <p>The principles the card was designed against, each shown on the card itself.</p>
       </div>
     </div>
-    <ol class="drivers">
-      <li data-fig>
+    <ol class="drivers" data-fig data-drivers>
+      <li style="--k:0">
         <h3>Clear information display</h3>
         <div class="mini d-all"><PuzzleCard size="sm" {...homeCard} /></div>
         <p>Present the essential puzzle details: name, mode, difficulty level, progression, and the timer for time-limited events.</p>
       </li>
-      <li data-fig>
+      <li style="--k:1">
         <h3>Contextual relevance</h3>
         <div class="mini" data-cycle={JSON.stringify(contexts)}>
           <span class="mini-label" data-cycle-label>{contexts[0].label}</span>
@@ -186,7 +186,7 @@ const rules = [
         </div>
         <p>Tailor what the card says to where the player meets it, so they get the most pertinent details at that point in the game.</p>
       </li>
-      <li data-fig>
+      <li style="--k:2">
         <h3>Cognitive load management</h3>
         <div class="mini" data-cycle={JSON.stringify(loads)}>
           <PuzzleCard size="sm" sub={loads[0].sub} />
@@ -197,7 +197,7 @@ const rules = [
         </div>
         <p>Balance the amount and complexity of information so players are not overwhelmed and can take in the puzzle details easily.</p>
       </li>
-      <li data-fig>
+      <li style="--k:3">
         <h3>Consistent information format</h3>
         <div class="mini d-same">
           <p class="cols" aria-hidden="true"><span>Art</span><span>Name, then one line of detail</span><span>Action</span></p>
@@ -206,7 +206,7 @@ const rules = [
         </div>
         <p>Keep one presentation of puzzle information across the game, to aid recognition and comprehension.</p>
       </li>
-      <li data-fig>
+      <li style="--k:4">
         <h3>Customisation options</h3>
         <div class="mini d-pin">
           <div class="pin-wrap">
@@ -292,7 +292,7 @@ const rules = [
               <p class="scr-title">Well done!<span>Daily Sudoku complete!</span></p>
               <PuzzleCard size="sm" button data-end-go {...dailyDone} />
               <p class="scr-btn quiet" aria-hidden="true">Share this puzzle</p>
-              <button class="scr-btn" type="button" data-end-go>Continue</button>
+              <button class="scr-btn hint" type="button" data-end-go>Continue</button>
             </div>
           </div>
           <div class="scr">
@@ -462,20 +462,104 @@ const rules = [
     card.style.setProperty('--prog', String(s.progress ?? 0));
   }
 
-  // Small cards beside the UX drivers: step through a few states.
-  $$('[data-cycle]').forEach((box) => {
-    const states: St[] = JSON.parse(box.dataset.cycle!);
-    const card = box.querySelector<HTMLElement>('.pc')!;
-    let i = 0;
-    setInterval(() => {
-      if (!live(box)) return;
-      i = (i + 1) % states.length;
-      applyCard(card, states[i]);
-      swap(box.querySelector('[data-cycle-label]'), states[i].label);
-      const meter = box.querySelector<HTMLElement>('[data-cycle-meter]');
-      if (meter) meter.dataset.on = String(states[i].meter);
-    }, 2600);
-  });
+  // UX drivers: they come in one after another, then each plays its card in turn, one at a time,
+  // on a loop, while the section is on screen.
+  const drivers = document.querySelector<HTMLElement>('[data-drivers]');
+  if (drivers && !reduce) {
+    const items = $$(':scope > li', drivers);
+    const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+    const ready = async () => { while (!live(drivers)) await sleep(400); };
+    const light = (els: Element[], on: boolean) => els.forEach((e) => e.classList.toggle('hl', on));
+    const states = (li: HTMLElement) => {
+      const box = li.querySelector<HTMLElement>('[data-cycle]')!;
+      const list: St[] = JSON.parse(box.dataset.cycle!);
+      const card = box.querySelector<HTMLElement>('.pc')!;
+      return (k: number) => {
+        applyCard(card, list[k]);
+        swap(box.querySelector('[data-cycle-label]'), list[k].label);
+        const meter = box.querySelector<HTMLElement>('[data-cycle-meter]');
+        if (meter) meter.dataset.on = String(list[k].meter);
+      };
+    };
+    const beats: ((li: HTMLElement) => Promise<void>)[] = [
+      // 1. every detail on the card, one at a time
+      async (li) => {
+        for (const sel of ['.pc-name', '.pc-tag', '.pc-sub', '.pc-act']) {
+          const el = $$(sel, li);
+          light(el, true);
+          await sleep(560);
+          light(el, false);
+        }
+      },
+      // 2. the card where the player meets it: Home, game selection, the end screen
+      async (li) => {
+        const go = states(li);
+        go(1);
+        await sleep(1500);
+        go(2);
+        await sleep(1500);
+        go(0);
+        await sleep(500);
+      },
+      // 3. first time, then in progress
+      async (li) => {
+        const go = states(li);
+        go(1);
+        await sleep(1900);
+        go(0);
+        await sleep(500);
+      },
+      // 4. the same three columns on both cards
+      async (li) => {
+        const labels = $$('.cols span', li);
+        for (const [k, sel] of ['.pc-thumb', '.pc-text', '.pc-act'].entries()) {
+          const el = [labels[k], ...$$(sel, li)];
+          light(el, true);
+          await sleep(700);
+          light(el, false);
+        }
+      },
+      // 5. pinning a favourite
+      async (li) => {
+        const pin = li.querySelector('.pin')!;
+        pin.classList.add('on');
+        await sleep(1600);
+        pin.classList.remove('on');
+        await sleep(400);
+      },
+    ];
+    const run = async () => {
+      for (;;) {
+        for (let k = 0; k < items.length; k++) {
+          await ready();
+          items[k].classList.add('playing');
+          await beats[k]?.(items[k]);
+          items[k].classList.remove('playing');
+          await sleep(450);
+        }
+        await sleep(1000);
+      }
+    };
+
+    // Entrance: whatever comes into view together rises in one after another
+    drivers.setAttribute('data-armed', '');
+    let started = false;
+    const enter = new IntersectionObserver((es) => {
+      es.filter((e) => e.isIntersecting)
+        .sort((a, b) => items.indexOf(a.target as HTMLElement) - items.indexOf(b.target as HTMLElement))
+        .forEach((e, n) => {
+          const li = e.target as HTMLElement;
+          enter.unobserve(li);
+          li.style.transitionDelay = `${n * 140}ms`;
+          li.classList.add('in');
+          if (!started) {
+            started = true;
+            setTimeout(run, 1500);
+          }
+        });
+    }, { rootMargin: '0px 0px -10% 0px' });
+    items.forEach((li) => enter.observe(li));
+  }
 
   // Anatomy: one part lit at a time; choosing one holds it.
   $$('[data-anatomy]').forEach((fig) => {
@@ -526,6 +610,8 @@ const rules = [
     const pick = (b: HTMLButtonElement) => {
       btns.forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
       knob.style.transform = `translateX(${btns.indexOf(b) * 100}%)`;
+      // the tap hint moves to the next difficulty along
+      btns.forEach((x, k) => x.classList.toggle('hint', k === (btns.indexOf(b) + 1) % btns.length));
     };
     pick(btns.find((b) => b.getAttribute('aria-pressed') === 'true')!);
     // A new difficulty brings its list in: each card rises a few pixels into place, one after another.
@@ -561,6 +647,9 @@ const rules = [
   // Home: tapping a game brings it to the top; whichever ends up last is "played recently".
   $$('[data-recent]').forEach((box) => {
     const firstLabel = box.querySelector<HTMLElement>('[data-first-label]')!, lastLabel = box.querySelector<HTMLElement>('[data-last-label]')!;
+    // the tap hint sits on the last game, the one a tap would bring to the top
+    const mark = () => $$('.pc', box).forEach((c, k, all) => c.querySelector('.pc-act')!.classList.toggle('hint', k === all.length - 1));
+    mark();
     box.addEventListener('click', (e) => {
       const card = (e.target as HTMLElement).closest<HTMLElement>('.pc');
       const cards = $$('.pc', box);
@@ -571,6 +660,7 @@ const rules = [
       order[0].after(order[1]);
       order[1].after(lastLabel);
       lastLabel.after(order[2]);
+      mark();
       card.focus({ preventScroll: true });
       if (reduce) return;
       card.style.zIndex = '1';
@@ -781,6 +871,39 @@ const rules = [
   .drivers li:nth-child(4) {
     grid-column: 2 / span 2;
   }
+  /* come in one after another (the delay is set as they enter view) */
+  .drivers > li {
+    transition: opacity 600ms var(--ease-out), transform 700ms var(--ease-out);
+  }
+  .drivers[data-armed] > li:not(.in) {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  /* the one playing now */
+  .drivers .mini {
+    transition: box-shadow var(--t-med) var(--ease-out);
+  }
+  .drivers .playing .mini {
+    box-shadow: 0 0 0 2px rgb(26 95 208 / 0.28), 0 10px 26px -14px rgb(26 95 208 / 0.45);
+  }
+  /* a detail being pointed out */
+  .mini :global(.pc .hl) {
+    outline: 1.5px solid #1a5fd0;
+    outline-offset: 2px;
+    background-color: rgb(26 95 208 / 0.08);
+  }
+  .d-same :global(.pc-text.hl) {
+    border-radius: 6px;
+  }
+  .d-same :global(.pc-act.hl) {
+    border-radius: 50%;
+  }
+  .cols span {
+    transition: color var(--t-med) var(--ease-out);
+  }
+  .cols span.hl {
+    color: #1a5fd0;
+  }
   .drivers li > h3 {
     align-self: end;
     font-size: clamp(1.125rem, 1.6vw, 1.375rem);
@@ -895,15 +1018,15 @@ const rules = [
     background: #fff;
     color: #b9cfee;
     box-shadow: 0 0 0 1.5px #b9cfee inset;
+    transition: color 260ms var(--ease-out), box-shadow 260ms var(--ease-out);
   }
-  [data-live] .pin {
-    animation: pin 3.2s var(--ease-out) infinite;
+  .pin.on {
+    color: #f0651a;
+    box-shadow: 0 0 0 1.5px #f0651a inset;
+    animation: pin-pop 420ms var(--ease-out);
   }
-  @keyframes pin {
-    0%, 40% { color: #b9cfee; box-shadow: 0 0 0 1.5px #b9cfee inset; transform: none; }
-    50% { transform: scale(1.18); }
-    55%, 92% { color: #f0651a; box-shadow: 0 0 0 1.5px #f0651a inset; transform: none; }
-    100% { color: #b9cfee; box-shadow: 0 0 0 1.5px #b9cfee inset; }
+  @keyframes pin-pop {
+    45% { transform: scale(1.22); }
   }
 
   /* ---------- Navigation flow ---------- */
@@ -1245,6 +1368,52 @@ const rules = [
   }
   button.scr-btn:hover {
     background: #1b2f4d;
+  }
+  /* Where to press: a light tap ripple on the one thing to press in each screen. The three
+     take turns, a second apart, and rest while the figure is off screen. */
+  .scr :global(.hint) {
+    position: relative;
+  }
+  .scr :global(.hint::after) {
+    content: '';
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 34px;
+    height: 34px;
+    margin: -17px 0 0 -17px;
+    border: 1.5px solid rgb(26 95 208 / 0.5);
+    border-radius: 50%;
+    background: rgb(26 95 208 / 0.1);
+    pointer-events: none;
+    opacity: 0;
+    animation: tap-hint 3s var(--ease-out) var(--hint-at, 0s) infinite;
+  }
+  .scr:nth-child(2) {
+    --hint-at: 1s;
+  }
+  .scr:nth-child(3) {
+    --hint-at: 2s;
+  }
+  /* on the dark Continue button, a light ring */
+  .scr :global(.scr-btn.hint::after) {
+    border-color: rgb(255 255 255 / 0.6);
+    background: rgb(255 255 255 / 0.12);
+  }
+  .fig:not([data-live]) .scr :global(.hint::after) {
+    animation-play-state: paused;
+  }
+  @keyframes tap-hint {
+    0% { opacity: 0; transform: scale(0.4); }
+    10% { opacity: 1; }
+    45%, 100% { opacity: 0; transform: scale(1.45); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .scr :global(.hint::after) {
+      animation: none;
+      opacity: 0.6;
+      transform: none;
+    }
   }
   button.scr-btn:active {
     transform: scale(0.98);
