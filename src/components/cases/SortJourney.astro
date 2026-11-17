@@ -87,6 +87,8 @@ const principles = [
 ];
 ---
 
+<canvas class="sj-bg" aria-hidden="true" data-sj-bg></canvas>
+
 <article class="wrap case">
   <section class="sec">
     <div class="sec-head">
@@ -315,6 +317,132 @@ const principles = [
 </article>
 
 <script>
+  // Background: paws, bones and fish skeletons pressed into the game's blue, drawn by a fragment
+  // shader. Motifs are signed-distance shapes scattered one per grid cell, tied to the page so they
+  // scroll with it, each swaying very slightly. Without WebGL the CSS pattern stays; with reduced
+  // motion the motifs hold still and only follow the scroll.
+  (() => {
+    const canvas = document.querySelector<HTMLCanvasElement>('[data-sj-bg]');
+    const gl = canvas?.getContext('webgl', { antialias: false, alpha: true, premultipliedAlpha: true });
+    if (!canvas || !gl) return;
+
+    const vert = 'attribute vec2 a;void main(){gl_Position=vec4(a,0.,1.);}';
+    const frag = `
+      precision mediump float;
+      uniform vec2 uRes; uniform float uTime; uniform float uScroll; uniform float uDpr; uniform float uCell; uniform float uScale;
+      float hash(vec2 p){ return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
+      mat2 rot(float a){ float c = cos(a), s = sin(a); return mat2(c, -s, s, c); }
+      float sdEll(vec2 p, vec2 r){ float k0 = length(p / r); float k1 = length(p / (r * r)); return k0 * (k0 - 1.0) / k1; }
+      float sdSeg(vec2 p, vec2 a, vec2 b){ vec2 pa = p - a, ba = b - a; float h = clamp(dot(pa, ba) / dot(ba, ba), 0.0, 1.0); return length(pa - ba * h); }
+      // y points down, so toes sit above the pad
+      float paw(vec2 p){
+        float d = sdEll(p - vec2(0.0, 8.0), vec2(20.0, 16.0));
+        d = min(d, sdEll(rot(0.35) * (p - vec2(-21.0, -10.0)), vec2(7.0, 9.0)));
+        d = min(d, sdEll(rot(0.12) * (p - vec2(-8.0, -23.0)), vec2(7.5, 10.0)));
+        d = min(d, sdEll(rot(-0.12) * (p - vec2(8.0, -23.0)), vec2(7.5, 10.0)));
+        d = min(d, sdEll(rot(-0.35) * (p - vec2(21.0, -10.0)), vec2(7.0, 9.0)));
+        return d;
+      }
+      float bone(vec2 p){
+        float d = sdSeg(p, vec2(-24.0, 0.0), vec2(24.0, 0.0)) - 6.0;
+        d = min(d, length(p - vec2(-27.0, -6.5)) - 7.5);
+        d = min(d, length(p - vec2(-27.0, 6.5)) - 7.5);
+        d = min(d, length(p - vec2(27.0, -6.5)) - 7.5);
+        d = min(d, length(p - vec2(27.0, 6.5)) - 7.5);
+        return d;
+      }
+      float fish(vec2 p){
+        float w = 2.2;
+        float d = abs(sdEll(p - vec2(25.0, 0.0), vec2(13.0, 9.0))) - w;
+        d = min(d, sdSeg(p, vec2(-27.0, 0.0), vec2(12.0, 0.0)) - w);
+        for (int i = 0; i < 3; i++) {
+          float x = -13.0 + float(i) * 8.5;
+          d = min(d, sdSeg(p, vec2(x - 5.0, -9.0), vec2(x, 0.0)) - w);
+          d = min(d, sdSeg(p, vec2(x - 5.0, 9.0), vec2(x, 0.0)) - w);
+        }
+        d = min(d, sdSeg(p, vec2(-27.0, 0.0), vec2(-38.0, -10.0)) - w);
+        d = min(d, sdSeg(p, vec2(-38.0, -10.0), vec2(-38.0, 10.0)) - w);
+        d = min(d, sdSeg(p, vec2(-38.0, 10.0), vec2(-27.0, 0.0)) - w);
+        d = min(d, length(p - vec2(29.0, -2.0)) - 2.2);
+        return d;
+      }
+      float motif(vec2 p, float t){ return t < 0.56 ? paw(p) : (t < 0.78 ? bone(p) : fish(p)); }
+      void main(){
+        vec2 frag = vec2(gl_FragCoord.x, uRes.y - gl_FragCoord.y) / uDpr;
+        vec2 world = frag + vec2(0.0, uScroll);
+        vec2 cell = floor(world / uCell);
+        vec2 local = world - (cell + 0.5) * uCell;
+        float present = step(0.3, hash(cell + 7.3));
+        float kind = hash(cell + 3.1);
+        float hx = hash(cell), hy = hash(cell + 19.19);
+        float ang = (hx - 0.5) * 1.5 + sin(uTime * 0.35 + hy * 6.283) * 0.08;
+        vec2 off = (vec2(hx, hy) - 0.5) * uCell * 0.36 + vec2(0.0, sin(uTime * 0.45 + hx * 6.283) * 3.0);
+        float sc = uScale * mix(1.0, 1.55, hash(cell + 11.7));
+        float d = motif(rot(ang) * ((local - off) / sc), kind) * sc;
+        float d2 = motif(rot(ang) * ((local - off - vec2(0.0, 2.0)) / sc), kind) * sc; // lit edge, 2px lower
+        float inside = (1.0 - smoothstep(-0.75, 0.75, d)) * present;
+        float rim = (1.0 - smoothstep(-0.75, 0.75, d2)) * present * (1.0 - inside);
+        // premultiplied: a darker blue pressed in, a light edge underneath
+        gl_FragColor = vec4(0.184, 0.435, 0.839, 1.0) * 0.2 * inside + vec4(1.0) * 0.13 * rim;
+      }`;
+    const compile = (type: number, src: string) => {
+      const sh = gl.createShader(type)!;
+      gl.shaderSource(sh, src);
+      gl.compileShader(sh);
+      return gl.getShaderParameter(sh, gl.COMPILE_STATUS) ? sh : null;
+    };
+    const vs = compile(gl.VERTEX_SHADER, vert), fs = compile(gl.FRAGMENT_SHADER, frag);
+    if (!vs || !fs) return;
+    const prog = gl.createProgram()!;
+    gl.attachShader(prog, vs);
+    gl.attachShader(prog, fs);
+    gl.linkProgram(prog);
+    if (!gl.getProgramParameter(prog, gl.LINK_STATUS)) return;
+    gl.useProgram(prog);
+    gl.bindBuffer(gl.ARRAY_BUFFER, gl.createBuffer());
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 3, -1, -1, 3]), gl.STATIC_DRAW);
+    const loc = gl.getAttribLocation(prog, 'a');
+    gl.enableVertexAttribArray(loc);
+    gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
+    const u = (n: string) => gl.getUniformLocation(prog, n);
+    const uRes = u('uRes'), uTime = u('uTime'), uScroll = u('uScroll'), uDpr = u('uDpr'), uCell = u('uCell'), uScale = u('uScale');
+
+    const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    let dpr = 1;
+    const size = () => {
+      dpr = Math.min(devicePixelRatio || 1, 1.5); // soft shapes stay smooth; keeps the cost down on dense screens
+      canvas.width = Math.round(innerWidth * dpr);
+      canvas.height = Math.round(innerHeight * dpr);
+      gl.viewport(0, 0, canvas.width, canvas.height);
+      const small = innerWidth < 600;
+      gl.uniform1f(uCell, small ? 210 : 300);
+      gl.uniform1f(uScale, small ? 0.75 : 1);
+    };
+    const t0 = performance.now();
+    const draw = (now: number) => {
+      gl.uniform2f(uRes, canvas.width, canvas.height);
+      gl.uniform1f(uDpr, dpr);
+      gl.uniform1f(uScroll, scrollY);
+      gl.uniform1f(uTime, still ? 0 : (now - t0) / 1000);
+      gl.drawArrays(gl.TRIANGLES, 0, 3);
+    };
+    size();
+    addEventListener('resize', () => { size(); draw(performance.now()); });
+    if (still) {
+      addEventListener('scroll', () => draw(performance.now()), { passive: true });
+      draw(performance.now());
+    } else {
+      const loop = (now: number) => {
+        if (!document.hidden) draw(now);
+        requestAnimationFrame(loop);
+      };
+      requestAnimationFrame(loop);
+    }
+    document.documentElement.setAttribute('data-shader', ''); // the CSS pattern steps aside
+  })();
+</script>
+
+<script>
   const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
   const count = (el: Element | null, to: number, ms: number) => {
     if (!el) return;
@@ -383,6 +511,14 @@ const principles = [
 </script>
 
 <style>
+  .sj-bg {
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+  }
   .case {
     display: grid;
     grid-template-columns: minmax(0, 1fr);
