@@ -87,10 +87,12 @@ const principles = [
 ];
 ---
 
+<canvas class="sj-bg" aria-hidden="true" data-sj-bg></canvas>
+
 <article class="wrap case">
   <section class="sec">
-    <div class="sec-head">
-      <h2>Collections</h2>
+    <div class="sec-head" data-fig>
+      <h2 class="ribbon"><span>Collections</span></h2>
       <div>
         <p>
           Collections is a feature of Sort Journey, a travel puzzle game by Bluetile Games. Players collect
@@ -116,8 +118,8 @@ const principles = [
   </section>
 
   <section class="sec">
-    <div class="sec-head">
-      <h2>How the cards were made</h2>
+    <div class="sec-head" data-fig>
+      <h2 class="ribbon"><span>AI production</span></h2>
       <div>
         <p>
           A season runs to around 20 sets of nine cards: about 180 card illustrations, every season.
@@ -181,17 +183,13 @@ const principles = [
           </li>
         ))}
       </ol>
-      <figcaption>
-        One set, {demoSet}, going through the pipeline. Its nine cards are the real ones from the game; the
-        coloured tiles stand in for the renders. It plays while it is on screen.
-      </figcaption>
     </figure>
 
   </section>
 
   <section class="sec">
-    <div class="sec-head">
-      <h2>Where it lives</h2>
+    <div class="sec-head" data-fig>
+      <h2>Screens</h2>
       <div><p>Three screens carry the feature: Home, where it starts; the album; and a set opened card by card.</p></div>
     </div>
     <ol class="phones" role="list" data-fig>
@@ -206,7 +204,7 @@ const principles = [
   </section>
 
   <section class="sec">
-    <div class="sec-head">
+    <div class="sec-head" data-fig>
       <h2>Sets</h2>
       <div><p>Every set is a book with its own colour and one scene from a trip.</p></div>
     </div>
@@ -221,7 +219,7 @@ const principles = [
   </section>
 
   <section class="sec">
-    <div class="sec-head">
+    <div class="sec-head" data-fig>
       <h2>Popups</h2>
       <div><p>Five moments explain the feature as it happens: the rules, the packs, opening a pack, a new album and Card Stars.</p></div>
     </div>
@@ -244,8 +242,8 @@ const principles = [
   </section>
 
   <section class="sec">
-    <div class="sec-head">
-      <h2>UI assets</h2>
+    <div class="sec-head" data-fig>
+      <h2 class="ribbon"><span>UI assets</span></h2>
       <div><p>Packs, chests, buttons and every state a card can be in.</p></div>
     </div>
 
@@ -302,8 +300,8 @@ const principles = [
   </section>
 
   <section class="sec">
-    <div class="sec-head">
-      <h2>Art direction notes</h2>
+    <div class="sec-head" data-fig>
+      <h2 class="ribbon"><span>Art direction</span></h2>
       <div><p>The rules the whole feature was drawn to.</p></div>
     </div>
     <ol class="principles" role="list">
@@ -317,6 +315,206 @@ const principles = [
     </ol>
   </section>
 </article>
+
+<script>
+  // Background: paws, bones and fish skeletons pressed into the game's blue. JavaScript places them
+  // (four sizes, each on its own offset grid; a smaller one gives way to any larger one it would
+  // touch) and hands the few on screen to a fragment shader, which draws each as a signed-distance
+  // shape: a darker blue pressed in, with a light edge underneath. They scroll with the page and sway
+  // very slightly. Without WebGL the CSS pattern stays; with reduced motion the motifs hold still.
+  (() => {
+    const canvas = document.querySelector<HTMLCanvasElement>('[data-sj-bg]');
+    const gl = canvas?.getContext('webgl', { antialias: false, alpha: true, premultipliedAlpha: true });
+    if (!canvas || !gl) return;
+    const MAX = 64;
+
+    const vert = 'attribute vec2 a;void main(){gl_Position=vec4(a,0.,1.);}';
+    const frag = `
+      precision mediump float;
+      uniform vec2 uRes; uniform float uDpr; uniform float uTime; uniform int uCount;
+      uniform vec4 uA[${MAX}];   // centre in CSS px (viewport), radius, scale
+      uniform vec4 uB[${MAX}];   // angle, kind, strength, phase
+      mat2 rot(float a){ float c = cos(a), s = sin(a); return mat2(c, -s, s, c); }
+      float sdEll(vec2 p, vec2 r){ float k0 = length(p / r); float k1 = length(p / (r * r)); return k0 * (k0 - 1.0) / k1; }
+      float sdSeg(vec2 p, vec2 a, vec2 b){ vec2 pa = p - a, ba = b - a; float h = clamp(dot(pa, ba) / dot(ba, ba), 0.0, 1.0); return length(pa - ba * h); }
+      // y points down, so toes sit above the pad
+      float paw(vec2 p){
+        float d = sdEll(p - vec2(0.0, 8.0), vec2(20.0, 16.0));
+        d = min(d, sdEll(rot(0.35) * (p - vec2(-21.0, -10.0)), vec2(7.0, 9.0)));
+        d = min(d, sdEll(rot(0.12) * (p - vec2(-8.0, -23.0)), vec2(7.5, 10.0)));
+        d = min(d, sdEll(rot(-0.12) * (p - vec2(8.0, -23.0)), vec2(7.5, 10.0)));
+        d = min(d, sdEll(rot(-0.35) * (p - vec2(21.0, -10.0)), vec2(7.0, 9.0)));
+        return d;
+      }
+      float bone(vec2 p){
+        float d = sdSeg(p, vec2(-24.0, 0.0), vec2(24.0, 0.0)) - 6.0;
+        d = min(d, length(p - vec2(-27.0, -6.5)) - 7.5);
+        d = min(d, length(p - vec2(-27.0, 6.5)) - 7.5);
+        d = min(d, length(p - vec2(27.0, -6.5)) - 7.5);
+        d = min(d, length(p - vec2(27.0, 6.5)) - 7.5);
+        return d;
+      }
+      float fish(vec2 p){
+        float w = 2.2;
+        float d = abs(sdEll(p - vec2(25.0, 0.0), vec2(13.0, 9.0))) - w;
+        d = min(d, sdSeg(p, vec2(-27.0, 0.0), vec2(12.0, 0.0)) - w);
+        for (int i = 0; i < 3; i++) {
+          float x = -13.0 + float(i) * 8.5;
+          d = min(d, sdSeg(p, vec2(x - 5.0, -9.0), vec2(x, 0.0)) - w);
+          d = min(d, sdSeg(p, vec2(x - 5.0, 9.0), vec2(x, 0.0)) - w);
+        }
+        d = min(d, sdSeg(p, vec2(-27.0, 0.0), vec2(-38.0, -10.0)) - w);
+        d = min(d, sdSeg(p, vec2(-38.0, -10.0), vec2(-38.0, 10.0)) - w);
+        d = min(d, sdSeg(p, vec2(-38.0, 10.0), vec2(-27.0, 0.0)) - w);
+        d = min(d, length(p - vec2(29.0, -2.0)) - 2.2);
+        return d;
+      }
+      float motif(vec2 p, float t){ return t < 0.56 ? paw(p) : (t < 0.78 ? bone(p) : fish(p)); }
+      void main(){
+        vec2 frag = vec2(gl_FragCoord.x, uRes.y - gl_FragCoord.y) / uDpr;
+        vec4 col = vec4(0.0);
+        for (int i = 0; i < ${MAX}; i++) {
+          if (i >= uCount) break;
+          vec4 a = uA[i];
+          vec2 p = frag - a.xy;
+          if (dot(p, p) > a.z * a.z) continue;          // nowhere near this motif
+          vec4 b = uB[i];
+          float sc = a.w;
+          p.y -= sin(uTime * 0.45 + b.w * 0.5) * 3.0;     // a slight bob
+          float ang = b.x + sin(uTime * 0.35 + b.w) * 0.08;
+          float edge = 1.5 + 0.5 * sc;                     // the lit edge grows a little with the motif
+          float d = motif(rot(ang) * (p / sc), b.y) * sc;
+          float d2 = motif(rot(ang) * ((p - vec2(0.0, edge)) / sc), b.y) * sc;
+          float inside = 1.0 - smoothstep(-0.75, 0.75, d);
+          float rim = (1.0 - smoothstep(-0.75, 0.75, d2)) * (1.0 - inside);
+          col += (vec4(0.184, 0.435, 0.839, 1.0) * 0.2 * inside + vec4(1.0) * 0.13 * rim) * b.z;
+        }
+        gl_FragColor = col;
+      }`;
+    const compile = (type: number, src: string) => {
+      const sh = gl.createShader(type)!;
+      gl.shaderSource(sh, src);
+      gl.compileShader(sh);
+      return gl.getShaderParameter(sh, gl.COMPILE_STATUS) ? sh : null;
+    };
+    const vs = compile(gl.VERTEX_SHADER, vert), fs = compile(gl.FRAGMENT_SHADER, frag);
+    if (!vs || !fs) return;
+    const prog = gl.createProgram()!;
+    gl.attachShader(prog, vs);
+    gl.attachShader(prog, fs);
+    gl.linkProgram(prog);
+    if (!gl.getProgramParameter(prog, gl.LINK_STATUS)) return;
+    gl.useProgram(prog);
+    gl.bindBuffer(gl.ARRAY_BUFFER, gl.createBuffer());
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 3, -1, -1, 3]), gl.STATIC_DRAW);
+    const loc = gl.getAttribLocation(prog, 'a');
+    gl.enableVertexAttribArray(loc);
+    gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
+    const u = (n: string) => gl.getUniformLocation(prog, n);
+    const uRes = u('uRes'), uDpr = u('uDpr'), uTime = u('uTime'), uCount = u('uCount'), uA = u('uA'), uB = u('uB');
+
+    // ---- placement, in page coordinates (CSS px) ----
+    const R = 45; // a motif's radius at scale 1, with room for its lit edge
+    const LAYERS = [
+      { cs: 560, ox: 0, oy: 0, s0: 1.7, s1: 2.6, pr: 0.5, seed: 1 },      // large
+      { cs: 320, ox: 131, oy: 77, s0: 0.85, s1: 1.3, pr: 0.8, seed: 37 },  // medium
+      { cs: 250, ox: 197, oy: 143, s0: 0.7, s1: 1.05, pr: 0.85, seed: 53 }, // medium, filling the gaps
+      { cs: 180, ox: 59, oy: 211, s0: 0.38, s1: 0.62, pr: 0.5, seed: 91 }, // small: paws and bones only
+    ];
+    const hash = (x: number, y: number, k: number) => { const n = Math.sin(x * 127.1 + y * 311.7 + k * 74.7) * 43758.5453; return n - Math.floor(n); };
+    type M = { x: number; y: number; r: number; s: number; ang: number; kind: number; w: number; ph: number };
+    let K = 1;
+    // every motif whose cell overlaps a band of the page, larger sizes first
+    const placeBand = (top: number, bottom: number, width: number) => {
+      const kept: M[] = [];
+      LAYERS.forEach((L, l) => {
+        const cs = L.cs * K, ox = L.ox * K, oy = L.oy * K, s0 = L.s0 * K, s1 = L.s1 * K;
+        const j = cs * 0.5 - R * s1 - 4; // jitter that keeps a motif inside its own cell
+        for (let cy = Math.floor((top - oy) / cs); cy * cs + oy < bottom; cy++) {
+          for (let cx = Math.floor((-ox - cs) / cs); cx * cs + ox < width + cs; cx++) {
+            const k = L.seed;
+            if (hash(cx, cy, k + 7.3) >= L.pr) continue;
+            const s = s0 + (s1 - s0) * hash(cx, cy, k + 11.7);
+            const m: M = {
+              x: (cx + 0.5) * cs + ox + (hash(cx, cy, k) - 0.5) * 2 * j,
+              y: (cy + 0.5) * cs + oy + (hash(cx, cy, k + 19.19) - 0.5) * 2 * j,
+              r: R * s,
+              s,
+              ang: (hash(cx, cy, k + 23) - 0.5) * 2.2,
+              kind: hash(cx, cy, k + 3.1) * (l === 3 ? 0.77 : 1), // a fish's lines get too thin when small
+              w: 0.7 + 0.3 * hash(cx, cy, k + 5.5),
+              ph: hash(cx, cy, k + 29) * 40,
+            };
+            if (kept.some((o) => Math.hypot(o.x - m.x, o.y - m.y) < o.r + m.r + 12 * K)) continue;
+            kept.push(m);
+          }
+        }
+      });
+      return kept;
+    };
+
+    const A = new Float32Array(MAX * 4), B = new Float32Array(MAX * 4);
+    let dpr = 1, count = 0, band: { top: number; bottom: number; list: M[] } | null = null;
+    const size = () => {
+      dpr = Math.min(devicePixelRatio || 1, 1.5); // soft shapes stay smooth; keeps the cost down on dense screens
+      canvas.width = Math.round(innerWidth * dpr);
+      canvas.height = Math.round(innerHeight * dpr);
+      gl.viewport(0, 0, canvas.width, canvas.height);
+      K = innerWidth < 600 ? 0.62 : 1; // smaller and closer together on phones
+      band = null;
+    };
+    // motifs are placed for a band larger than the screen and re-placed only when the screen nears its edge
+    const visible = (y: number) => {
+      const pad = 700, H = innerHeight;
+      if (!band || y < band.top + pad / 2 || y + H > band.bottom - pad / 2) {
+        // start the band on a large-cell boundary, so placement never depends on where the band begins
+        const top = Math.floor((y - pad) / (560 * K)) * 560 * K - 560 * K, bottom = y + H + pad + 560 * K;
+        band = { top, bottom, list: placeBand(top, bottom, innerWidth) };
+      }
+      count = 0;
+      for (const m of band.list) {
+        if (count >= MAX) break;
+        const vy = m.y - y;
+        if (vy + m.r < -8 || vy - m.r > H + 8) continue;
+        A.set([m.x, vy, m.r + 6, m.s], count * 4);
+        B.set([m.ang, m.kind, m.w, m.ph], count * 4);
+        count++;
+      }
+    };
+
+    const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const t0 = performance.now();
+    const draw = (now: number) => {
+      visible(scrollY);
+      gl.uniform2f(uRes, canvas.width, canvas.height);
+      gl.uniform1f(uDpr, dpr);
+      gl.uniform1f(uTime, still ? 0 : (now - t0) / 1000);
+      gl.uniform1i(uCount, count);
+      gl.uniform4fv(uA, A);
+      gl.uniform4fv(uB, B);
+      gl.drawArrays(gl.TRIANGLES, 0, 3);
+    };
+    size();
+    addEventListener('resize', () => { size(); draw(performance.now()); });
+    if (still) {
+      addEventListener('scroll', () => draw(performance.now()), { passive: true });
+      draw(performance.now());
+    } else {
+      // full rate while the page scrolls; the slow sway alone only needs about 20 frames a second
+      let lastScroll = 0, lastDraw = 0;
+      addEventListener('scroll', () => { lastScroll = performance.now(); }, { passive: true });
+      const loop = (now: number) => {
+        if (!document.hidden && (now - lastScroll < 200 || now - lastDraw > 50)) {
+          draw(now);
+          lastDraw = now;
+        }
+        requestAnimationFrame(loop);
+      };
+      requestAnimationFrame(loop);
+    }
+    document.documentElement.setAttribute('data-shader', ''); // the CSS pattern steps aside
+  })();
+</script>
 
 <script>
   const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -387,6 +585,14 @@ const principles = [
 </script>
 
 <style>
+  .sj-bg {
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+  }
   .case {
     display: grid;
     grid-template-columns: minmax(0, 1fr);
@@ -405,6 +611,67 @@ const principles = [
   }
   .sec-head h2 {
     font-size: clamp(1.5rem, 2.2vw, 2rem);
+  }
+
+  /* Section titles sit on the game's ribbon: a red band with gold edges and folded tails */
+  .sec-head .ribbon {
+    position: relative;
+    isolation: isolate;
+    justify-self: start;
+    align-self: start;
+    margin: 0 0.9em;
+    font-size: clamp(1.25rem, 1.8vw, 1.6rem);
+    line-height: 1.15;
+  }
+  .ribbon span {
+    position: relative;
+    z-index: 1;
+    display: block;
+    width: 9.4em;                       /* every ribbon the same size, sized for the longest title */
+    padding: 0.38em 0.4em 0.46em;
+    text-align: center;
+    white-space: nowrap;
+    border-radius: 0.3em;
+    background: linear-gradient(#e8505e, #c42c3b);
+    box-shadow:
+      inset 0 0.16em 0 #f9c95c,
+      inset 0 -0.16em 0 #e3a43a,
+      0 0.22em 0 #8e1b27,
+      0 0.6em 1em -0.4em rgb(80 10 20 / 0.45);
+    color: #fff;
+    text-shadow: 0 0.08em 0 rgb(110 12 26 / 0.7);
+    transition: transform 520ms cubic-bezier(0.3, 1.6, 0.5, 1), opacity 260ms var(--ease-out);
+  }
+  /* the folded ends, tucked behind the band */
+  .ribbon::before,
+  .ribbon::after {
+    content: '';
+    position: absolute;
+    z-index: 0;
+    top: 0.42em;
+    bottom: -0.32em;
+    width: 1.5em;
+    background: linear-gradient(#b52432, #8e1b27);
+    transition: opacity 260ms var(--ease-out) 160ms;
+  }
+  .ribbon::before {
+    left: -0.95em;
+    clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%, 34% 50%);
+  }
+  .ribbon::after {
+    right: -0.95em;
+    clip-path: polygon(0 0, 100% 0, 66% 50%, 100% 100%, 0 100%);
+  }
+  .ribbon:hover span {
+    transform: scale(1.04);
+  }
+  [data-armed]:not(.seen) .ribbon span {
+    opacity: 0;
+    transform: scale(0.5);
+  }
+  [data-armed]:not(.seen) .ribbon::before,
+  [data-armed]:not(.seen) .ribbon::after {
+    opacity: 0;
   }
   .sec-head p {
     max-width: 64ch;
@@ -436,10 +703,19 @@ const principles = [
     padding-top: 16px;
     border-top: 2px solid var(--ink);
   }
+  /* step numbers are the game's gold coins */
   .step {
-    color: var(--ink-2);
+    display: inline-grid;
+    place-items: center;
+    width: 1.9rem;
+    height: 1.9rem;
+    border-radius: 50%;
+    background: radial-gradient(circle at 35% 30%, #ffe27a, #f6b62a 60%, #e0931a);
+    box-shadow: inset 0 0 0 2px #c9790f, inset 0 3px 0 rgb(255 255 255 / 0.45), 0 2px 0 #9a5a08;
+    color: #4a2a00;
     font-size: 0.875rem;
-    font-weight: 500;
+    font-weight: 600;
+    line-height: 1;
   }
   .structure h3,
   .principles h3,
