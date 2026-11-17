@@ -20,7 +20,7 @@ const rel = related(p, 3);
 const href = (x: Project) => (x.caseStudy ? `${base}/work/${x.slug}/` : `${base}/work/?p=${x.slug}`);
 ---
 
-<Layout title={p.title} description={p.summary} current="case">
+<Layout title={p.title} description={p.summary} current="case" theme={p.theme}>
   <nav class="wrap crumbs" aria-label="Case studies">
     <a class="back" href={`${base}/work/`} data-back-to-work>
       <Icon name="arrow-left" size={16} /> All work

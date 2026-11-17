@@ -20,51 +20,65 @@ const structure = [
   { name: 'Pack', text: 'How cards arrive. Common packs are a surprise; a rare pack holds at least one card of its star level.' },
 ];
 
-const sections = [
-  {
-    key: 'screens',
-    title: 'Where it lives',
-    intro: 'Three screens carry the feature: Home, where it starts; the album; and a set opened card by card.',
-    img: { src: 'screens', w: 707, h: 400, alt: 'Three phone screens: Home with the corgi beside a treasure chest, the Summer Album with its sets in a grid, and the Tropical Escape set with nine photo cards' },
-    notes: [
-      { h: 'Home', t: 'The collection sits on Home as a chest beside the corgi, with its progress on the left edge. Nothing new to find.' },
-      { h: 'Album', t: 'The season’s sets on a shelf, three to a row, each with its progress or a tick when it is done. The grand prize stays in view at the top.' },
-      { h: 'Set', t: 'A set opens like a page of photos: nine cards, their stars underneath, and a stamp when every card is collected.' },
-    ],
-  },
-  {
-    key: 'sets',
-    title: 'Sets',
-    intro: 'Every set is a book with its own colour and one scene from a trip.',
-    img: { src: 'sets', w: 707, h: 403, alt: 'Twenty-seven set covers drawn as small framed books, each with its own colour and holiday scene' },
-    notes: [
-      { h: 'One subject a cover', t: 'Each scene has one clear subject, centred and bright against its frame, so a cover still reads at the size of a thumbnail.' },
-      { h: 'Colour tells them apart', t: 'The frame colours rotate across the shelf, so neighbouring sets never look alike.' },
-    ],
-  },
-  {
-    key: 'popups',
-    title: 'Popups',
-    intro: 'Five moments explain the feature as it happens: the rules, the packs, opening a pack, a new album and Card Stars.',
-    img: { src: 'popups', w: 707, h: 365, alt: 'Five popups: Cards Collection, Card Packs, Common Pack, New Album: Summer Vibes!, and Card Stars' },
-    notes: [
-      { h: 'One frame', t: 'A red ribbon for the title, a purple close button, a dark backdrop and one yellow action. Every popup is built the same way.' },
-      { h: 'Rules as pictures', t: 'Collect cards in events, complete the sets, win prizes: three steps, each drawn rather than written.' },
-      { h: 'The corgi hosts', t: 'The game’s corgi presents Card Stars, as it greets players on Home and in the key art.' },
-    ],
-  },
-  {
-    key: 'ui',
-    title: 'UI assets',
-    intro: 'Packs, chests, buttons and every state a card can be in.',
-    img: { src: 'ui-assets', w: 707, h: 620, alt: 'UI assets: six card packs in two rows, three treasure chests, Claim and price buttons, and card states from locked to collected, with Reroll and +1 Card offers' },
-    notes: [
-      { h: 'Rarity in one language', t: 'Packs climb from plain white through green, blue and pink to purple and red, adding a star at each step. Chests follow the same climb.' },
-      { h: 'Every card state', t: 'Locked with its stars greyed, new, collected with duplicates counted, and two ways to finish a set: reroll a card or buy one more.' },
-      { h: 'Prices you can read', t: 'Star prices sit on green buttons; the same price in grey means it cannot be paid yet.' },
-    ],
-  },
+const screens = [
+  { img: 'screen-home', h: 'Home', t: 'The collection sits on Home as a chest beside the corgi, with its progress on the left edge. Nothing new to find.', alt: 'Home screen: a Paris street, the corgi beside a purple treasure chest, and the Level 10 button' },
+  { img: 'screen-album', h: 'Album', t: 'The season’s sets on a shelf, three to a row, each with its progress or a tick when it is done. The grand prize stays in view at the top.', alt: 'The Summer Album: a grand prize of 999 gems, 60 of 135 cards, and the sets in a three-column grid' },
+  { img: 'screen-cards', h: 'Set', t: 'A set opens like a page of photos: nine cards, their stars underneath, and a stamp when every card is collected.', alt: 'The Tropical Escape set, complete: nine photo cards with their stars' },
 ];
+const popups = [
+  { name: 'Cards Collection', alt: 'Cards Collection popup: collect cards in events, complete the sets, win cool prizes' },
+  { name: 'Card Packs', alt: 'Card Packs popup: common packs, and rare packs that hold at least one card of their star level' },
+  { name: 'Common Pack', alt: 'A common pack opening into three cards, with a Claim button' },
+  { name: 'New Album', alt: 'New album popup: Summer Vibes!, 29 days left, with its rewards and a Show Me button' },
+  { name: 'Card Stars', alt: 'Card Stars popup hosted by the corgi: duplicates give Card Stars to redeem chests for 200, 300 and 400 stars' },
+];
+const packs = ['No stars', '1 star', '2 stars', '3 stars', '4 stars', '5 stars'];
+const chests = [
+  { img: 'chest-1', price: 200, alt: 'A wooden chest with a silver star' },
+  { img: 'chest-2', price: 300, alt: 'A red quilted chest with a gold star' },
+  { img: 'chest-3', price: 400, alt: 'A gold-trimmed chest with a red star' },
+];
+const cardStates = [
+  { img: 'card-locked1', w: 188, label: 'Locked', alt: 'A locked card showing one grey star' },
+  { img: 'card-locked3', w: 188, label: 'Locked', alt: 'A locked card showing three grey stars' },
+  { img: 'card-new', w: 193, label: 'New', alt: 'The Sun Cream card with a NEW ribbon and one star' },
+  { img: 'card-dupe', w: 184, label: '+2 copies', alt: 'The Seashell card with three stars and a +2 duplicates badge' },
+  { img: 'card-dupe2', w: 183, label: '+2 copies', alt: 'The Camera Snapshot card with five stars and a +2 duplicates badge' },
+];
+const offers = [
+  { img: 'offer-reroll', w: 211, label: 'Reroll', alt: 'A Reroll offer: swap a card for 120 gems' },
+  { img: 'offer-card', w: 204, label: '+1 card', alt: 'A mystery +1 Card offer for 160 gems' },
+];
+
+// How the cards were made. In the owner's words: a custom style in Layer AI; Claude, connected
+// to Layer AI, writes the themes and a prompt for every card; Layer AI renders them in a batch;
+// the renders go into a folder and are uploaded to the game.
+const pipeline = [
+  { who: 'Me', name: 'A style for the game', text: 'A custom style in Layer AI, built from Sort Journey’s own art, so every render belongs to the game.' },
+  { who: 'Claude', name: 'A theme, nine prompts', text: 'Connected to Layer AI, Claude proposes the set’s theme and writes a prompt for each of its nine cards.' },
+  { who: 'Layer AI', name: 'Batch render', text: 'Every prompt rendered in one batch, in the game’s style.' },
+  { who: 'Folder', name: 'Saved together', text: 'The renders land in one folder per set, named and ready.' },
+  { who: 'The game', name: 'Uploaded', text: 'The folder is uploaded to the project, and the set fills its place in the album.' },
+];
+// One real set from the game, shown going through the pipeline: its card names are from the Cards screen.
+const demoSet = 'Tropical Escape';
+const demoCards = ['Travel Suitcase', 'Boarding Pass', 'Beach Postcard', 'Sun Cream', 'Seashell', 'Camera Snapshot', 'Beach Bag', 'Open Book', 'Golden Sunset'];
+// A colour for each rendered card, in the set's beach palette (a diagram, not the art)
+const demoFills = [
+  'linear-gradient(160deg, #ffb46b, #e7743a)',
+  'linear-gradient(160deg, #9fd3ff, #4c96ff)',
+  'linear-gradient(160deg, #ffe39a, #f6b23c)',
+  'linear-gradient(160deg, #ffd0a8, #f39a5b)',
+  'linear-gradient(160deg, #fff1d6, #e9c98f)',
+  'linear-gradient(160deg, #8ee6e8, #2fb3c0)',
+  'linear-gradient(160deg, #ffc2d8, #e96aa0)',
+  'linear-gradient(160deg, #d6e8ff, #8db6f2)',
+  'linear-gradient(160deg, #ffcf7a, #f0653a)',
+];
+const palette = ['#f5913a', '#4c96ff', '#e96aa0', '#7cc36b', '#a98bf0'];
+const SETS = 20, CARDS = 9;
+// Set colours, taken from the album covers
+const setColours = ['#f5913a', '#a98bf0', '#f6c142', '#e96aa0', '#7cc36b', '#ffffff', '#e8504a', '#3fc1c9'];
 
 const principles = [
   { h: 'Souvenirs, not menus', t: 'Albums are stitched photo books, cards are holiday snapshots, packs are foil packets. The feature looks like things you would bring home from a trip.' },
@@ -103,27 +117,216 @@ const principles = [
     </ol>
   </section>
 
-  {sections.map((s) => (
-    <section class="sec">
-      <div class="sec-head">
-        <h2>{s.title}</h2>
-        <div><p>{s.intro}</p></div>
+  <section class="sec">
+    <div class="sec-head">
+      <h2>How the cards were made</h2>
+      <div>
+        <p>
+          A season runs to around 20 sets of nine cards: about 180 card illustrations, every season.
+          Making that much content was the real challenge.
+        </p>
+        <p>
+          In early 2026, when few studios had tried AI for production art, I connected Claude to Layer AI and
+          built a pipeline around it.
+        </p>
       </div>
-      <div class="art-row">
-        <figure class="art">
-          <img src={art(s.img.src)} width={s.img.w} height={s.img.h} alt={s.img.alt} loading="lazy" decoding="async" />
-        </figure>
-        <ul class="notes" role="list">
-          {s.notes.map((n) => (
-            <li>
-              <h3>{n.h}</h3>
-              <p>{n.t}</p>
-            </li>
-          ))}
-        </ul>
+    </div>
+
+    <figure class="fig" data-fig data-process>
+      <ol class="proc" role="list">
+        {pipeline.map((st, i) => (
+          <li class="stage" data-stage={i + 1}>
+            <div class="vis" aria-hidden="true">
+              {i === 0 && (
+                <div class="paper style-card">
+                  <p class="paper-title">Sort Journey style</p>
+                  <span class="dots">{palette.map((c, k) => <i style={`--c:${c}; --k:${k}`} />)}</span>
+                  <span class="samples">{demoFills.slice(0, 3).map((g, k) => <i style={`--g:${g}; --k:${k}`} />)}</span>
+                  <p class="paper-meta">Layer AI · custom style</p>
+                </div>
+              )}
+              {i === 1 && (
+                <div class="paper prompts-card">
+                  <p class="theme">{demoSet}</p>
+                  <ol class="prompts">{demoCards.map((c, k) => <li style={`--k:${k}`}>{c}</li>)}</ol>
+                </div>
+              )}
+              {i === 2 && (
+                <div class="render">
+                  <span class="renders">{demoFills.map((g, k) => <i style={`--g:${g}; --k:${k}`} />)}</span>
+                  <p class="tag-n"><span data-n="render">0</span>/9 rendered</p>
+                </div>
+              )}
+              {i === 3 && (
+                <div class="folder-wrap">
+                  <span class="folder">
+                    <svg class="f-back" viewBox="0 0 96 72"><path d="M6 14a6 6 0 0 1 6-6h22l8 8h42a6 6 0 0 1 6 6v38a6 6 0 0 1-6 6H12a6 6 0 0 1-6-6z" fill="#fff" /></svg>
+                    <span class="drops">{demoFills.slice(0, 3).map((g, k) => <i style={`--g:${g}; --k:${k}`} />)}</span>
+                    <svg class="f-front" viewBox="0 0 96 72"><path d="M6 30h84v30a6 6 0 0 1-6 6H12a6 6 0 0 1-6-6z" fill="#eaf3ff" /></svg>
+                  </span>
+                  <p class="tag-n">tropical-escape · <span data-n="files">0</span> files</p>
+                </div>
+              )}
+              {i === 4 && (
+                <div class="paper album-card">
+                  <span class="book"><i /></span>
+                  <p class="paper-title">{demoSet}</p>
+                  <span class="abar"><i /></span>
+                  <p class="paper-meta"><span data-n="album">0</span>/9 in the album</p>
+                  <svg class="tick" viewBox="0 0 24 24"><circle cx="12" cy="12" r="11" fill="#17824a" /><path d="M7 12.5l3.2 3.2L17 9" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" /></svg>
+                </div>
+              )}
+            </div>
+            <span class="who" data-who={st.who}>{st.who}</span>
+            <h3><span class="n">{i + 1}</span>{st.name}</h3>
+            <p>{st.text}</p>
+          </li>
+        ))}
+      </ol>
+      <figcaption>
+        One set, {demoSet}, going through the pipeline. Its nine cards are the real ones from the game; the
+        coloured tiles stand in for the renders. It plays while it is on screen.
+      </figcaption>
+    </figure>
+
+    <figure class="fig" data-fig data-season>
+      <div class="season-tile">
+        <div class="season" role="img" aria-label={`One season: ${SETS} sets of ${CARDS} cards, ${SETS * CARDS} cards in all`}>
+          <p class="axis-y" aria-hidden="true">{CARDS} cards a set</p>
+          <div class="grid" aria-hidden="true" style={`--sets:${SETS}`}>
+            {Array.from({ length: SETS }).map((_, c) => (
+              <span class="set" style={`--c:${c}; --col:${setColours[c % setColours.length]}`}>
+                {Array.from({ length: CARDS }).map((_, r) => <i style={`--r:${r}`} />)}
+              </span>
+            ))}
+          </div>
+          <p class="axis-x" aria-hidden="true">{SETS} sets a season</p>
+          <p class="total"><b data-n="season" data-to={SETS * CARDS}>{SETS * CARDS}</b> cards</p>
+        </div>
       </div>
-    </section>
-  ))}
+      <figcaption>One season, one square per card. Each column is a set: one theme, nine prompts, rendered together.</figcaption>
+    </figure>
+  </section>
+
+  <section class="sec">
+    <div class="sec-head">
+      <h2>Where it lives</h2>
+      <div><p>Three screens carry the feature: Home, where it starts; the album; and a set opened card by card.</p></div>
+    </div>
+    <ol class="phones" role="list" data-fig>
+      {screens.map((sc, i) => (
+        <li class="rise" style={`--k:${i}`}>
+          <img src={art(sc.img)} width="640" height="1294" alt={sc.alt} loading="lazy" decoding="async" />
+          <h3>{sc.h}</h3>
+          <p>{sc.t}</p>
+        </li>
+      ))}
+    </ol>
+  </section>
+
+  <section class="sec">
+    <div class="sec-head">
+      <h2>Sets</h2>
+      <div><p>Every set is a book with its own colour and one scene from a trip.</p></div>
+    </div>
+    <figure class="fig sets" data-fig>
+      <img class="rise" src={art('sets')} width="2400" height="953" alt="Twenty-seven set covers drawn as small framed books, each with its own colour and holiday scene" loading="lazy" decoding="async" />
+    </figure>
+    <ul class="notes cols" role="list">
+      <li><h3>One subject a cover</h3><p>Each scene has one clear subject, centred and bright against its frame, so a cover still reads at the size of a thumbnail.</p></li>
+      <li><h3>Colour tells them apart</h3><p>The frame colours rotate across the shelf, so neighbouring sets never look alike.</p></li>
+    </ul>
+  </section>
+
+  <section class="sec">
+    <div class="sec-head">
+      <h2>Popups</h2>
+      <div><p>Five moments explain the feature as it happens: the rules, the packs, opening a pack, a new album and Card Stars.</p></div>
+    </div>
+    <ol class="popups" role="list" data-fig>
+      {popups.map((pp, i) => (
+        <li class="rise" style={`--k:${i}`}>
+          <img src={art(`popup-${i + 1}`)} width="480" height="1040" alt={pp.alt} loading="lazy" decoding="async" />
+          <p>{pp.name}</p>
+        </li>
+      ))}
+    </ol>
+    <div class="host">
+      <ul class="notes cols" role="list">
+        <li><h3>One frame</h3><p>A red ribbon for the title, a purple close button, a dark backdrop and one yellow action. Every popup is built the same way.</p></li>
+        <li><h3>Rules as pictures</h3><p>Collect cards in events, complete the sets, win prizes: three steps, each drawn rather than written.</p></li>
+        <li><h3>The corgi hosts</h3><p>The game’s corgi presents Card Stars, as it greets players on Home and in the key art.</p></li>
+      </ul>
+      <img class="corgi" src={art('corgi')} width="560" height="560" alt="The game’s corgi, tongue out, in a red bandana" loading="lazy" decoding="async" />
+    </div>
+  </section>
+
+  <section class="sec">
+    <div class="sec-head">
+      <h2>UI assets</h2>
+      <div><p>Packs, chests, buttons and every state a card can be in.</p></div>
+    </div>
+
+    <div class="shelf" data-fig data-packs>
+      <div class="shelf-text">
+        <h3>Packs</h3>
+        <p>Rarity in one language: packs climb from plain white through green, blue and pink to purple and red, adding a star at each step. Tap a pack to open it.</p>
+      </div>
+      <ul class="packs" role="list">
+        {packs.map((label, i) => (
+          <li>
+            <button class="pack" type="button" aria-pressed="false" aria-label={`Open the ${label.toLowerCase()} pack`}>
+              <img class="closed" src={art(`pack-${i}`)} width="231" height="280" alt="" loading="lazy" decoding="async" />
+              <img class="opened" src={art(`pack-${i}-open`)} width="216" height="216" alt="" loading="lazy" decoding="async" />
+            </button>
+            <span>{label}</span>
+          </li>
+        ))}
+      </ul>
+    </div>
+
+    <div class="shelf" data-fig>
+      <div class="shelf-text">
+        <h3>Chests</h3>
+        <p>Card Stars buy chests, and the chests climb the same way: wood and silver, then red, then gold.</p>
+      </div>
+      <ul class="chests" role="list">
+        {chests.map((c, i) => (
+          <li class="rise" style={`--k:${i}`}>
+            <img src={art(c.img)} width="485" height="436" alt={c.alt} loading="lazy" decoding="async" />
+            <span>{c.price} Card Stars</span>
+          </li>
+        ))}
+      </ul>
+    </div>
+
+    <div class="shelf" data-fig>
+      <div class="shelf-text">
+        <h3>Every card state</h3>
+        <p>Locked with its stars greyed, new, collected with duplicates counted, and two ways to finish a set: reroll a card or buy one more.</p>
+      </div>
+      <ul class="cards" role="list">
+        {[...cardStates, ...offers].map((c, i) => (
+          <li class="rise" style={`--k:${i}`}>
+            <img src={art(c.img)} width={c.w} height="260" alt={c.alt} loading="lazy" decoding="async" />
+            <span>{c.label}</span>
+          </li>
+        ))}
+      </ul>
+    </div>
+
+    <div class="shelf" data-fig>
+      <div class="shelf-text">
+        <h3>Prices you can read</h3>
+        <p>One yellow action per popup. Star prices sit on green buttons; the same price in grey means it cannot be paid yet.</p>
+      </div>
+      <ul class="buttons" role="list">
+        <li class="rise" style="--k:0"><img src={art('btn-claim')} width="320" height="128" alt="The yellow Claim button" loading="lazy" decoding="async" /><span>Action</span></li>
+        <li class="rise" style="--k:1"><img src={art('btn-200')} width="209" height="112" alt="A green price button: 200 stars" loading="lazy" decoding="async" /><span>Can pay</span></li>
+        <li class="rise" style="--k:2"><img src={art('btn-400')} width="210" height="112" alt="A grey price button: 400 stars" loading="lazy" decoding="async" /><span>Not yet</span></li>
+      </ul>
+    </div>
+  </section>
 
   <section class="sec">
     <div class="sec-head">
@@ -141,6 +344,87 @@ const principles = [
     </ol>
   </section>
 </article>
+
+<script>
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const count = (el: Element | null, to: number, ms: number) => {
+    if (!el) return;
+    if (reduce || ms <= 0) { el.textContent = String(to); return; }
+    const t0 = performance.now();
+    const step = (now: number) => {
+      const t = Math.min((now - t0) / ms, 1);
+      el.textContent = String(Math.round(to * t));
+      if (t < 1) requestAnimationFrame(step);
+    };
+    requestAnimationFrame(step);
+  };
+
+  // The process: one set travels through the five stages, then the loop starts again.
+  const proc = document.querySelector<HTMLElement>('[data-process]');
+  let running = false;
+  const STAGES = 5;
+  const n = (k: string) => proc?.querySelector(`[data-n="${k}"]`) ?? null;
+  const setStage = (k: number) => {
+    if (!proc) return;
+    for (let i = 1; i <= STAGES; i++) proc.classList.toggle(`s${i}`, i <= k);
+    proc.querySelectorAll('.stage').forEach((el, i) => el.classList.toggle('on', i === k - 1));
+  };
+  const wait = (ms: number) => new Promise((r) => setTimeout(r, ms));
+  async function play() {
+    if (!proc || running) return;
+    running = true;
+    while (proc.hasAttribute('data-live') && !document.hidden) {
+      setStage(1);
+      await wait(1300);
+      setStage(2);
+      await wait(1900);
+      setStage(3);
+      count(n('render'), 9, 9 * 150 + 300);
+      await wait(2000);
+      setStage(4);
+      count(n('files'), 9, 700);
+      await wait(1500);
+      setStage(5);
+      count(n('album'), 9, 900);
+      await wait(2600);
+      setStage(0);
+      ['render', 'files', 'album'].forEach((k) => { const el = n(k); if (el) el.textContent = '0'; });
+      await wait(700);
+    }
+    running = false;
+  }
+
+  // Packs: tap to open and close; the first time the shelf is seen they open in turn, then close.
+  const packs = [...document.querySelectorAll<HTMLButtonElement>('.pack')];
+  const setPack = (b: HTMLButtonElement, open: boolean) => b.setAttribute('aria-pressed', String(open));
+  packs.forEach((b) => b.addEventListener('click', () => setPack(b, b.getAttribute('aria-pressed') !== 'true')));
+  const demoPacks = () => {
+    packs.forEach((b, i) => {
+      setTimeout(() => setPack(b, true), 300 + i * 140);
+      setTimeout(() => setPack(b, false), 1900 + i * 140);
+    });
+  };
+
+  const io = new IntersectionObserver((es) => es.forEach((e) => {
+    e.target.toggleAttribute('data-live', e.isIntersecting);
+    if (!e.isIntersecting) return;
+    if (e.target === proc) play();
+    if (!e.target.classList.contains('seen')) {
+      e.target.classList.add('seen'); // things rise in, and the season grid fills, once
+      if (e.target.hasAttribute('data-packs')) demoPacks();
+      count(e.target.querySelector('[data-n="season"]'), 180, 1900);
+    }
+  }), { threshold: 0.3 });
+
+  if (reduce) {
+    // Everything shown in its finished state, nothing moves
+    setStage(STAGES);
+    ['render', 'files', 'album'].forEach((k) => { const el = n(k); if (el) el.textContent = '9'; });
+    document.querySelectorAll('[data-fig]').forEach((f) => f.classList.add('seen'));
+  } else {
+    document.querySelectorAll('[data-fig]').forEach((f) => { f.setAttribute('data-armed', ''); io.observe(f); });
+  }
+</script>
 
 <style>
   .case {
@@ -165,7 +449,10 @@ const principles = [
   .sec-head p {
     max-width: 64ch;
     font-size: 1.125rem;
+  }  .sec-head p + p {
+    margin-top: 0.8em;
   }
+
   .out {
     margin-top: 20px;
   }
@@ -208,26 +495,6 @@ const principles = [
   }
 
   /* Art at its own size on the board's blue; notes beside it */
-  .art-row {
-    display: grid;
-    grid-template-columns: minmax(0, 707px) minmax(0, 1fr);
-    align-items: start;
-    gap: 24px clamp(32px, 5vw, 72px);
-  }
-  .art {
-    margin: 0;
-    padding: 8px;
-    border-radius: var(--radius-lg);
-    background: var(--surface);
-    box-shadow: var(--shadow-tile);
-  }
-  .art img {
-    display: block;
-    width: 100%;
-    height: auto;
-    border-radius: var(--radius-md);
-    background: #4c96ff;
-  }
   .notes {
     margin: 0;
     padding: 0;
@@ -257,12 +524,468 @@ const principles = [
     font-size: 1.0625rem;
   }
 
+  .fig {
+    margin: 0;
+  }
+  figcaption {
+    max-width: 72ch;
+    margin-top: 14px;
+    color: var(--ink-2);
+    font-size: 0.9375rem;
+  }
+
+  /* ---------- The process: five stages, one set passing through ---------- */
+  .proc {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 20px 14px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .stage {
+    position: relative;
+    display: grid;
+    grid-template-rows: auto auto auto 1fr;
+    align-content: start;
+    gap: 10px;
+  }
+  /* the arrow to the next stage, lit once that stage has started */
+  .stage:not(:last-child)::after {
+    content: '';
+    position: absolute;
+    top: 118px;
+    right: -11px;
+    z-index: 1;
+    width: 8px;
+    height: 8px;
+    border-top: 2px solid var(--line);
+    border-right: 2px solid var(--line);
+    transform: rotate(45deg);
+    transition: border-color var(--t-med) var(--ease-out);
+  }
+  .s2 .stage:nth-child(1)::after,
+  .s3 .stage:nth-child(2)::after,
+  .s4 .stage:nth-child(3)::after,
+  .s5 .stage:nth-child(4)::after {
+    border-color: var(--ink);
+  }
+  .vis {
+    position: relative;
+    display: grid;
+    place-items: center;
+    height: 236px;
+    margin-bottom: 4px;
+    padding: 12px;
+    border-radius: var(--radius-md);
+    background: #4c96ff;
+    overflow: hidden;
+    transition: box-shadow var(--t-med) var(--ease-out), transform var(--t-med) var(--ease-out);
+  }
+  .stage.on .vis {
+    box-shadow: 0 0 0 3px var(--ink);
+    transform: translateY(-3px);
+  }
+  .stage h3 {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    font-size: 1.0625rem;
+    letter-spacing: -0.02em;
+    line-height: 1.2;
+  }
+  .stage .n {
+    color: var(--ink-2);
+    font-size: 0.875rem;
+    font-weight: 500;
+  }
+  .stage > p {
+    color: var(--ink-2);
+    font-size: 0.9375rem;
+  }
+  .who {
+    justify-self: start;
+    padding: 3px 10px;
+    border-radius: var(--pill);
+    background: var(--surface-2);
+    font-size: 0.75rem;
+    font-weight: 600;
+  }
+  .who[data-who='Claude'] {
+    background: #f3e3d6;
+    color: #7a3a14;
+  }
+  .who[data-who='Layer AI'] {
+    background: #e3e6fb;
+    color: #2632a8;
+  }
+  .who[data-who='Me'] {
+    background: var(--btn-bg);
+    color: var(--btn-ink);
+  }
+
+  /* shared pieces inside the stages */
+  .paper {
+    position: relative;
+    width: 100%;
+    padding: 12px;
+    border-radius: 14px;
+    background: #fff;
+    color: #0b1a30;
+  }
+  .paper-title {
+    font-size: 0.8125rem;
+    font-weight: 600;
+    line-height: 1.2;
+  }
+  .paper-meta {
+    color: #45546c;
+    font-size: 0.75rem;
+  }
+  .tag-n {
+    padding: 4px 10px;
+    border-radius: var(--pill);
+    background: #fff;
+    color: #0b1a30;
+    font-size: 0.75rem;
+    font-weight: 600;
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* 1. the style */
+  .style-card {
+    display: grid;
+    gap: 12px;
+  }
+  .dots,
+  .samples {
+    display: flex;
+    gap: 6px;
+  }
+  .dots i {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: var(--c);
+  }
+  .samples i {
+    flex: 1;
+    aspect-ratio: 1;
+    border-radius: 8px;
+    background: var(--g);
+  }
+  .dots i,
+  .samples i {
+    opacity: 0.25;
+    transform: scale(0.7);
+    transition: opacity 400ms var(--ease-out), transform 400ms var(--ease-out);
+    transition-delay: calc(var(--k) * 90ms);
+  }
+  .s1 .dots i,
+  .s1 .samples i {
+    opacity: 1;
+    transform: none;
+  }
+
+  /* 2. the theme and its nine prompts */
+  .prompts-card {
+    display: grid;
+    gap: 8px;
+    align-self: stretch;
+  }
+  .theme {
+    justify-self: start;
+    padding: 3px 9px;
+    border-radius: var(--pill);
+    background: #f3e3d6;
+    color: #7a3a14;
+    font-size: 0.75rem;
+    font-weight: 600;
+    opacity: 0;
+    transform: translateY(4px);
+    transition: opacity 300ms var(--ease-out), transform 300ms var(--ease-out);
+  }
+  .prompts {
+    display: grid;
+    gap: 3px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .prompts li {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    color: #0b1a30;
+    font-size: 0.75rem;
+    line-height: 1.25;
+    white-space: nowrap;
+    opacity: 0;
+    transform: translateX(-6px);
+    transition: opacity 260ms var(--ease-out), transform 260ms var(--ease-out);
+    transition-delay: calc(250ms + var(--k) * 140ms);
+  }
+  .prompts li::before {
+    content: '';
+    flex: none;
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: #e7743a;
+  }
+  .s2 .theme,
+  .s2 .prompts li {
+    opacity: 1;
+    transform: none;
+  }
+
+  /* 3. nine renders */
+  .render {
+    display: grid;
+    justify-items: center;
+    gap: 12px;
+  }
+  .renders {
+    display: grid;
+    grid-template-columns: repeat(3, 44px);
+    gap: 7px;
+  }
+  .renders i {
+    position: relative;
+    height: 52px;
+    padding: 3px 3px 9px;
+    border-radius: 4px;
+    background: rgb(255 255 255 / 0.25);
+    box-shadow: 0 0 0 1.5px rgb(255 255 255 / 0.7) inset;
+  }
+  .renders i::after {
+    content: '';
+    position: absolute;
+    inset: 3px 3px 9px;
+    border-radius: 2px;
+    background: var(--g);
+    opacity: 0;
+    transform: scale(0.6);
+    transition: opacity 320ms var(--ease-out), transform 420ms var(--ease-out);
+    transition-delay: calc(var(--k) * 150ms);
+  }
+  .s3 .renders i {
+    background: #fff;
+    transition: background-color 200ms var(--ease-out);
+    transition-delay: calc(var(--k) * 150ms);
+  }
+  .s3 .renders i::after {
+    opacity: 1;
+    transform: none;
+  }
+
+  /* 4. into one folder */
+  .folder-wrap {
+    position: relative;
+    display: grid;
+    justify-items: center;
+    gap: 12px;
+  }
+  .folder {
+    position: relative;
+    width: 120px;
+    height: 90px;
+  }
+  .f-back,
+  .f-front {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+  }
+  .f-front {
+    z-index: 2;
+  }
+  .drops {
+    position: absolute;
+    z-index: 1;
+    top: 0;
+    left: 50%;
+    width: 76px;
+    height: 100%;
+    margin-left: -38px;
+  }
+  .drops i {
+    position: absolute;
+    top: 0;
+    width: 32px;
+    height: 40px;
+    border: 3px solid #fff;
+    border-bottom-width: 8px;
+    border-radius: 4px;
+    background: var(--g);
+    opacity: 0;
+    transform: translateY(-46px) rotate(-8deg);
+    transition: opacity 260ms var(--ease-out), transform 560ms cubic-bezier(0.5, 0, 0.2, 1.25);
+    transition-delay: calc(var(--k) * 170ms);
+  }
+  .drops i:nth-child(1) { left: 0; --rot: -9deg; }
+  .drops i:nth-child(2) { left: 22px; --rot: 2deg; }
+  .drops i:nth-child(3) { left: 44px; --rot: 10deg; }
+  .s4 .drops i {
+    opacity: 1;
+    transform: translateY(6px) rotate(var(--rot));
+  }
+
+  /* 5. the set in the album */
+  .album-card {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    grid-template-areas:
+      'book title'
+      'book bar'
+      'book meta';
+    align-items: center;
+    gap: 6px 12px;
+  }
+  .book {
+    grid-area: book;
+    width: 52px;
+    height: 66px;
+    padding: 5px;
+    border-radius: 6px;
+    background: #f5913a;
+    box-shadow: 3px 3px 0 #c8622a;
+  }
+  .book i {
+    display: block;
+    height: 100%;
+    border-radius: 3px;
+    background: linear-gradient(160deg, #9fd3ff, #4c96ff 55%, #ffe39a 56%, #f6b23c);
+  }
+  .album-card .paper-title { grid-area: title; }
+  .album-card .paper-meta { grid-area: meta; font-variant-numeric: tabular-nums; }
+  .abar {
+    grid-area: bar;
+    height: 6px;
+    border-radius: 3px;
+    background: #dcebff;
+    overflow: hidden;
+  }
+  .abar i {
+    display: block;
+    width: 0;
+    height: 100%;
+    border-radius: 3px;
+    background: linear-gradient(90deg, #7cc0ff, #3a8dff);
+    transition: width 900ms var(--ease-out);
+  }
+  .s5 .abar i {
+    width: 100%;
+  }
+  .tick {
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    width: 26px;
+    height: 26px;
+    opacity: 0;
+    transform: scale(0.4);
+    transition: opacity 240ms var(--ease-out) 0s, transform 420ms cubic-bezier(0.3, 1.6, 0.5, 1) 0s;
+  }
+  .s5 .tick {
+    opacity: 1;
+    transform: none;
+    transition-delay: 950ms;
+  }
+
+  /* ---------- One season, one square per card ---------- */
+  .season-tile {
+    padding: 8px;
+    border-radius: var(--radius-lg);
+    background: var(--surface);
+    box-shadow: var(--shadow-tile);
+  }
+  .season {
+    display: grid;
+    grid-template-columns: auto minmax(0, 620px) auto;
+    justify-content: center;
+    grid-template-areas:
+      'y grid total'
+      '. x .';
+    align-items: center;
+    gap: 12px 20px;
+    padding: clamp(24px, 3.4vw, 48px);
+    border-radius: var(--radius-md);
+    background: #4c96ff;
+    color: #fff;
+  }
+  .grid {
+    grid-area: grid;
+    display: grid;
+    grid-template-columns: repeat(var(--sets), minmax(0, 1fr));
+    gap: clamp(4px, 0.6vw, 8px);
+  }
+  .set {
+    display: grid;
+    gap: clamp(3px, 0.4vw, 5px);
+  }
+  .set i {
+    aspect-ratio: 3 / 4;
+    border-radius: 3px;
+    background: var(--col);
+    box-shadow: 0 0 0 1.5px rgb(255 255 255 / 0.85) inset;
+    opacity: 0.25;
+    transform: scale(0.8);
+    transition: opacity 360ms var(--ease-out), transform 360ms var(--ease-out);
+    transition-delay: calc(var(--c) * 70ms + var(--r) * 18ms);
+  }
+  .seen .set i {
+    opacity: 1;
+    transform: none;
+  }
+  .axis-y {
+    grid-area: y;
+    writing-mode: vertical-rl;
+    transform: rotate(180deg);
+    font-size: 0.875rem;
+    font-weight: 600;
+  }
+  .axis-x {
+    grid-area: x;
+    text-align: center;
+    font-size: 0.875rem;
+    font-weight: 600;
+  }
+  .total {
+    grid-area: total;
+    display: grid;
+    font-size: 0.9375rem;
+    font-weight: 600;
+    line-height: 1.1;
+  }
+  .total b {
+    font-family: var(--font-display);
+    font-size: clamp(2.25rem, 4vw, 3.5rem);
+    letter-spacing: -0.04em;
+  }
+
   @media (max-width: 1100px) {
-    .art-row {
-      grid-template-columns: minmax(0, 1fr);
+    .proc {
+      grid-template-columns: 1fr;
+      gap: 18px;
     }
-    .art {
-      max-width: 723px;
+    .stage {
+      grid-template-columns: minmax(220px, 280px) minmax(0, 1fr);
+      grid-template-rows: auto auto 1fr;
+      column-gap: 28px;
+    }
+    .vis {
+      grid-row: 1 / span 3;
+      margin: 0;
+    }
+    .stage:not(:last-child)::after {
+      top: auto;
+      bottom: -14px;
+      left: 136px;
+      right: auto;
+      transform: rotate(135deg);
     }
     .structure {
       grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -283,6 +1006,28 @@ const principles = [
     .structure {
       grid-template-columns: 1fr;
     }
+    .stage {
+      grid-template-columns: 1fr;
+    }
+    .vis {
+      grid-row: auto;
+    }
+    .stage:not(:last-child)::after {
+      display: none;
+    }
+    .season {
+      grid-template-columns: auto minmax(0, 1fr);
+      grid-template-areas:
+        'y grid'
+        '. x'
+        '. total';
+      padding: 18px 14px;
+    }
+    .total {
+      display: flex;
+      align-items: baseline;
+      gap: 8px;
+    }
     .art {
       padding: 5px;
       border-radius: var(--radius-md);
@@ -290,5 +1035,257 @@ const principles = [
     .art img {
       border-radius: 15px;
     }
+  }
+
+  /* ---------- The art, straight on the game's blue ---------- */
+  .rise {
+    transition: opacity 600ms var(--ease-out), transform 700ms var(--ease-out);
+    transition-delay: calc(var(--k, 0) * 90ms);
+  }
+  [data-armed]:not(.seen) .rise,
+  [data-armed]:not(.seen).rise {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  .art-shadow,
+  .phones img,
+  .sets img,
+  .popups img {
+    filter: drop-shadow(0 22px 28px rgb(11 26 48 / 0.28));
+  }
+
+  .phones {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 32px clamp(24px, 4vw, 64px);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .phones li {
+    display: grid;
+    align-content: start;
+    gap: 8px;
+  }
+  .phones img {
+    width: min(100%, 320px);
+    height: auto;
+    margin: 0 auto 18px;
+  }
+  .phones h3,
+  .shelf-text h3 {
+    font-size: clamp(1.125rem, 1.6vw, 1.375rem);
+    letter-spacing: -0.025em;
+    line-height: 1.15;
+  }
+  .phones p,
+  .shelf-text p {
+    max-width: 44ch;
+    color: var(--ink-2);
+  }
+
+  .sets {
+    margin: 0;
+  }
+  .sets img {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+  .notes.cols {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+    gap: 0 clamp(24px, 4vw, 56px);
+    border-bottom: 0;
+  }
+  .notes.cols li {
+    border-bottom: 1px solid var(--line);
+  }
+
+  .popups {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: clamp(12px, 1.6vw, 20px);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .popups li {
+    display: grid;
+    gap: 12px;
+    justify-items: center;
+  }
+  .popups img {
+    width: 100%;
+    height: auto;
+    border-radius: clamp(16px, 2vw, 28px);
+  }
+  .popups p {
+    font-size: 0.9375rem;
+    font-weight: 600;
+  }
+  .host {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) clamp(140px, 16vw, 220px);
+    align-items: end;
+    gap: 24px;
+  }
+  .corgi {
+    width: 100%;
+    height: auto;
+    filter: drop-shadow(0 18px 22px rgb(11 26 48 / 0.25));
+  }
+
+  .shelf {
+    display: grid;
+    grid-template-columns: minmax(10rem, 1fr) minmax(0, 2fr);
+    align-items: center;
+    gap: 20px clamp(32px, 6vw, 96px);
+    padding: clamp(24px, 3vw, 40px) 0;
+    border-top: 1px solid var(--line);
+  }
+  .shelf-text {
+    display: grid;
+    gap: 8px;
+  }
+  .shelf ul {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: end;
+    gap: clamp(12px, 2vw, 28px);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .shelf li {
+    display: grid;
+    justify-items: center;
+    gap: 8px;
+  }
+  .shelf li span {
+    color: var(--ink-2);
+    font-size: 0.8125rem;
+    font-weight: 600;
+    text-align: center;
+  }
+  .shelf img {
+    height: auto;
+    filter: drop-shadow(0 12px 16px rgb(11 26 48 / 0.22));
+  }
+
+  /* packs: the closed pack gives way to the opened one */
+  .pack {
+    position: relative;
+    display: grid;
+    place-items: end center;
+    width: clamp(46px, 6.4vw, 96px);
+    aspect-ratio: 231 / 280;
+    padding: 0;
+    border: 0;
+    border-radius: 12px;
+    background: none;
+    cursor: pointer;
+    transition: transform var(--t-fast) var(--ease-out);
+  }
+  .pack:hover {
+    transform: translateY(-4px) rotate(-2deg);
+  }
+  .pack:active {
+    transform: scale(0.95);
+  }
+  .pack img {
+    position: absolute;
+    left: 50%;
+    bottom: 0;
+    transition: opacity 260ms var(--ease-out), transform 460ms cubic-bezier(0.3, 1.5, 0.5, 1);
+  }
+  .pack .closed {
+    width: 100%;
+    transform: translateX(-50%);
+  }
+  .pack .opened {
+    width: 94%;
+    opacity: 0;
+    transform: translateX(-50%) scale(0.7);
+  }
+  .pack[aria-pressed='true'] .closed {
+    opacity: 0;
+    transform: translateX(-50%) scale(1.1) translateY(-6px);
+  }
+  .pack[aria-pressed='true'] .opened {
+    opacity: 1;
+    transform: translateX(-50%);
+  }
+
+  .chests img {
+    width: clamp(110px, 13vw, 200px);
+  }
+  .cards img {
+    width: clamp(52px, 6vw, 84px);
+  }
+  .shelf li span {
+    white-space: nowrap;
+  }
+  @media (min-width: 561px) {
+    .packs,
+    .cards {
+      flex-wrap: nowrap !important;
+      gap: clamp(8px, 1.4vw, 18px) !important;
+    }
+  }
+  .buttons {
+    align-items: center !important;
+  }
+  .buttons img {
+    width: clamp(90px, 11vw, 160px);
+  }
+  .buttons li:first-child img {
+    width: clamp(120px, 14vw, 180px);
+  }
+
+  @media (max-width: 1100px) {
+    .popups {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+  }
+  @media (max-width: 860px) {
+    .phones {
+      grid-template-columns: 1fr;
+    }
+    .phones img {
+      width: min(70%, 300px);
+    }
+    .shelf {
+      grid-template-columns: 1fr;
+    }
+    .host {
+      grid-template-columns: 1fr;
+    }
+    .corgi {
+      width: 160px;
+      justify-self: end;
+      order: -1;
+    }
+  }
+  @media (max-width: 560px) {
+    .popups {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  /* On the blue page the diagrams sit on a lighter panel and the art on the ground itself */
+  :global(html[data-theme='blue']) .season-tile {
+    padding: 0;
+    background: none;
+    box-shadow: none;
+  }
+  :global(html[data-theme='blue']) .vis,
+  :global(html[data-theme='blue']) .season {
+    background: rgb(255 255 255 / 0.18);
+    box-shadow: 0 0 0 1px rgb(255 255 255 / 0.32) inset;
+    color: var(--ink);
+  }
+  :global(html[data-theme='blue']) .stage.on .vis {
+    box-shadow: 0 0 0 3px var(--ink);
   }
 </style>

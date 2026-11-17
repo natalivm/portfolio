@@ -219,3 +219,39 @@ button {
     scroll-behavior: auto !important;
   }
 }
+
+/* ---------- Page theme: blue ----------
+   For a case study whose art lives on the game's own blue (Sort Journey's art board, #4c96ff).
+   White text cannot reach 4.5:1 on this blue, so the ink is navy. Anything on a white surface
+   (tiles, light pills, round buttons, dialogs) keeps the site's own ink. */
+html[data-theme='blue'] {
+  --bg: #4c96ff;
+  --surface-2: rgb(255 255 255 / 0.28);
+  --ink: #0b1a30; /* 5.9:1 on the ground */
+  --ink-2: #0b2a63; /* 4.7:1 */
+  --ink-3: #16387d; /* large text only, 3.8:1 */
+  --line: rgb(11 26 48 / 0.2);
+  --accent: #0b1a30; /* focus, selection and current state */
+  --accent-ink: #ffffff;
+  --shadow-tile: 0 1px 2px rgb(11 26 48 / 0.18), 0 16px 34px -16px rgb(11 26 48 / 0.45);
+  --shadow-lift: 0 2px 4px rgb(11 26 48 / 0.2), 0 24px 46px -18px rgb(11 26 48 / 0.55);
+  scrollbar-color: #2f6fd6 var(--bg);
+}
+html[data-theme='blue'] body {
+  background:
+    radial-gradient(90% 50% at 70% 0%, rgb(160 205 255 / 0.7) 0%, rgb(160 205 255 / 0) 70%),
+    var(--bg);
+}
+html[data-theme='blue'] .site-header {
+  background: rgb(76 150 255 / 0.85);
+}
+html[data-theme='blue'] :is(.tile, .ptile, .pager-card, .pill-light, .round, .back, .find, .jump) {
+  --ink: #16171a;
+  --ink-2: #5d6169;
+  --ink-3: #767a82;
+  --line: #dcdfe4;
+  --surface-2: #e8eaee;
+  --accent: #3346d3;
+  --accent-ink: #ffffff;
+  color: var(--ink);
+}
