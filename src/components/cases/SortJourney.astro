@@ -91,8 +91,8 @@ const principles = [
 
 <article class="wrap case">
   <section class="sec">
-    <div class="sec-head">
-      <h2>Collections</h2>
+    <div class="sec-head" data-fig>
+      <h2 class="ribbon" style="--tilt:-2deg"><span>Collections</span></h2>
       <div>
         <p>
           Collections is a feature of Sort Journey, a travel puzzle game by Bluetile Games. Players collect
@@ -118,8 +118,8 @@ const principles = [
   </section>
 
   <section class="sec">
-    <div class="sec-head">
-      <h2>How the cards were made</h2>
+    <div class="sec-head" data-fig>
+      <h2 class="ribbon" style="--tilt:1.5deg"><span>How the cards were made</span></h2>
       <div>
         <p>
           A season runs to around 20 sets of nine cards: about 180 card illustrations, every season.
@@ -188,8 +188,8 @@ const principles = [
   </section>
 
   <section class="sec">
-    <div class="sec-head">
-      <h2>Where it lives</h2>
+    <div class="sec-head" data-fig>
+      <h2 class="ribbon" style="--tilt:-2deg"><span>Where it lives</span></h2>
       <div><p>Three screens carry the feature: Home, where it starts; the album; and a set opened card by card.</p></div>
     </div>
     <ol class="phones" role="list" data-fig>
@@ -204,8 +204,8 @@ const principles = [
   </section>
 
   <section class="sec">
-    <div class="sec-head">
-      <h2>Sets</h2>
+    <div class="sec-head" data-fig>
+      <h2 class="ribbon" style="--tilt:1.5deg"><span>Sets</span></h2>
       <div><p>Every set is a book with its own colour and one scene from a trip.</p></div>
     </div>
     <figure class="fig sets" data-fig>
@@ -219,8 +219,8 @@ const principles = [
   </section>
 
   <section class="sec">
-    <div class="sec-head">
-      <h2>Popups</h2>
+    <div class="sec-head" data-fig>
+      <h2 class="ribbon" style="--tilt:-2deg"><span>Popups</span></h2>
       <div><p>Five moments explain the feature as it happens: the rules, the packs, opening a pack, a new album and Card Stars.</p></div>
     </div>
     <ol class="popups" role="list" data-fig>
@@ -242,8 +242,8 @@ const principles = [
   </section>
 
   <section class="sec">
-    <div class="sec-head">
-      <h2>UI assets</h2>
+    <div class="sec-head" data-fig>
+      <h2 class="ribbon" style="--tilt:1.5deg"><span>UI assets</span></h2>
       <div><p>Packs, chests, buttons and every state a card can be in.</p></div>
     </div>
 
@@ -300,8 +300,8 @@ const principles = [
   </section>
 
   <section class="sec">
-    <div class="sec-head">
-      <h2>Art direction notes</h2>
+    <div class="sec-head" data-fig>
+      <h2 class="ribbon" style="--tilt:-2deg"><span>Art direction notes</span></h2>
       <div><p>The rules the whole feature was drawn to.</p></div>
     </div>
     <ol class="principles" role="list">
@@ -318,8 +318,9 @@ const principles = [
 
 <script>
   // Background: paws, bones and fish skeletons pressed into the game's blue, drawn by a fragment
-  // shader. Motifs are signed-distance shapes scattered one per grid cell, tied to the page so they
-  // scroll with it, each swaying very slightly. Without WebGL the CSS pattern stays; with reduced
+  // shader. Motifs are signed-distance shapes in four sizes, each size scattered over its own offset
+  // grid; a smaller one gives way to any larger one it would touch. They are tied to the page so they
+  // scroll with it, and each sways very slightly. Without WebGL the CSS pattern stays; with reduced
   // motion the motifs hold still and only follow the scroll.
   (() => {
     const canvas = document.querySelector<HTMLCanvasElement>('[data-sj-bg]');
@@ -329,7 +330,7 @@ const principles = [
     const vert = 'attribute vec2 a;void main(){gl_Position=vec4(a,0.,1.);}';
     const frag = `
       precision mediump float;
-      uniform vec2 uRes; uniform float uTime; uniform float uScroll; uniform float uDpr; uniform float uCell; uniform float uScale;
+      uniform vec2 uRes; uniform float uTime; uniform float uScroll; uniform float uDpr; uniform float uK;
       float hash(vec2 p){ return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
       mat2 rot(float a){ float c = cos(a), s = sin(a); return mat2(c, -s, s, c); }
       float sdEll(vec2 p, vec2 r){ float k0 = length(p / r); float k1 = length(p / (r * r)); return k0 * (k0 - 1.0) / k1; }
@@ -367,23 +368,68 @@ const principles = [
         return d;
       }
       float motif(vec2 p, float t){ return t < 0.56 ? paw(p) : (t < 0.78 ? bone(p) : fish(p)); }
+
+      // Four layers of motifs, large to small (two of them medium, to fill the gaps), each on its own
+      // offset grid with one motif per cell
+      const float R = 45.0; // a motif's radius at scale 1, with room for its lit edge
+      void layer(int l, out float cs, out vec2 o, out float s0, out float s1, out float pr, out float seed){
+        if (l == 0) { cs = 560.0; o = vec2(0.0, 0.0); s0 = 1.7; s1 = 2.6; pr = 0.5; seed = 1.0; }
+        else if (l == 1) { cs = 320.0; o = vec2(131.0, 77.0); s0 = 0.85; s1 = 1.3; pr = 0.8; seed = 37.0; }
+        else if (l == 2) { cs = 250.0; o = vec2(197.0, 143.0); s0 = 0.7; s1 = 1.05; pr = 0.85; seed = 53.0; }
+        else { cs = 180.0; o = vec2(59.0, 211.0); s0 = 0.38; s1 = 0.62; pr = 0.5; seed = 91.0; }
+        cs *= uK; o *= uK; s0 *= uK; s1 *= uK;
+      }
+      // a cell's motif: centre (xy) and radius (z, 0 when the cell is empty), scale (w)
+      vec4 placed(int l, vec2 cell){
+        float cs, s0, s1, pr, seed; vec2 o;
+        layer(l, cs, o, s0, s1, pr, seed);
+        float sc = mix(s0, s1, hash(cell + seed + 11.7));
+        float j = cs * 0.5 - R * s1 - 4.0;   // jitter that keeps any motif inside its own cell
+        vec2 c = (cell + 0.5) * cs + o + (vec2(hash(cell + seed), hash(cell + seed + 19.19)) - 0.5) * 2.0 * j;
+        float r = hash(cell + seed + 7.3) < pr ? R * sc : 0.0;
+        return vec4(c, r, sc);
+      }
+      // a smaller motif gives way to any larger one it would touch
+      bool crowded(int l, vec2 c, float r){
+        for (int e = 0; e < 3; e++) {
+          if (e >= l) break;
+          float cs, s0, s1, pr, seed; vec2 o;
+          layer(e, cs, o, s0, s1, pr, seed);
+          vec2 base = floor((c - o) / cs);
+          for (int i = -1; i <= 1; i++) {
+            for (int k = -1; k <= 1; k++) {
+              vec4 m = placed(e, base + vec2(float(i), float(k)));
+              if (m.z > 0.0 && length(m.xy - c) < m.z + r + 12.0 * uK) return true;
+            }
+          }
+        }
+        return false;
+      }
       void main(){
         vec2 frag = vec2(gl_FragCoord.x, uRes.y - gl_FragCoord.y) / uDpr;
         vec2 world = frag + vec2(0.0, uScroll);
-        vec2 cell = floor(world / uCell);
-        vec2 local = world - (cell + 0.5) * uCell;
-        float present = step(0.3, hash(cell + 7.3));
-        float kind = hash(cell + 3.1);
-        float hx = hash(cell), hy = hash(cell + 19.19);
-        float ang = (hx - 0.5) * 1.5 + sin(uTime * 0.35 + hy * 6.283) * 0.08;
-        vec2 off = (vec2(hx, hy) - 0.5) * uCell * 0.36 + vec2(0.0, sin(uTime * 0.45 + hx * 6.283) * 3.0);
-        float sc = uScale * mix(1.0, 1.55, hash(cell + 11.7));
-        float d = motif(rot(ang) * ((local - off) / sc), kind) * sc;
-        float d2 = motif(rot(ang) * ((local - off - vec2(0.0, 2.0)) / sc), kind) * sc; // lit edge, 2px lower
-        float inside = (1.0 - smoothstep(-0.75, 0.75, d)) * present;
-        float rim = (1.0 - smoothstep(-0.75, 0.75, d2)) * present * (1.0 - inside);
-        // premultiplied: a darker blue pressed in, a light edge underneath
-        gl_FragColor = vec4(0.184, 0.435, 0.839, 1.0) * 0.2 * inside + vec4(1.0) * 0.13 * rim;
+        vec4 col = vec4(0.0);
+        for (int l = 0; l < 4; l++) {
+          float cs, s0, s1, pr, seed; vec2 o;
+          layer(l, cs, o, s0, s1, pr, seed);
+          vec2 cell = floor((world - o) / cs);
+          vec4 m = placed(l, cell);
+          if (m.z <= 0.0) continue;
+          if (crowded(l, m.xy, m.z)) continue;
+          float kind = hash(cell + seed + 3.1);
+          if (l == 3) kind *= 0.77;          // the smallest are paws and bones: a fish's lines get too thin
+          float a = (hash(cell + seed + 23.0) - 0.5) * 2.2 + sin(uTime * 0.35 + kind * 40.0) * 0.08;
+          vec2 p = world - m.xy - vec2(0.0, sin(uTime * 0.45 + kind * 17.0) * 3.0 * uK);
+          float edge = 1.5 + 0.5 * m.w;    // the lit edge grows a little with the motif
+          float d = motif(rot(a) * (p / m.w), kind) * m.w;
+          float d2 = motif(rot(a) * ((p - vec2(0.0, edge)) / m.w), kind) * m.w;
+          float inside = 1.0 - smoothstep(-0.75, 0.75, d);
+          float rim = (1.0 - smoothstep(-0.75, 0.75, d2)) * (1.0 - inside);
+          float strength = mix(0.7, 1.0, hash(cell + seed + 5.5));
+          // premultiplied: a darker blue pressed in, a light edge underneath
+          col += (vec4(0.184, 0.435, 0.839, 1.0) * 0.2 * inside + vec4(1.0) * 0.13 * rim) * strength;
+        }
+        gl_FragColor = col;
       }`;
     const compile = (type: number, src: string) => {
       const sh = gl.createShader(type)!;
@@ -405,7 +451,7 @@ const principles = [
     gl.enableVertexAttribArray(loc);
     gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
     const u = (n: string) => gl.getUniformLocation(prog, n);
-    const uRes = u('uRes'), uTime = u('uTime'), uScroll = u('uScroll'), uDpr = u('uDpr'), uCell = u('uCell'), uScale = u('uScale');
+    const uRes = u('uRes'), uTime = u('uTime'), uScroll = u('uScroll'), uDpr = u('uDpr'), uK = u('uK');
 
     const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
     let dpr = 1;
@@ -414,9 +460,7 @@ const principles = [
       canvas.width = Math.round(innerWidth * dpr);
       canvas.height = Math.round(innerHeight * dpr);
       gl.viewport(0, 0, canvas.width, canvas.height);
-      const small = innerWidth < 600;
-      gl.uniform1f(uCell, small ? 210 : 300);
-      gl.uniform1f(uScale, small ? 0.75 : 1);
+      gl.uniform1f(uK, innerWidth < 600 ? 0.62 : 1); // smaller and closer together on phones
     };
     const t0 = performance.now();
     const draw = (now: number) => {
@@ -538,6 +582,70 @@ const principles = [
   .sec-head h2 {
     font-size: clamp(1.5rem, 2.2vw, 2rem);
   }
+
+  /* Section titles sit on the game's ribbon: a red band with gold edges and folded tails */
+  .sec-head .ribbon {
+    position: relative;
+    isolation: isolate;
+    justify-self: start;
+    align-self: start;
+    margin: 0 0.9em;
+    font-size: clamp(1.25rem, 1.8vw, 1.6rem);
+    line-height: 1.15;
+    transform: rotate(var(--tilt, -2deg));
+  }
+  .ribbon span {
+    position: relative;
+    z-index: 1;
+    display: block;
+    padding: 0.38em 0.8em 0.46em;
+    border-radius: 0.3em;
+    background: linear-gradient(#e8505e, #c42c3b);
+    box-shadow:
+      inset 0 0.16em 0 #f9c95c,
+      inset 0 -0.16em 0 #e3a43a,
+      0 0.22em 0 #8e1b27,
+      0 0.6em 1em -0.4em rgb(80 10 20 / 0.45);
+    color: #fff;
+    text-shadow: 0 0.08em 0 rgb(110 12 26 / 0.7);
+    transition: transform 520ms cubic-bezier(0.3, 1.6, 0.5, 1), opacity 260ms var(--ease-out);
+  }
+  /* the folded ends, tucked behind the band */
+  .ribbon::before,
+  .ribbon::after {
+    content: '';
+    position: absolute;
+    z-index: 0;
+    top: 0.42em;
+    bottom: -0.32em;
+    width: 1.5em;
+    background: linear-gradient(#b52432, #8e1b27);
+    transition: opacity 260ms var(--ease-out) 160ms;
+  }
+  .ribbon::before {
+    left: -0.95em;
+    clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%, 34% 50%);
+  }
+  .ribbon::after {
+    right: -0.95em;
+    clip-path: polygon(0 0, 100% 0, 66% 50%, 100% 100%, 0 100%);
+  }
+  @media (min-width: 1180px) {
+    .sec-head .ribbon {
+      white-space: nowrap;
+    }
+  }
+  .ribbon:hover span {
+    transform: rotate(-1.5deg) scale(1.04);
+  }
+  [data-armed]:not(.seen) .ribbon span {
+    opacity: 0;
+    transform: scale(0.5) rotate(-8deg);
+  }
+  [data-armed]:not(.seen) .ribbon::before,
+  [data-armed]:not(.seen) .ribbon::after {
+    opacity: 0;
+  }
   .sec-head p {
     max-width: 64ch;
     font-size: 1.125rem;
@@ -568,10 +676,19 @@ const principles = [
     padding-top: 16px;
     border-top: 2px solid var(--ink);
   }
+  /* step numbers are the game's gold coins */
   .step {
-    color: var(--ink-2);
+    display: inline-grid;
+    place-items: center;
+    width: 1.9rem;
+    height: 1.9rem;
+    border-radius: 50%;
+    background: radial-gradient(circle at 35% 30%, #ffe27a, #f6b62a 60%, #e0931a);
+    box-shadow: inset 0 0 0 2px #c9790f, inset 0 3px 0 rgb(255 255 255 / 0.45), 0 2px 0 #9a5a08;
+    color: #4a2a00;
     font-size: 0.875rem;
-    font-weight: 500;
+    font-weight: 600;
+    line-height: 1;
   }
   .structure h3,
   .principles h3,
