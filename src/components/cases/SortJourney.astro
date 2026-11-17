@@ -66,6 +66,36 @@ const sections = [
   },
 ];
 
+// How the cards were made. In the owner's words: a custom style in Layer AI; Claude, connected
+// to Layer AI, writes the themes and a prompt for every card; Layer AI renders them in a batch;
+// the renders go into a folder and are uploaded to the game.
+const pipeline = [
+  { who: 'Me', name: 'A style for the game', text: 'A custom style in Layer AI, built from Sort Journey’s own art, so every render belongs to the game.' },
+  { who: 'Claude', name: 'A theme, nine prompts', text: 'Connected to Layer AI, Claude proposes the set’s theme and writes a prompt for each of its nine cards.' },
+  { who: 'Layer AI', name: 'Batch render', text: 'Every prompt rendered in one batch, in the game’s style.' },
+  { who: 'Folder', name: 'Saved together', text: 'The renders land in one folder per set, named and ready.' },
+  { who: 'The game', name: 'Uploaded', text: 'The folder is uploaded to the project, and the set fills its place in the album.' },
+];
+// One real set from the game, shown going through the pipeline: its card names are from the Cards screen.
+const demoSet = 'Tropical Escape';
+const demoCards = ['Travel Suitcase', 'Boarding Pass', 'Beach Postcard', 'Sun Cream', 'Seashell', 'Camera Snapshot', 'Beach Bag', 'Open Book', 'Golden Sunset'];
+// A colour for each rendered card, in the set's beach palette (a diagram, not the art)
+const demoFills = [
+  'linear-gradient(160deg, #ffb46b, #e7743a)',
+  'linear-gradient(160deg, #9fd3ff, #4c96ff)',
+  'linear-gradient(160deg, #ffe39a, #f6b23c)',
+  'linear-gradient(160deg, #ffd0a8, #f39a5b)',
+  'linear-gradient(160deg, #fff1d6, #e9c98f)',
+  'linear-gradient(160deg, #8ee6e8, #2fb3c0)',
+  'linear-gradient(160deg, #ffc2d8, #e96aa0)',
+  'linear-gradient(160deg, #d6e8ff, #8db6f2)',
+  'linear-gradient(160deg, #ffcf7a, #f0653a)',
+];
+const palette = ['#f5913a', '#4c96ff', '#e96aa0', '#7cc36b', '#a98bf0'];
+const SETS = 20, CARDS = 9;
+// Set colours, taken from the album covers
+const setColours = ['#f5913a', '#a98bf0', '#f6c142', '#e96aa0', '#7cc36b', '#ffffff', '#e8504a', '#3fc1c9'];
+
 const principles = [
   { h: 'Souvenirs, not menus', t: 'Albums are stitched photo books, cards are holiday snapshots, packs are foil packets. The feature looks like things you would bring home from a trip.' },
   { h: 'One rarity language', t: 'Colour and star count rise together, and mean the same on packs, cards and chests.' },
@@ -101,6 +131,97 @@ const principles = [
         </li>
       ))}
     </ol>
+  </section>
+
+  <section class="sec">
+    <div class="sec-head">
+      <h2>How the cards were made</h2>
+      <div>
+        <p>
+          A season runs to around 20 sets of nine cards: about 180 card illustrations, every season.
+          Making that much content was the real challenge.
+        </p>
+        <p>
+          In early 2026, when few studios had tried AI for production art, I connected Claude to Layer AI and
+          built a pipeline around it.
+        </p>
+      </div>
+    </div>
+
+    <figure class="fig" data-fig data-process>
+      <ol class="proc" role="list">
+        {pipeline.map((st, i) => (
+          <li class="stage" data-stage={i + 1}>
+            <div class="vis" aria-hidden="true">
+              {i === 0 && (
+                <div class="paper style-card">
+                  <p class="paper-title">Sort Journey style</p>
+                  <span class="dots">{palette.map((c, k) => <i style={`--c:${c}; --k:${k}`} />)}</span>
+                  <span class="samples">{demoFills.slice(0, 3).map((g, k) => <i style={`--g:${g}; --k:${k}`} />)}</span>
+                  <p class="paper-meta">Layer AI · custom style</p>
+                </div>
+              )}
+              {i === 1 && (
+                <div class="paper prompts-card">
+                  <p class="theme">{demoSet}</p>
+                  <ol class="prompts">{demoCards.map((c, k) => <li style={`--k:${k}`}>{c}</li>)}</ol>
+                </div>
+              )}
+              {i === 2 && (
+                <div class="render">
+                  <span class="renders">{demoFills.map((g, k) => <i style={`--g:${g}; --k:${k}`} />)}</span>
+                  <p class="tag-n"><span data-n="render">0</span>/9 rendered</p>
+                </div>
+              )}
+              {i === 3 && (
+                <div class="folder-wrap">
+                  <span class="folder">
+                    <svg class="f-back" viewBox="0 0 96 72"><path d="M6 14a6 6 0 0 1 6-6h22l8 8h42a6 6 0 0 1 6 6v38a6 6 0 0 1-6 6H12a6 6 0 0 1-6-6z" fill="#fff" /></svg>
+                    <span class="drops">{demoFills.slice(0, 3).map((g, k) => <i style={`--g:${g}; --k:${k}`} />)}</span>
+                    <svg class="f-front" viewBox="0 0 96 72"><path d="M6 30h84v30a6 6 0 0 1-6 6H12a6 6 0 0 1-6-6z" fill="#eaf3ff" /></svg>
+                  </span>
+                  <p class="tag-n">tropical-escape · <span data-n="files">0</span> files</p>
+                </div>
+              )}
+              {i === 4 && (
+                <div class="paper album-card">
+                  <span class="book"><i /></span>
+                  <p class="paper-title">{demoSet}</p>
+                  <span class="abar"><i /></span>
+                  <p class="paper-meta"><span data-n="album">0</span>/9 in the album</p>
+                  <svg class="tick" viewBox="0 0 24 24"><circle cx="12" cy="12" r="11" fill="#17824a" /><path d="M7 12.5l3.2 3.2L17 9" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" /></svg>
+                </div>
+              )}
+            </div>
+            <span class="who" data-who={st.who}>{st.who}</span>
+            <h3><span class="n">{i + 1}</span>{st.name}</h3>
+            <p>{st.text}</p>
+          </li>
+        ))}
+      </ol>
+      <figcaption>
+        One set, {demoSet}, going through the pipeline. Its nine cards are the real ones from the game; the
+        coloured tiles stand in for the renders. It plays while it is on screen.
+      </figcaption>
+    </figure>
+
+    <figure class="fig" data-fig data-season>
+      <div class="season-tile">
+        <div class="season" role="img" aria-label={`One season: ${SETS} sets of ${CARDS} cards, ${SETS * CARDS} cards in all`}>
+          <p class="axis-y" aria-hidden="true">{CARDS} cards a set</p>
+          <div class="grid" aria-hidden="true" style={`--sets:${SETS}`}>
+            {Array.from({ length: SETS }).map((_, c) => (
+              <span class="set" style={`--c:${c}; --col:${setColours[c % setColours.length]}`}>
+                {Array.from({ length: CARDS }).map((_, r) => <i style={`--r:${r}`} />)}
+              </span>
+            ))}
+          </div>
+          <p class="axis-x" aria-hidden="true">{SETS} sets a season</p>
+          <p class="total"><b data-n="season" data-to={SETS * CARDS}>{SETS * CARDS}</b> cards</p>
+        </div>
+      </div>
+      <figcaption>One season, one square per card. Each column is a set: one theme, nine prompts, rendered together.</figcaption>
+    </figure>
   </section>
 
   {sections.map((s) => (
@@ -142,6 +263,75 @@ const principles = [
   </section>
 </article>
 
+<script>
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const count = (el: Element | null, to: number, ms: number) => {
+    if (!el) return;
+    if (reduce || ms <= 0) { el.textContent = String(to); return; }
+    const t0 = performance.now();
+    const step = (now: number) => {
+      const t = Math.min((now - t0) / ms, 1);
+      el.textContent = String(Math.round(to * t));
+      if (t < 1) requestAnimationFrame(step);
+    };
+    requestAnimationFrame(step);
+  };
+
+  // The process: one set travels through the five stages, then the loop starts again.
+  const proc = document.querySelector<HTMLElement>('[data-process]');
+  let running = false;
+  const STAGES = 5;
+  const n = (k: string) => proc?.querySelector(`[data-n="${k}"]`) ?? null;
+  const setStage = (k: number) => {
+    if (!proc) return;
+    for (let i = 1; i <= STAGES; i++) proc.classList.toggle(`s${i}`, i <= k);
+    proc.querySelectorAll('.stage').forEach((el, i) => el.classList.toggle('on', i === k - 1));
+  };
+  const wait = (ms: number) => new Promise((r) => setTimeout(r, ms));
+  async function play() {
+    if (!proc || running) return;
+    running = true;
+    while (proc.hasAttribute('data-live') && !document.hidden) {
+      setStage(1);
+      await wait(1300);
+      setStage(2);
+      await wait(1900);
+      setStage(3);
+      count(n('render'), 9, 9 * 150 + 300);
+      await wait(2000);
+      setStage(4);
+      count(n('files'), 9, 700);
+      await wait(1500);
+      setStage(5);
+      count(n('album'), 9, 900);
+      await wait(2600);
+      setStage(0);
+      ['render', 'files', 'album'].forEach((k) => { const el = n(k); if (el) el.textContent = '0'; });
+      await wait(700);
+    }
+    running = false;
+  }
+
+  const io = new IntersectionObserver((es) => es.forEach((e) => {
+    e.target.toggleAttribute('data-live', e.isIntersecting);
+    if (!e.isIntersecting) return;
+    if (e.target === proc) play();
+    if (!e.target.classList.contains('seen')) {
+      e.target.classList.add('seen'); // the season grid fills once, the first time
+      count(e.target.querySelector('[data-n="season"]'), 180, 1900);
+    }
+  }), { threshold: 0.3 });
+
+  if (reduce) {
+    // Everything shown in its finished state, nothing moves
+    setStage(STAGES);
+    ['render', 'files', 'album'].forEach((k) => { const el = n(k); if (el) el.textContent = '9'; });
+    document.querySelectorAll('[data-fig]').forEach((f) => f.classList.add('seen'));
+  } else {
+    document.querySelectorAll('[data-fig]').forEach((f) => io.observe(f));
+  }
+</script>
+
 <style>
   .case {
     display: grid;
@@ -165,7 +355,10 @@ const principles = [
   .sec-head p {
     max-width: 64ch;
     font-size: 1.125rem;
+  }  .sec-head p + p {
+    margin-top: 0.8em;
   }
+
   .out {
     margin-top: 20px;
   }
@@ -257,7 +450,469 @@ const principles = [
     font-size: 1.0625rem;
   }
 
+  .fig {
+    margin: 0;
+  }
+  figcaption {
+    max-width: 72ch;
+    margin-top: 14px;
+    color: var(--ink-2);
+    font-size: 0.9375rem;
+  }
+
+  /* ---------- The process: five stages, one set passing through ---------- */
+  .proc {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 20px 14px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .stage {
+    position: relative;
+    display: grid;
+    grid-template-rows: auto auto auto 1fr;
+    align-content: start;
+    gap: 10px;
+  }
+  /* the arrow to the next stage, lit once that stage has started */
+  .stage:not(:last-child)::after {
+    content: '';
+    position: absolute;
+    top: 118px;
+    right: -11px;
+    z-index: 1;
+    width: 8px;
+    height: 8px;
+    border-top: 2px solid var(--line);
+    border-right: 2px solid var(--line);
+    transform: rotate(45deg);
+    transition: border-color var(--t-med) var(--ease-out);
+  }
+  .s2 .stage:nth-child(1)::after,
+  .s3 .stage:nth-child(2)::after,
+  .s4 .stage:nth-child(3)::after,
+  .s5 .stage:nth-child(4)::after {
+    border-color: var(--ink);
+  }
+  .vis {
+    position: relative;
+    display: grid;
+    place-items: center;
+    height: 236px;
+    margin-bottom: 4px;
+    padding: 12px;
+    border-radius: var(--radius-md);
+    background: #4c96ff;
+    overflow: hidden;
+    transition: box-shadow var(--t-med) var(--ease-out), transform var(--t-med) var(--ease-out);
+  }
+  .stage.on .vis {
+    box-shadow: 0 0 0 3px var(--ink);
+    transform: translateY(-3px);
+  }
+  .stage h3 {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    font-size: 1.0625rem;
+    letter-spacing: -0.02em;
+    line-height: 1.2;
+  }
+  .stage .n {
+    color: var(--ink-2);
+    font-size: 0.875rem;
+    font-weight: 500;
+  }
+  .stage > p {
+    color: var(--ink-2);
+    font-size: 0.9375rem;
+  }
+  .who {
+    justify-self: start;
+    padding: 3px 10px;
+    border-radius: var(--pill);
+    background: var(--surface-2);
+    font-size: 0.75rem;
+    font-weight: 600;
+  }
+  .who[data-who='Claude'] {
+    background: #f3e3d6;
+    color: #7a3a14;
+  }
+  .who[data-who='Layer AI'] {
+    background: #e3e6fb;
+    color: #2632a8;
+  }
+  .who[data-who='Me'] {
+    background: var(--btn-bg);
+    color: var(--btn-ink);
+  }
+
+  /* shared pieces inside the stages */
+  .paper {
+    position: relative;
+    width: 100%;
+    padding: 12px;
+    border-radius: 14px;
+    background: #fff;
+    color: #0b1a30;
+  }
+  .paper-title {
+    font-size: 0.8125rem;
+    font-weight: 600;
+    line-height: 1.2;
+  }
+  .paper-meta {
+    color: #45546c;
+    font-size: 0.75rem;
+  }
+  .tag-n {
+    padding: 4px 10px;
+    border-radius: var(--pill);
+    background: #fff;
+    color: #0b1a30;
+    font-size: 0.75rem;
+    font-weight: 600;
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* 1. the style */
+  .style-card {
+    display: grid;
+    gap: 12px;
+  }
+  .dots,
+  .samples {
+    display: flex;
+    gap: 6px;
+  }
+  .dots i {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: var(--c);
+  }
+  .samples i {
+    flex: 1;
+    aspect-ratio: 1;
+    border-radius: 8px;
+    background: var(--g);
+  }
+  .dots i,
+  .samples i {
+    opacity: 0.25;
+    transform: scale(0.7);
+    transition: opacity 400ms var(--ease-out), transform 400ms var(--ease-out);
+    transition-delay: calc(var(--k) * 90ms);
+  }
+  .s1 .dots i,
+  .s1 .samples i {
+    opacity: 1;
+    transform: none;
+  }
+
+  /* 2. the theme and its nine prompts */
+  .prompts-card {
+    display: grid;
+    gap: 8px;
+    align-self: stretch;
+  }
+  .theme {
+    justify-self: start;
+    padding: 3px 9px;
+    border-radius: var(--pill);
+    background: #f3e3d6;
+    color: #7a3a14;
+    font-size: 0.75rem;
+    font-weight: 600;
+    opacity: 0;
+    transform: translateY(4px);
+    transition: opacity 300ms var(--ease-out), transform 300ms var(--ease-out);
+  }
+  .prompts {
+    display: grid;
+    gap: 3px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .prompts li {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    color: #0b1a30;
+    font-size: 0.75rem;
+    line-height: 1.25;
+    white-space: nowrap;
+    opacity: 0;
+    transform: translateX(-6px);
+    transition: opacity 260ms var(--ease-out), transform 260ms var(--ease-out);
+    transition-delay: calc(250ms + var(--k) * 140ms);
+  }
+  .prompts li::before {
+    content: '';
+    flex: none;
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: #e7743a;
+  }
+  .s2 .theme,
+  .s2 .prompts li {
+    opacity: 1;
+    transform: none;
+  }
+
+  /* 3. nine renders */
+  .render {
+    display: grid;
+    justify-items: center;
+    gap: 12px;
+  }
+  .renders {
+    display: grid;
+    grid-template-columns: repeat(3, 44px);
+    gap: 7px;
+  }
+  .renders i {
+    position: relative;
+    height: 52px;
+    padding: 3px 3px 9px;
+    border-radius: 4px;
+    background: rgb(255 255 255 / 0.25);
+    box-shadow: 0 0 0 1.5px rgb(255 255 255 / 0.7) inset;
+  }
+  .renders i::after {
+    content: '';
+    position: absolute;
+    inset: 3px 3px 9px;
+    border-radius: 2px;
+    background: var(--g);
+    opacity: 0;
+    transform: scale(0.6);
+    transition: opacity 320ms var(--ease-out), transform 420ms var(--ease-out);
+    transition-delay: calc(var(--k) * 150ms);
+  }
+  .s3 .renders i {
+    background: #fff;
+    transition: background-color 200ms var(--ease-out);
+    transition-delay: calc(var(--k) * 150ms);
+  }
+  .s3 .renders i::after {
+    opacity: 1;
+    transform: none;
+  }
+
+  /* 4. into one folder */
+  .folder-wrap {
+    position: relative;
+    display: grid;
+    justify-items: center;
+    gap: 12px;
+  }
+  .folder {
+    position: relative;
+    width: 120px;
+    height: 90px;
+  }
+  .f-back,
+  .f-front {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+  }
+  .f-front {
+    z-index: 2;
+  }
+  .drops {
+    position: absolute;
+    z-index: 1;
+    top: 0;
+    left: 50%;
+    width: 76px;
+    height: 100%;
+    margin-left: -38px;
+  }
+  .drops i {
+    position: absolute;
+    top: 0;
+    width: 32px;
+    height: 40px;
+    border: 3px solid #fff;
+    border-bottom-width: 8px;
+    border-radius: 4px;
+    background: var(--g);
+    opacity: 0;
+    transform: translateY(-46px) rotate(-8deg);
+    transition: opacity 260ms var(--ease-out), transform 560ms cubic-bezier(0.5, 0, 0.2, 1.25);
+    transition-delay: calc(var(--k) * 170ms);
+  }
+  .drops i:nth-child(1) { left: 0; --rot: -9deg; }
+  .drops i:nth-child(2) { left: 22px; --rot: 2deg; }
+  .drops i:nth-child(3) { left: 44px; --rot: 10deg; }
+  .s4 .drops i {
+    opacity: 1;
+    transform: translateY(6px) rotate(var(--rot));
+  }
+
+  /* 5. the set in the album */
+  .album-card {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    grid-template-areas:
+      'book title'
+      'book bar'
+      'book meta';
+    align-items: center;
+    gap: 6px 12px;
+  }
+  .book {
+    grid-area: book;
+    width: 52px;
+    height: 66px;
+    padding: 5px;
+    border-radius: 6px;
+    background: #f5913a;
+    box-shadow: 3px 3px 0 #c8622a;
+  }
+  .book i {
+    display: block;
+    height: 100%;
+    border-radius: 3px;
+    background: linear-gradient(160deg, #9fd3ff, #4c96ff 55%, #ffe39a 56%, #f6b23c);
+  }
+  .album-card .paper-title { grid-area: title; }
+  .album-card .paper-meta { grid-area: meta; font-variant-numeric: tabular-nums; }
+  .abar {
+    grid-area: bar;
+    height: 6px;
+    border-radius: 3px;
+    background: #dcebff;
+    overflow: hidden;
+  }
+  .abar i {
+    display: block;
+    width: 0;
+    height: 100%;
+    border-radius: 3px;
+    background: linear-gradient(90deg, #7cc0ff, #3a8dff);
+    transition: width 900ms var(--ease-out);
+  }
+  .s5 .abar i {
+    width: 100%;
+  }
+  .tick {
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    width: 26px;
+    height: 26px;
+    opacity: 0;
+    transform: scale(0.4);
+    transition: opacity 240ms var(--ease-out) 0s, transform 420ms cubic-bezier(0.3, 1.6, 0.5, 1) 0s;
+  }
+  .s5 .tick {
+    opacity: 1;
+    transform: none;
+    transition-delay: 950ms;
+  }
+
+  /* ---------- One season, one square per card ---------- */
+  .season-tile {
+    padding: 8px;
+    border-radius: var(--radius-lg);
+    background: var(--surface);
+    box-shadow: var(--shadow-tile);
+  }
+  .season {
+    display: grid;
+    grid-template-columns: auto minmax(0, 620px) auto;
+    justify-content: center;
+    grid-template-areas:
+      'y grid total'
+      '. x .';
+    align-items: center;
+    gap: 12px 20px;
+    padding: clamp(24px, 3.4vw, 48px);
+    border-radius: var(--radius-md);
+    background: #4c96ff;
+    color: #fff;
+  }
+  .grid {
+    grid-area: grid;
+    display: grid;
+    grid-template-columns: repeat(var(--sets), minmax(0, 1fr));
+    gap: clamp(4px, 0.6vw, 8px);
+  }
+  .set {
+    display: grid;
+    gap: clamp(3px, 0.4vw, 5px);
+  }
+  .set i {
+    aspect-ratio: 3 / 4;
+    border-radius: 3px;
+    background: var(--col);
+    box-shadow: 0 0 0 1.5px rgb(255 255 255 / 0.85) inset;
+    opacity: 0.25;
+    transform: scale(0.8);
+    transition: opacity 360ms var(--ease-out), transform 360ms var(--ease-out);
+    transition-delay: calc(var(--c) * 70ms + var(--r) * 18ms);
+  }
+  .seen .set i {
+    opacity: 1;
+    transform: none;
+  }
+  .axis-y {
+    grid-area: y;
+    writing-mode: vertical-rl;
+    transform: rotate(180deg);
+    font-size: 0.875rem;
+    font-weight: 600;
+  }
+  .axis-x {
+    grid-area: x;
+    text-align: center;
+    font-size: 0.875rem;
+    font-weight: 600;
+  }
+  .total {
+    grid-area: total;
+    display: grid;
+    font-size: 0.9375rem;
+    font-weight: 600;
+    line-height: 1.1;
+  }
+  .total b {
+    font-family: var(--font-display);
+    font-size: clamp(2.25rem, 4vw, 3.5rem);
+    letter-spacing: -0.04em;
+  }
+
   @media (max-width: 1100px) {
+    .proc {
+      grid-template-columns: 1fr;
+      gap: 18px;
+    }
+    .stage {
+      grid-template-columns: minmax(220px, 280px) minmax(0, 1fr);
+      grid-template-rows: auto auto 1fr;
+      column-gap: 28px;
+    }
+    .vis {
+      grid-row: 1 / span 3;
+      margin: 0;
+    }
+    .stage:not(:last-child)::after {
+      top: auto;
+      bottom: -14px;
+      left: 136px;
+      right: auto;
+      transform: rotate(135deg);
+    }
     .art-row {
       grid-template-columns: minmax(0, 1fr);
     }
@@ -282,6 +937,28 @@ const principles = [
   @media (max-width: 560px) {
     .structure {
       grid-template-columns: 1fr;
+    }
+    .stage {
+      grid-template-columns: 1fr;
+    }
+    .vis {
+      grid-row: auto;
+    }
+    .stage:not(:last-child)::after {
+      display: none;
+    }
+    .season {
+      grid-template-columns: auto minmax(0, 1fr);
+      grid-template-areas:
+        'y grid'
+        '. x'
+        '. total';
+      padding: 18px 14px;
+    }
+    .total {
+      display: flex;
+      align-items: baseline;
+      gap: 8px;
     }
     .art {
       padding: 5px;
