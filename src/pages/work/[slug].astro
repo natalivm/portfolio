@@ -18,8 +18,6 @@ const prev = caseStudies[(i - 1 + caseStudies.length) % caseStudies.length];
 const next = caseStudies[(i + 1) % caseStudies.length];
 const rel = related(p, 3);
 const href = (x: Project) => (x.caseStudy ? `${base}/work/${x.slug}/` : `${base}/work/?p=${x.slug}`);
-// Header images that are simply there when the page opens, instead of growing out of the tile
-const stillHero = new Set(['sort-journey']);
 ---
 
 <Layout title={p.title} description={p.summary} current="case" theme={p.theme}>
@@ -62,7 +60,7 @@ const stillHero = new Set(['sort-journey']);
 
   {p.prototype ? (
     <figure class="wrap hero">
-      <div class="proto-frame" style={`view-transition-name: cover-${p.slug}; view-transition-class: cover`}>
+      <div class="proto-frame" style="view-transition-name: hero-still">
         <iframe
           class="proto-desktop"
           src={`${base}${p.prototype}?demo=1`}
@@ -82,7 +80,7 @@ const stillHero = new Set(['sort-journey']);
     </figure>
   ) : (
     <figure class="wrap hero">
-      <div class="hero-frame" style={stillHero.has(p.slug) ? 'view-transition-name: hero-still' : `view-transition-name: cover-${p.slug}; view-transition-class: cover`}>
+      <div class="hero-frame" style="view-transition-name: hero-still">
         <Cover project={p} ratio="16/9" eager />
       </div>
     </figure>

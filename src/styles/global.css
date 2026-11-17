@@ -191,7 +191,7 @@ button {
   color: var(--btn-ink);
 }
 
-/* Cross-document view transitions: tile cover ↔ case-study hero */
+/* Cross-document view transitions: pages cross-fade */
 @view-transition {
   navigation: auto;
 }
@@ -199,16 +199,8 @@ button {
   animation-duration: 420ms;
   animation-timing-function: var(--ease-out);
 }
-/* Covers change aspect between tile (4:3) and hero (16:9): crop, don't stretch */
-::view-transition-old(*.cover),
-::view-transition-new(*.cover) {
-  height: 100%;
-  object-fit: cover;
-  overflow: clip;
-}
-
-/* A header image that does not animate in: shown at once, over the page's cross-fade.
-   Leaving the page, it fades out with everything else. */
+/* A case study's header image does not animate in, or grow out of the tile that was clicked:
+   it is in place from the first frame, over the page's cross-fade. Leaving, it fades out. */
 ::view-transition-group(hero-still),
 ::view-transition-new(hero-still) {
   animation: none;

@@ -21,7 +21,7 @@ const href = p.caseStudy ? `${base}/work/${p.slug}/` : `${base}/work/?p=${p.slug
   data-quick={p.caseStudy ? undefined : ''}
   data-disciplines={p.disciplines.map(slugify).join(' ')}
 >
-  <div class="frame" style={`view-transition-name: cover-${p.slug}; view-transition-class: cover`}>
+  <div class="frame">
     <Cover project={p} eager={eager} ratio={size === 'large' ? '16/9' : '4/3'} />
   </div>
   <div class="text">

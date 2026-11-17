@@ -13,7 +13,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 ---
 
 <article class="ptile">
-  <div class="pframe" style={`view-transition-name: cover-${p.slug}; view-transition-class: cover`}>
+  <div class="pframe">
     <iframe
       src={`${base}${p.prototype}?embed=1&demo=1`}
       title={`${p.title}: animated walk-through of the prototype`}
