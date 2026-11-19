@@ -182,12 +182,76 @@ const space = p.theme === 'space';
 
 <script>
   // Beat Saber opens veiled: the space, the logo and a Reveal button. The page does not scroll until
-  // it is revealed. Pressing the button sends glowing blue rings out across the ground, wider than they are tall, and each part of
-  // the page appears as the first ring reaches it.
+  // it is revealed. Pressing the button plays a plasma reveal, drawn by a fragment shader over the
+  // whole window: a ring of energy charges round the button, bursts into rays, and a cloud of violet
+  // smoke shot through with lightning rolls out to the edges, then thins from the middle to leave
+  // the page standing there.
   const root = document.documentElement;
   const btn = document.querySelector<HTMLButtonElement>('[data-reveal]');
   const fx = document.querySelector<HTMLCanvasElement>('.reveal-fx');
   if (btn && fx && root.hasAttribute('data-veil')) {
+    const FRAG = `
+      precision highp float;
+      uniform vec2 uRes;
+      uniform vec2 uC;
+      uniform float uT;
+      uniform float uFar;
+      float hash(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
+      float noise(vec2 p) {
+        vec2 i = floor(p), f = fract(p);
+        f = f * f * (3.0 - 2.0 * f);
+        return mix(mix(hash(i), hash(i + vec2(1.0, 0.0)), f.x), mix(hash(i + vec2(0.0, 1.0)), hash(i + vec2(1.0, 1.0)), f.x), f.y);
+      }
+      float fbm(vec2 p) {
+        float v = 0.0, a = 0.5;
+        for (int i = 0; i < 5; i++) { v += a * noise(p); p = p * 2.03 + vec2(1.7, 9.2); a *= 0.5; }
+        return v;
+      }
+      void main() {
+        vec2 p = (gl_FragCoord.xy - uC) / uRes.y;
+        float d = length(p);
+        float ang = atan(p.y, p.x);
+        float t = uT;
+
+        // smoke: warped noise, flowing outward
+        vec2 q = p * 3.0;
+        vec2 w = vec2(fbm(q + vec2(0.0, t * 0.35)), fbm(q + vec2(5.2, -t * 0.3)));
+        float n = fbm(q * 1.2 + w * 1.7 - normalize(p + 0.0001) * t * 0.45);
+        float edge = (n - 0.5) * 0.4;
+        float front = uFar * 1.2 * (1.0 - exp(-max(t - 0.45, 0.0) * 2.4)); // the cloud's leading edge
+        float clear = uFar * 1.35 * smoothstep(1.0, 2.7, t);              // the clearing that follows
+        float inside = smoothstep(front + 0.02, front - 0.14, d + edge);
+        float outside = smoothstep(clear - 0.3, clear + 0.06, d + edge * 1.6);
+        float dens = inside * outside * (0.5 + 0.8 * n) * step(0.45, t) * (1.0 - smoothstep(2.4, 3.2, t));
+
+        vec3 col = mix(vec3(0.07, 0.02, 0.24), vec3(0.8, 0.18, 0.92), smoothstep(0.34, 0.8, n));
+        col *= 0.55 + 0.75 * smoothstep(0.25, 0.8, fbm(q * 2.2 + w * 3.0)); // folds and billows
+        col = mix(col, vec3(0.22, 0.52, 1.0), smoothstep(0.5, 0.9, w.x) * 0.65);
+        col = mix(col, vec3(1.0, 0.25, 0.4), smoothstep(0.62, 0.95, w.y) * 0.35); // a little of the logo's red
+        // lightning: thin bright veins through the smoke
+        float v = abs(fbm(q * 2.6 + w * 2.2 + t * 0.5) - 0.5);
+        float arcs = smoothstep(0.012, 0.0, v) * smoothstep(0.45, 0.7, fbm(q * 0.9 - t * 0.3)); // only here and there
+        col += vec3(0.7, 0.8, 1.0) * (arcs * 1.3 + smoothstep(0.06, 0.0, v) * 0.12);
+        // the hot rim of the front
+        float rim = exp(-abs(d + edge - front) * 16.0) * step(0.45, t) * (1.0 - smoothstep(1.5, 2.3, t));
+        float a = clamp(dens * 1.15, 0.0, 1.0);
+        col = col * a + vec3(0.95, 0.55, 1.0) * rim * 1.1;
+        a = clamp(a + rim * 0.7, 0.0, 1.0);
+
+        // the charge: a ring of energy round the button
+        float ch = smoothstep(0.0, 0.25, t) * (1.0 - smoothstep(0.45, 0.62, t));
+        float rr = 0.05 + 0.035 * smoothstep(0.0, 0.45, t) + (fbm(vec2(ang * 3.0, t * 5.0)) - 0.5) * 0.035;
+        float ring = (exp(-abs(d - rr) * 55.0) + 0.35 * exp(-abs(d - rr) * 12.0)) * ch;
+        // the burst: rays and a flash
+        float bt = clamp((t - 0.4) / 0.7, 0.0, 1.0);
+        float rays = pow(abs(cos(ang * 3.0 + 0.6)), 48.0) + 0.7 * pow(abs(cos(ang * 5.0 - 1.1)), 80.0) + 0.5 * pow(abs(cos(ang * 2.0 + 2.0)), 120.0);
+        float reach = bt * uFar * 1.3;
+        float spike = rays * smoothstep(reach, reach * 0.15, d) * (1.0 - bt) * step(0.4, t) * exp(-d * 1.2) * 3.0;
+        float flash = exp(-d * 5.0) * step(0.38, t) * (1.0 - smoothstep(0.4, 1.2, t)) * 2.2;
+        col += vec3(1.0, 0.5, 1.0) * ring * 1.8 + mix(vec3(0.5, 0.7, 1.0), vec3(1.0, 0.45, 0.9), 0.5 + 0.5 * sin(ang * 3.0)) * spike + vec3(1.0, 0.82, 1.0) * flash;
+        a = clamp(a + ring + spike * 0.6 + flash, 0.0, 1.0);
+        gl_FragColor = vec4(col, a);
+      }`;
     let done = false;
     const reveal = () => {
       if (done) return;
@@ -196,197 +260,59 @@ const space = p.theme === 'space';
       const cx = b.left + b.width / 2;
       const cy = b.top + b.height / 2;
       const W = innerWidth, H = innerHeight;
-      const SQ = 0.5; // ripples on the ground: half as tall as they are wide
-      const far = Math.max(...[[0, 0], [W, 0], [0, H], [W, H]].map(([x, y]) => Math.hypot(x - cx, (y - cy) / SQ)));
-      const RUN = 1700; // the first ring's time to the farthest corner
-      const ease = (p: number) => 1 - (1 - p) ** 3;
-      const reachAt = (d: number) => (1 - Math.cbrt(1 - Math.min(1, d / far))) * RUN;
+      const END = 3300; // ms
+      const COVERED = 950; // by now the smoke hides the window: the page comes in underneath it
 
-      // the parts of the page in view appear as the first ring passes over them
       const parts = [...document.querySelectorAll<HTMLElement>('body > :not(main, dialog, script, .skip), main > :not(.space-field, .stage, .reveal-fx, script)')];
       root.setAttribute('data-revealing', '');
       root.removeAttribute('data-veil');
       for (const el of parts) {
         const r = el.getBoundingClientRect();
         if (!r.width || r.bottom < 0 || r.top > H) continue;
-        const nx = Math.max(r.left, Math.min(cx, r.right));
-        const ny = Math.max(r.top, Math.min(cy, r.bottom));
-        el.animate(
-          [
-            { opacity: 0, transform: 'translateY(10px)', filter: 'blur(6px)' },
-            { opacity: 1, transform: 'none', filter: 'blur(0)' },
-          ],
-          { duration: 700, delay: reachAt(Math.hypot(nx - cx, (ny - cy) / SQ)) + 60, easing: 'cubic-bezier(0.16, 1, 0.3, 1)', fill: 'backwards' },
-        );
+        el.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 500, delay: COVERED, easing: 'ease-out', fill: 'backwards' });
       }
-      btn.animate([{ opacity: 1, transform: 'scale(1)' }, { opacity: 0, transform: 'scale(1.2)' }], { duration: 420, easing: 'ease-out', fill: 'forwards' })
+      btn.animate([{ opacity: 1, transform: 'scale(1)' }, { opacity: 0, transform: 'scale(0.85)' }], { duration: 380, easing: 'ease-in', fill: 'forwards' })
         .finished.then(() => { btn.hidden = true; });
 
-      // The spell. Everything lies on the ground, so it is drawn squashed (SQ): a rune circle opens
-      // round the button and turns as it fades, rays burst from the middle, then three wave fronts
-      // roll out with a living, uneven edge, trailing wisps of light and throwing up sparks.
-      const g = fx.getContext('2d')!;
-      const dpr = Math.min(devicePixelRatio || 1, 2);
+      const finish = () => {
+        fx.width = fx.height = 0;
+        root.removeAttribute('data-revealing');
+      };
+      const gl = fx.getContext('webgl', { premultipliedAlpha: true, alpha: true });
+      if (!gl) { setTimeout(finish, COVERED + 500); return; }
+      const dpr = Math.min(devicePixelRatio || 1, 1.5) * (W * H > 1.6e6 ? 0.75 : 1); // smoke is soft: fewer pixels are fine
       fx.width = Math.round(W * dpr);
       fx.height = Math.round(H * dpr);
-      const TAU = Math.PI * 2;
-      const rnd = (lo: number, hi: number) => lo + Math.random() * (hi - lo);
-      const pt = (r: number, th: number): [number, number] => [cx + Math.cos(th) * r, cy + Math.sin(th) * r * SQ];
-      const path = (pts: [number, number][], close = false) => {
-        g.beginPath();
-        pts.forEach(([x, y], k) => (k ? g.lineTo(x, y) : g.moveTo(x, y)));
-        if (close) g.closePath();
+      const sh = (type: number, src: string) => {
+        const o = gl.createShader(type)!;
+        gl.shaderSource(o, src);
+        gl.compileShader(o);
+        return o;
       };
-      const circle = (r: number, wob = 0, seed = 0, t = 0) => {
-        const pts: [number, number][] = [];
-        for (let k = 0; k <= 140; k++) {
-          const th = (k / 140) * TAU;
-          pts.push(pt(r * (1 + wob * (Math.sin(th * 7 + t / 190 + seed) * 0.6 + Math.sin(th * 13 - t / 130 + seed * 2) * 0.4)), th));
-        }
-        return pts;
-      };
-      const glow = (rgb: string, a: number, w: number) => {
-        g.strokeStyle = `rgb(${rgb} / ${a})`;
-        g.lineWidth = w;
-        g.stroke();
-      };
-      // a line of light: wide soft halo, body, bright core
-      const light = (a: number, rgb = '80 205 255', w = 1) => {
-        glow('40 130 255', 0.14 * a, 26 * w);
-        glow(rgb, 0.4 * a, 8 * w);
-        glow('225 248 255', 0.9 * a, 1.8 * w);
-      };
-      type Spark = { th: number; r: number; vr: number; up: number; vu: number; age: number; life: number; size: number; violet: boolean };
-      const sparks: Spark[] = [];
-      const wisps = Array.from({ length: 7 }, (_, k) => ({ a0: (k / 7) * TAU + rnd(-0.3, 0.3), spin: rnd(0.5, 1.1) * (k % 2 ? 1 : -1), lag: rnd(0.78, 0.94), len: rnd(0.5, 1) }));
-      const RINGS = 3, GAP = 280, RUNE = 1300, RAYS = 800;
-      let t0 = 0, prev = 0;
+      const prog = gl.createProgram()!;
+      gl.attachShader(prog, sh(gl.VERTEX_SHADER, 'attribute vec2 a; void main() { gl_Position = vec4(a, 0.0, 1.0); }'));
+      gl.attachShader(prog, sh(gl.FRAGMENT_SHADER, FRAG));
+      gl.linkProgram(prog);
+      if (!gl.getProgramParameter(prog, gl.LINK_STATUS)) { setTimeout(finish, COVERED + 500); return; }
+      gl.useProgram(prog);
+      gl.bindBuffer(gl.ARRAY_BUFFER, gl.createBuffer());
+      gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 1, -1, -1, 1, 1, 1]), gl.STATIC_DRAW);
+      const loc = gl.getAttribLocation(prog, 'a');
+      gl.enableVertexAttribArray(loc);
+      gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
+      gl.viewport(0, 0, fx.width, fx.height);
+      gl.uniform2f(gl.getUniformLocation(prog, 'uRes'), fx.width, fx.height);
+      gl.uniform2f(gl.getUniformLocation(prog, 'uC'), cx * dpr, (H - cy) * dpr);
+      gl.uniform1f(gl.getUniformLocation(prog, 'uFar'), Math.max(...[[0, 0], [W, 0], [0, H], [W, H]].map(([x, y]) => Math.hypot(x - cx, y - cy))) / H);
+      const uT = gl.getUniformLocation(prog, 'uT');
+      let t0 = 0;
       const frame = (now: number) => {
-        if (!t0) t0 = prev = now;
+        if (!t0) t0 = now;
         const t = now - t0;
-        const dt = Math.min((now - prev) / 1000, 0.05);
-        prev = now;
-        g.setTransform(dpr, 0, 0, dpr, 0, 0);
-        g.clearRect(0, 0, W, H);
-        g.globalCompositeOperation = 'lighter';
-        g.lineCap = 'round';
-        g.lineJoin = 'round';
-
-        // flash and rays from the middle
-        if (t < RAYS) {
-          const q = t / RAYS, k = (1 - q) ** 2;
-          const fl = g.createRadialGradient(cx, cy, 0, cx, cy, 220);
-          fl.addColorStop(0, `rgb(190 240 255 / ${0.6 * k})`);
-          fl.addColorStop(0.4, `rgb(110 140 255 / ${0.22 * k})`);
-          fl.addColorStop(1, 'rgb(40 120 255 / 0)');
-          g.fillStyle = fl;
-          g.fillRect(cx - 220, cy - 220, 440, 440);
-          const L = 90 + 420 * ease(q);
-          for (let n = 0; n < 16; n++) {
-            const th = (n / 16) * TAU + t / 2600 + (n % 2) * 0.08;
-            const len = L * (n % 2 ? 0.62 : 1);
-            const w = 0.035;
-            path([pt(26, th), pt(len, th - w), pt(len * 1.08, th), pt(len, th + w)], true);
-            g.fillStyle = `rgb(${n % 4 === 0 ? '190 160 255' : '130 220 255'} / ${0.2 * k})`;
-            g.fill();
-          }
-        }
-
-        // the rune circle: rings, tick marks, small diamonds, and two triangles turning against it
-        if (t < RUNE) {
-          const q = t / RUNE;
-          const R = 70 + 300 * ease(q);
-          const a = Math.min(1, q * 7) * (1 - q) ** 1.4;
-          const rot = t / 1100;
-          path(circle(R));
-          light(a);
-          path(circle(R * 0.84));
-          glow('150 225 255', 0.7 * a, 1.4);
-          for (let n = 0; n < 36; n++) {
-            const th = (n / 36) * TAU + rot;
-            if (n % 3 === 0) {
-              const m = R * 0.92, d = R * 0.045, dth = 0.03;
-              path([pt(m - d, th), pt(m, th - dth), pt(m + d, th), pt(m, th + dth)], true);
-              g.fillStyle = `rgb(215 200 255 / ${0.85 * a})`;
-              g.fill();
-            } else {
-              path([pt(R * 0.88, th), pt(R * 0.96, th)]);
-              glow('170 235 255', 0.75 * a, 1.3);
-            }
-          }
-          for (const flip of [0, Math.PI]) {
-            path([0, 1, 2].map((n) => pt(R * 0.84, flip - rot * 1.6 + (n / 3) * TAU)), true);
-            glow('170 150 255', 0.55 * a, 1.5);
-          }
-          g.setLineDash([3, 9]);
-          path(circle(R * 0.5));
-          glow('200 240 255', 0.8 * a, 1.6);
-          g.setLineDash([]);
-        }
-
-        // the wave fronts
-        let alive = t < RUNE;
-        for (let i = 0; i < RINGS; i++) {
-          const p = (t - i * GAP) / RUN;
-          if (p < 1) alive = true;
-          if (p <= 0 || p >= 1) continue;
-          const R = ease(p) * far;
-          const a = (1 - p) ** 1.3 * (i === 0 ? 1 : 0.6);
-          // a violet swell just behind the edge
-          path(circle(R * 0.965, 0.012, i, t));
-          glow('120 90 255', 0.1 * a, 54);
-          path(circle(R, 0.014, i * 3, t));
-          light(a, i === 1 ? '150 150 255' : '80 205 255');
-          // a fine second line riding ahead of it
-          path(circle(R * 1.025, 0.02, i * 5 + 1, t));
-          glow('190 240 255', 0.35 * a, 1);
-
-          if (i === 0) {
-            // wisps: arcs of light swept along behind the first front
-            for (const w of wisps) {
-              const pts: [number, number][] = [];
-              const head = w.a0 + w.spin * p * 2.2;
-              for (let k = 0; k <= 24; k++) pts.push(pt(R * (w.lag - 0.05 * (k / 24)), head - Math.sign(w.spin) * w.len * (k / 24)));
-              for (let k = 1; k < pts.length; k++) {
-                const f = 1 - k / pts.length;
-                path([pts[k - 1], pts[k]]);
-                glow('160 200 255', 0.5 * a * f, 1 + 5 * f);
-              }
-            }
-            // sparks thrown up along the edge
-            for (let n = 0; n < 7; n++) sparks.push({ th: rnd(0, TAU), r: R * rnd(0.97, 1.01), vr: rnd(-40, 60), up: 0, vu: rnd(18, 80), age: 0, life: rnd(600, 1500), size: rnd(1.5, 4.5), violet: Math.random() < 0.3 });
-          }
-        }
-
-        // sparks: four-pointed glints that rise off the ground and twinkle out
-        for (let n = sparks.length - 1; n >= 0; n--) {
-          const sp = sparks[n];
-          sp.age += dt * 1000;
-          if (sp.age >= sp.life) { sparks.splice(n, 1); continue; }
-          sp.r += sp.vr * dt;
-          sp.up += sp.vu * dt;
-          const k = sp.age / sp.life;
-          const [x, y0] = pt(sp.r, sp.th);
-          const y = y0 - sp.up;
-          const z = sp.size * (0.7 + 0.5 * Math.sin(sp.age / 70 + sp.th * 9)) * (1 - k * 0.5);
-          g.fillStyle = `rgb(${sp.violet ? '200 180 255' : '190 240 255'} / ${Math.min(1, k * 8) * (1 - k) ** 1.2})`;
-          g.beginPath();
-          g.moveTo(x, y - z * 2.6);
-          g.quadraticCurveTo(x + z * 0.25, y - z * 0.25, x + z * 2.6, y);
-          g.quadraticCurveTo(x + z * 0.25, y + z * 0.25, x, y + z * 2.6);
-          g.quadraticCurveTo(x - z * 0.25, y + z * 0.25, x - z * 2.6, y);
-          g.quadraticCurveTo(x - z * 0.25, y - z * 0.25, x, y - z * 2.6);
-          g.fill();
-        }
-        if (sparks.length) alive = true;
-
-        if (alive) {
-          requestAnimationFrame(frame);
-        } else {
-          g.clearRect(0, 0, W, H);
-          fx.width = fx.height = 0;
-          root.removeAttribute('data-revealing');
-        }
+        if (t >= END) { finish(); return; }
+        gl.uniform1f(uT, t / 1000);
+        gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+        requestAnimationFrame(frame);
       };
       requestAnimationFrame(frame);
     };
@@ -488,11 +414,11 @@ const space = p.theme === 'space';
   @keyframes reveal-pulse {
     50% { box-shadow: 0 0 30px rgb(60 190 255 / 0.8), inset 0 0 18px rgb(60 190 255 / 0.45); }
   }
-  /* the waves the button sends out, drawn behind the page as it appears */
+  /* the plasma the button sets off, drawn over the whole window while the page comes in under it */
   .reveal-fx {
     position: fixed;
     inset: 0;
-    z-index: -1;
+    z-index: 60;
     width: 100%;
     height: 100%;
     pointer-events: none;
