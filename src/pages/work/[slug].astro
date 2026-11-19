@@ -45,7 +45,9 @@ const space = p.theme === 'space';
       <SpaceField />
       <div class="wrap stage" style="view-transition-name: hero-still">
         <BeatSaberLogo class="stage-logo" />
+        <button class="reveal-btn" type="button" data-reveal>Reveal</button>
       </div>
+      <canvas class="reveal-fx" aria-hidden="true"></canvas>
     </>
   )}
 
@@ -178,6 +180,108 @@ const space = p.theme === 'space';
   });
 </script>
 
+<script>
+  // Beat Saber opens veiled: the space, the logo and a Reveal button. Pressing it (or scrolling, or a
+  // key) sends glowing blue rings out across the ground, wider than they are tall, and each part of
+  // the page appears as the first ring reaches it.
+  const root = document.documentElement;
+  const btn = document.querySelector<HTMLButtonElement>('[data-reveal]');
+  const fx = document.querySelector<HTMLCanvasElement>('.reveal-fx');
+  if (btn && fx && root.hasAttribute('data-veil')) {
+    let done = false;
+    const reveal = () => {
+      if (done) return;
+      done = true;
+      const b = btn.getBoundingClientRect();
+      const cx = b.left + b.width / 2;
+      const cy = b.top + b.height / 2;
+      const W = innerWidth, H = innerHeight;
+      const SQ = 0.5; // ripples on the ground: half as tall as they are wide
+      const far = Math.max(...[[0, 0], [W, 0], [0, H], [W, H]].map(([x, y]) => Math.hypot(x - cx, (y - cy) / SQ)));
+      const RUN = 1700; // the first ring's time to the farthest corner
+      const ease = (p: number) => 1 - (1 - p) ** 3;
+      const reachAt = (d: number) => (1 - Math.cbrt(1 - Math.min(1, d / far))) * RUN;
+
+      // the parts of the page in view appear as the first ring passes over them
+      const parts = [...document.querySelectorAll<HTMLElement>('body > :not(main, dialog, script, .skip), main > :not(.space-field, .stage, .reveal-fx, script)')];
+      root.setAttribute('data-revealing', '');
+      root.removeAttribute('data-veil');
+      for (const el of parts) {
+        const r = el.getBoundingClientRect();
+        if (!r.width || r.bottom < 0 || r.top > H) continue;
+        const nx = Math.max(r.left, Math.min(cx, r.right));
+        const ny = Math.max(r.top, Math.min(cy, r.bottom));
+        el.animate(
+          [
+            { opacity: 0, transform: 'translateY(10px)', filter: 'blur(6px)' },
+            { opacity: 1, transform: 'none', filter: 'blur(0)' },
+          ],
+          { duration: 700, delay: reachAt(Math.hypot(nx - cx, (ny - cy) / SQ)) + 60, easing: 'cubic-bezier(0.16, 1, 0.3, 1)', fill: 'backwards' },
+        );
+      }
+      btn.animate([{ opacity: 1, transform: 'scale(1)' }, { opacity: 0, transform: 'scale(1.2)' }], { duration: 420, easing: 'ease-out', fill: 'forwards' })
+        .finished.then(() => { btn.hidden = true; });
+
+      // the rings
+      const g = fx.getContext('2d')!;
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      fx.width = Math.round(W * dpr);
+      fx.height = Math.round(H * dpr);
+      const RINGS = 3, GAP = 260;
+      let t0 = 0;
+      const frame = (now: number) => {
+        if (!t0) t0 = now;
+        const t = now - t0;
+        g.setTransform(dpr, 0, 0, dpr, 0, 0);
+        g.clearRect(0, 0, W, H);
+        g.globalCompositeOperation = 'lighter';
+        // a flash where it starts
+        if (t < 600) {
+          const k = 1 - t / 600;
+          const fl = g.createRadialGradient(cx, cy, 0, cx, cy, 160);
+          fl.addColorStop(0, `rgb(150 230 255 / ${0.55 * k})`);
+          fl.addColorStop(1, 'rgb(40 160 255 / 0)');
+          g.fillStyle = fl;
+          g.fillRect(cx - 160, cy - 160, 320, 320);
+        }
+        let alive = t < 600;
+        for (let i = 0; i < RINGS; i++) {
+          const p = (t - i * GAP) / RUN;
+          if (p < 1) alive = true;
+          if (p <= 0 || p >= 1) continue;
+          const rx = ease(p) * far;
+          const a = (1 - p) ** 1.3 * (i === 0 ? 1 : 0.65);
+          g.beginPath();
+          g.ellipse(cx, cy, rx, rx * SQ, 0, 0, Math.PI * 2);
+          g.strokeStyle = `rgb(30 150 255 / ${0.16 * a})`;
+          g.lineWidth = 30;
+          g.stroke();
+          g.strokeStyle = `rgb(80 205 255 / ${0.4 * a})`;
+          g.lineWidth = 9;
+          g.stroke();
+          g.strokeStyle = `rgb(215 247 255 / ${0.9 * a})`;
+          g.lineWidth = 2;
+          g.stroke();
+        }
+        if (alive) {
+          requestAnimationFrame(frame);
+        } else {
+          g.clearRect(0, 0, W, H);
+          fx.width = fx.height = 0;
+          root.removeAttribute('data-revealing');
+        }
+      };
+      requestAnimationFrame(frame);
+    };
+    btn.addEventListener('click', reveal);
+    addEventListener('wheel', reveal, { passive: true });
+    addEventListener('touchmove', reveal, { passive: true });
+    addEventListener('keydown', (e) => {
+      if (e.target !== btn && [' ', 'Enter', 'ArrowDown', 'PageDown', 'End'].includes(e.key)) reveal();
+    });
+  }
+</script>
+
 <style>
   .crumbs {
     display: flex;
@@ -226,9 +330,60 @@ const space = p.theme === 'space';
 
   /* Beat Saber: the logo hangs over the page, and switches on as it opens, BEAT then SABER */
   .stage {
+    position: relative;
     display: grid;
     place-items: center;
     padding-block: clamp(32px, 6vw, 72px) 0;
+  }
+  /* Reveal: a glowing ring button under the logo, there only while the page is veiled */
+  .reveal-btn {
+    position: absolute;
+    top: calc(100% + clamp(28px, 5vw, 56px));
+    left: 50%;
+    translate: -50% 0;
+    min-height: 52px;
+    padding: 0 36px;
+    border: 1.5px solid rgb(120 220 255 / 0.85);
+    border-radius: var(--pill);
+    background: rgb(10 40 60 / 0.45);
+    color: #e9fbff;
+    font-family: var(--font-display);
+    font-size: 1rem;
+    font-style: italic;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    text-shadow: 0 0 8px rgb(120 220 255 / 0.9);
+    box-shadow: 0 0 18px rgb(60 190 255 / 0.5), inset 0 0 14px rgb(60 190 255 / 0.3);
+    cursor: pointer;
+    animation: reveal-in 700ms var(--ease-out) 1.5s both, reveal-pulse 2.6s ease-in-out 2.2s infinite;
+    transition: background-color var(--t-fast) var(--ease-out);
+  }
+  .reveal-btn:hover {
+    background: rgb(20 80 115 / 0.55);
+  }
+  .reveal-btn:focus-visible {
+    outline: 2px solid #e9fbff;
+    outline-offset: 5px;
+  }
+  .reveal-btn[hidden],
+  :global(html:not([data-veil]):not([data-revealing])) .reveal-btn {
+    display: none;
+  }
+  @keyframes reveal-in {
+    from { opacity: 0; transform: translateY(10px); }
+  }
+  @keyframes reveal-pulse {
+    50% { box-shadow: 0 0 30px rgb(60 190 255 / 0.8), inset 0 0 18px rgb(60 190 255 / 0.45); }
+  }
+  /* the waves the button sends out, drawn behind the page as it appears */
+  .reveal-fx {
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
   }
   .stage :global(.stage-logo) {
     display: block;

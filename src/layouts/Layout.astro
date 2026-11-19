@@ -20,7 +20,7 @@ const pageTitle = title ? `${title} · ${site.name}` : `${site.name}, ${site.rol
 ---
 
 <!doctype html>
-<html lang="en" data-m={site.emailCode} data-theme={theme}>
+<html lang="en" data-m={site.emailCode} data-theme={theme} data-veil={theme === 'space' ? '' : undefined}>
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -28,6 +28,16 @@ const pageTitle = title ? `${title} · ${site.name}` : `${site.name}, ${site.rol
     <meta name="description" content={description} />
     <meta name="theme-color" content={themeColor} />
     <link rel="icon" href={`${base}/favicon.svg`} type="image/svg+xml" />
+    {theme === 'space' && (
+      <>
+        {/* The page opens on the logo alone. Not with reduced motion; and without scripts, nothing is hidden. */}
+        <script is:inline>
+          if (matchMedia('(prefers-reduced-motion: reduce)').matches) document.documentElement.removeAttribute('data-veil');
+          else { history.scrollRestoration = 'manual'; scrollTo(0, 0); }
+        </script>
+        <noscript><style is:inline>html[data-veil] { overflow: auto; } html[data-veil] body > *, html[data-veil] main > * { visibility: visible !important; } .reveal-btn { display: none !important; }</style></noscript>
+      </>
+    )}
   </head>
   <body>
     <a class="skip" href="#main">Skip to content</a>
