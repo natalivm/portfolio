@@ -5,6 +5,8 @@ import Tile from '../../components/Tile.astro';
 import Icon from '../../components/Icon.astro';
 import NextGames from '../../components/cases/NextGames.astro';
 import SortJourney from '../../components/cases/SortJourney.astro';
+import BeatSaberLogo from '../../components/BeatSaberLogo.astro';
+import SpaceField from '../../components/SpaceField.astro';
 import { caseStudies, related, slugify, type Project } from '../../data/projects';
 
 export function getStaticPaths() {
@@ -18,6 +20,8 @@ const prev = caseStudies[(i - 1 + caseStudies.length) % caseStudies.length];
 const next = caseStudies[(i + 1) % caseStudies.length];
 const rel = related(p, 3);
 const href = (x: Project) => (x.caseStudy ? `${base}/work/${x.slug}/` : `${base}/work/?p=${x.slug}`);
+// Beat Saber opens in the game's own space: the neon logo at the top, no picture card
+const space = p.theme === 'space';
 ---
 
 <Layout title={p.title} description={p.summary} current="case" theme={p.theme}>
@@ -36,9 +40,18 @@ const href = (x: Project) => (x.caseStudy ? `${base}/work/${x.slug}/` : `${base}
     </div>
   </nav>
 
+  {space && (
+    <>
+      <SpaceField />
+      <div class="wrap stage" style="view-transition-name: hero-still">
+        <BeatSaberLogo class="stage-logo" />
+      </div>
+    </>
+  )}
+
   <header class="wrap intro">
     <h1 class="display">
-      {p.title}
+      {space ? <span class="visually-hidden">{p.title}</span> : p.title}
       <span class="quiet">{p.summary.replace(/^Sample project\.\s*/, '')}</span>
     </h1>
     <dl class="facts">
@@ -78,7 +91,7 @@ const href = (x: Project) => (x.caseStudy ? `${base}/work/${x.slug}/` : `${base}
         <a href={`${base}${p.prototype}`}>Open full screen</a>
       </figcaption>
     </figure>
-  ) : (
+  ) : space ? null : (
     <figure class="wrap hero">
       <div class="hero-frame" style="view-transition-name: hero-still">
         <Cover project={p} ratio="16/9" eager />
@@ -209,6 +222,33 @@ const href = (x: Project) => (x.caseStudy ? `${base}/work/${x.slug}/` : `${base}
   .round:hover {
     background: var(--btn-bg);
     color: var(--btn-ink);
+  }
+
+  /* Beat Saber: the logo hangs over the page, and switches on as it opens, BEAT then SABER */
+  .stage {
+    display: grid;
+    place-items: center;
+    padding-block: clamp(32px, 6vw, 72px) 0;
+  }
+  .stage :global(.stage-logo) {
+    display: block;
+    width: min(100%, 700px);
+    height: auto;
+    overflow: visible;
+  }
+  .stage :global(.bs-beat) {
+    animation: stage-on 900ms linear 200ms both;
+  }
+  .stage :global(.bs-saber) {
+    animation: stage-on 900ms linear 520ms both;
+  }
+  @keyframes stage-on {
+    0% { opacity: 0.06; }
+    10% { opacity: 1; }
+    16% { opacity: 0.2; }
+    24% { opacity: 0.9; }
+    30% { opacity: 0.35; }
+    46%, 100% { opacity: 1; }
   }
 
   .intro {

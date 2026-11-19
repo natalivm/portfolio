@@ -47,7 +47,7 @@ export interface Project {
   coverPosition?: string;
   link?: { label: string; href: string };
   /** A page theme for the case study, defined in global.css. */
-  theme?: 'blue';
+  theme?: 'blue' | 'space';
   /** Path under /public to an interactive prototype's HTML file (name the file: the dev server does not resolve a bare folder); shown on the case study page. */
   prototype?: string;
   art: Art;
@@ -57,7 +57,7 @@ export interface Project {
 
 const raw: Project[] = [
   { slug: 'next-games', title: 'Next Games', client: 'Puzzle games app', year: 2023, disciplines: ['Digital', 'Motion'], art: 'grid', palette: ['#eaf3ff', '#0b1a30', '#3a8dff'], caseStudy: true, featured: true, role: 'Product designer', cover: '/covers/next-games.png', coverAlt: 'Phone showing the Home screen with the recent games sheet pulled up', prototype: '/prototypes/next-games/index.html', summary: 'Puzzle cards on the Home screen: pick up the game you left, or pull the card up to see every game in progress.' },
-  { slug: 'beat-saber', title: 'Beat Saber', client: 'Beat Games', year: 2025, disciplines: ['Digital'], art: 'type', palette: ['#07070b', '#ff3a4c', '#2f9dff'], caseStudy: true, cover: '/covers/beat-saber.svg', coverAlt: 'The Beat Saber logo in neon: BEAT in red above SABER in blue, on black', summary: 'Design work for Beat Saber, the VR rhythm game by Beat Games.' },
+  { slug: 'beat-saber', title: 'Beat Saber', client: 'Beat Games', year: 2025, disciplines: ['Digital'], art: 'type', palette: ['#07070b', '#ff3a4c', '#2f9dff'], caseStudy: true, theme: 'space', cover: '/covers/beat-saber.svg', coverAlt: 'The Beat Saber logo in neon: BEAT in red above SABER in blue, on black', summary: 'Design work for Beat Saber, the VR rhythm game by Beat Games.' },
   { slug: 'sort-journey', title: 'Sort Journey', client: 'Bluetile Games', year: 2026, disciplines: ['Art direction', 'AI production', 'Illustration'], art: 'stack', palette: ['#c8622a', '#2b2f5e', '#f6a623'], caseStudy: true, featured: true, theme: 'blue', cover: '/covers/sort-journey.webp', coverAlt: 'Sort Journey key art for the Collections feature: the game logo, three sticker packs, a corgi and a stack of photo albums', link: { label: 'Sort Journey on Google Play', href: 'https://play.google.com/store/apps/details?id=com.playgames.sorting' }, summary: 'Collections for Sort Journey, a travel puzzle game by Bluetile Games: the art direction, and an AI pipeline that made around 180 cards a season.' },
   { slug: 'harbor-tea', title: 'Harbor Tea Co.', client: 'Harbor Tea Co.', year: 2026, disciplines: ['Packaging', 'Branding'], art: 'stack', palette: ['#0f3d3a', '#f3e6c8', '#e0763c'], caseStudy: true, role: 'Brand and packaging lead', summary: 'Sample project. A tin system for a small-batch tea importer, where each blend gets its own harbour flag.' },
   { slug: 'lumen-clinic', title: 'Lumen Clinic', client: 'Lumen Clinic', year: 2025, disciplines: ['Branding', 'Digital'], art: 'sun', palette: ['#f2efe8', '#1b2a4a', '#f2a93b'], caseStudy: true, featured: true, role: 'Identity and web design', summary: 'Sample project. A calmer identity for a family clinic, built around morning light rather than medical blue.' },

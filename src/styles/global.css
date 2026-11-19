@@ -219,6 +219,55 @@ button {
   }
 }
 
+/* ---------- Page theme: space ----------
+   For Beat Saber: the game's menu space, dark navy into teal (the page draws it, see SpaceField).
+   Light ink on the dark; buttons, cards and the case pager turn to glass. The find dialog keeps
+   the site's own white and ink. */
+html[data-theme='space'] {
+  color-scheme: dark;
+  --bg: #08121c;
+  --surface-2: rgb(255 255 255 / 0.07);
+  --ink: #eef6ff;
+  --ink-2: #a9bed1; /* 10:1 on the ground */
+  --ink-3: #8ba3b9;
+  --line: rgb(255 255 255 / 0.14);
+  --accent: #5fd6ff;
+  --accent-ink: #04121c;
+  --btn-bg: #eef6ff;
+  --btn-ink: #08121c;
+  --shadow-tile: 0 1px 2px rgb(0 0 0 / 0.4), 0 16px 34px -16px rgb(0 0 0 / 0.7);
+  --shadow-lift: 0 2px 4px rgb(0 0 0 / 0.45), 0 24px 46px -18px rgb(0 0 0 / 0.8);
+  scrollbar-color: #24435a var(--bg);
+}
+html[data-theme='space'] body {
+  background: linear-gradient(180deg, #0a0b18 0%, #0a1526 40%, #0c2635 60%, #061219 100%);
+}
+html[data-theme='space'][data-space] body {
+  background: var(--bg);
+}
+html[data-theme='space'] .site-header {
+  background: rgb(8 14 26 / 0.7);
+}
+html[data-theme='space'] :is(.back, .round, .pager-card, .tile, .ptile, .pill-light, .find) {
+  --surface: rgb(255 255 255 / 0.06);
+  --shadow-tile: inset 0 0 0 1px rgb(255 255 255 / 0.13), 0 16px 34px -18px rgb(0 0 0 / 0.7);
+  --shadow-lift: inset 0 0 0 1px rgb(255 255 255 / 0.2), 0 24px 46px -18px rgb(0 0 0 / 0.8);
+}
+html[data-theme='space'] .round:hover {
+  --btn-bg: #eef6ff;
+}
+html[data-theme='space'] .jump {
+  --surface: #ffffff;
+  --surface-2: #e8eaee;
+  --ink: #16171a;
+  --ink-2: #5d6169;
+  --ink-3: #767a82;
+  --line: #dcdfe4;
+  --accent: #3346d3;
+  --accent-ink: #ffffff;
+  color: var(--ink);
+}
+
 /* ---------- Page theme: blue ----------
    For a case study whose art lives on the game's own blue (Sort Journey's art board, #4c96ff).
    White text cannot reach 4.5:1 on this blue, so the ink is navy. Anything on a white surface
