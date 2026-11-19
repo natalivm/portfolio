@@ -1,0 +1,187 @@
+---
+/**
+ * The Beat Saber page's backdrop: the game's menu space, drawn on a fixed canvas behind the page.
+ * A red haze at the top (behind the logo), a teal glow at the horizon, a dark floor, and through it
+ * specks of light drifting slowly toward the viewer, with a few dark blocks hanging at the sides.
+ * The camera leans a little with the pointer and moves down with the page, so nearer things shift
+ * more than far ones. With reduced motion it is one still frame.
+ */
+---
+
+<canvas class="space-field" aria-hidden="true" data-space-field></canvas>
+
+<style>
+  .space-field {
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    background:
+      radial-gradient(60% 34% at 50% 0%, rgb(124 16 38 / 0.5), transparent 72%),
+      radial-gradient(95% 26% at 50% 58%, rgb(34 128 158 / 0.26), transparent 72%),
+      linear-gradient(180deg, #0a0b18 0%, #0a1526 38%, #0c2635 58%, #082029 70%, #061219 100%);
+  }
+</style>
+
+<script>
+  const cv = document.querySelector<HTMLCanvasElement>('[data-space-field]');
+  const g = cv?.getContext('2d');
+  if (cv && g) {
+    document.documentElement.setAttribute('data-space', '');
+    const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const rnd = (a: number, b: number) => a + Math.random() * (b - a);
+
+    // a soft speck of light, drawn once and stamped
+    const speck = document.createElement('canvas');
+    speck.width = speck.height = 32;
+    const sg = speck.getContext('2d')!;
+    const rg = sg.createRadialGradient(16, 16, 0, 16, 16, 16);
+    rg.addColorStop(0, 'rgb(225 250 255 / 1)');
+    rg.addColorStop(0.22, 'rgb(130 228 255 / 0.75)');
+    rg.addColorStop(1, 'rgb(80 200 255 / 0)');
+    sg.fillStyle = rg;
+    sg.fillRect(0, 0, 32, 32);
+
+    // the field is a box around the camera: x and y wrap, z runs from far (1) to near
+    const SPAN_X = 1.6, SPAN_Y = 1.25;
+    type Speck = { x: number; y: number; z: number; vx: number; vy: number; tw: number; s: number };
+    const specks: Speck[] = [];
+    const place = (p: Speck, far: boolean) => {
+      p.z = far ? rnd(0.85, 1) : rnd(0.14, 1);
+      p.x = camX + rnd(-SPAN_X, SPAN_X);
+      p.y = camY + rnd(-SPAN_Y, SPAN_Y);
+      p.vx = rnd(-0.014, 0.014);
+      p.vy = rnd(-0.01, 0.004);
+      p.tw = rnd(0, Math.PI * 2);
+      p.s = rnd(0.55, 1.5);
+    };
+
+    // dark cubes hanging in the space, out toward the sides and around the horizon, never up by the
+    // page's own controls. f = how far out, as a share of half the width (on a landscape screen)
+    const blocks = [
+      [-0.86, 0.1, 0.72, 0.06], [-0.66, 0.2, 0.9, 0.035], [-0.94, 0.24, 0.62, 0.07],
+      [0.84, 0.09, 0.76, 0.065], [0.93, 0.22, 0.64, 0.05], [0.7, 0.16, 0.95, 0.03],
+    ].map(([f, y, z, s], i) => ({ x: f * z, y, z, s, a: rnd(-0.25, 0.25), va: rnd(-0.03, 0.03), ph: i * 1.7 }));
+
+    let W = 0, H = 0, F = 1, dpr = 1;
+    let camX = 0, camY = 0, aimX = 0, aimY = 0;
+    const size = () => {
+      dpr = Math.min(devicePixelRatio || 1, 1.5);
+      W = innerWidth;
+      H = innerHeight;
+      F = Math.max(W, H) * 0.5;
+      cv.width = Math.round(W * dpr);
+      cv.height = Math.round(H * dpr);
+      const n = Math.round(Math.min(230, Math.max(90, (W * H) / 7500)));
+      while (specks.length < n) {
+        const p = {} as Speck;
+        place(p, false);
+        specks.push(p);
+      }
+      specks.length = n;
+    };
+    size();
+    addEventListener('resize', () => { size(); if (still) draw(0, 0); });
+    addEventListener('pointermove', (e) => {
+      aimX = (e.clientX / W - 0.5) * 0.14;
+      aimY = (e.clientY / H - 0.5) * 0.09;
+    }, { passive: true });
+
+    const wrap = (v: number, c: number, span: number) => (v - c > span ? v - 2 * span : v - c < -span ? v + 2 * span : v);
+
+    const draw = (t: number, dt: number) => {
+      // the camera eases toward the pointer, and travels down through the field as the page scrolls
+      const k = Math.min(1, dt * 2.5);
+      camX += (aimX - camX) * k;
+      camY += (aimY + (scrollY / H) * 0.3 - camY) * (still ? 1 : k);
+      const ox = W / 2, oy = H * 0.5;
+
+      g.setTransform(dpr, 0, 0, dpr, 0, 0);
+      g.clearRect(0, 0, W, H);
+
+      // blocks, kept faint: they are far off, in the haze
+      g.globalAlpha = 0.6;
+      for (const b of blocks) {
+        b.a += b.va * dt;
+        const by = wrap(b.y, camY, SPAN_Y);
+        b.y = by;
+        const kz = F / b.z;
+        const sx = ox + (b.x - camX) * kz;
+        const sy = oy + (by - camY) * kz + Math.sin(t / 2600 + b.ph) * 5;
+        const r = b.s * kz * 0.5;
+        if (sx < -r * 3 || sx > W + r * 3 || sy < -r * 3 || sy > H + r * 3) continue;
+        // a cube: its front face, and the faces that recede toward the horizon behind it
+        const c = Math.cos(b.a), s = Math.sin(b.a);
+        const front = [[-r, -r], [r, -r], [r, r], [-r, r]].map(([x, y]) => [sx + x * c - y * s, sy + x * s + y * c]);
+        const len = Math.hypot(ox - sx, oy - sy) || 1;
+        const vx = ((ox - sx) / len) * r * 0.65, vy = ((oy - sy) / len) * r * 0.65;
+        const back = front.map(([x, y]) => [x + vx, y + vy]);
+        const quad = (pts: number[][], fill: string | CanvasGradient) => {
+          g.beginPath();
+          g.moveTo(pts[0][0], pts[0][1]);
+          for (let n = 1; n < pts.length; n++) g.lineTo(pts[n][0], pts[n][1]);
+          g.closePath();
+          g.fillStyle = fill;
+          g.fill();
+          g.strokeStyle = 'rgb(110 200 230 / 0.12)';
+          g.lineWidth = 1;
+          g.stroke();
+        };
+        quad(back, 'rgb(6 18 26 / 0.95)');
+        for (let n = 0; n < 4; n++) {
+          const m = (n + 1) % 4;
+          const midY = (front[n][1] + front[m][1]) / 2;
+          // the face on top catches the light from above; the others stay dark
+          quad([front[n], front[m], back[m], back[n]], midY < sy ? 'rgb(28 66 82 / 0.95)' : 'rgb(10 30 40 / 0.95)');
+        }
+        const fill = g.createLinearGradient(sx - r, sy - r, sx + r, sy + r);
+        fill.addColorStop(0, 'rgb(18 46 58 / 0.97)');
+        fill.addColorStop(1, 'rgb(6 18 26 / 0.97)');
+        quad(front, fill);
+      }
+
+      g.globalAlpha = 1;
+
+      // specks
+      g.globalCompositeOperation = 'lighter';
+      for (const p of specks) {
+        if (!still) {
+          p.z -= 0.032 * dt;
+          p.x += p.vx * dt;
+          p.y += p.vy * dt;
+          if (p.z < 0.12) place(p, true);
+        }
+        p.x = wrap(p.x, camX, SPAN_X);
+        p.y = wrap(p.y, camY, SPAN_Y);
+        const kz = F / p.z;
+        const sx = ox + (p.x - camX) * kz;
+        const sy = oy + (p.y - camY) * kz;
+        if (sx < -20 || sx > W + 20 || sy < -20 || sy > H + 20) continue;
+        const r = Math.min(10, (p.s * 1.5) / p.z);
+        const fadeIn = Math.min(1, (1 - p.z) / 0.15);
+        const fadeOut = Math.min(1, (p.z - 0.12) / 0.12);
+        const tw = 0.72 + 0.28 * Math.sin(t / 700 + p.tw);
+        g.globalAlpha = Math.max(0, fadeIn * fadeOut * tw * (0.3 + 0.6 * (1 - p.z)));
+        g.drawImage(speck, sx - r * 1.6, sy - r * 1.6, r * 3.2, r * 3.2);
+      }
+      g.globalAlpha = 1;
+      g.globalCompositeOperation = 'source-over';
+    };
+
+    if (still) {
+      draw(0, 0);
+      addEventListener('scroll', () => draw(0, 0), { passive: true });
+    } else {
+      let last = 0;
+      const frame = (t: number) => {
+        const dt = last ? Math.min((t - last) / 1000, 0.05) : 1 / 60;
+        last = t;
+        draw(t, dt);
+        requestAnimationFrame(frame);
+      };
+      requestAnimationFrame(frame);
+    }
+  }
+</script>
