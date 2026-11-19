@@ -222,47 +222,164 @@ const space = p.theme === 'space';
       btn.animate([{ opacity: 1, transform: 'scale(1)' }, { opacity: 0, transform: 'scale(1.2)' }], { duration: 420, easing: 'ease-out', fill: 'forwards' })
         .finished.then(() => { btn.hidden = true; });
 
-      // the rings
+      // The spell. Everything lies on the ground, so it is drawn squashed (SQ): a rune circle opens
+      // round the button and turns as it fades, rays burst from the middle, then three wave fronts
+      // roll out with a living, uneven edge, trailing wisps of light and throwing up sparks.
       const g = fx.getContext('2d')!;
       const dpr = Math.min(devicePixelRatio || 1, 2);
       fx.width = Math.round(W * dpr);
       fx.height = Math.round(H * dpr);
-      const RINGS = 3, GAP = 260;
-      let t0 = 0;
+      const TAU = Math.PI * 2;
+      const rnd = (lo: number, hi: number) => lo + Math.random() * (hi - lo);
+      const pt = (r: number, th: number): [number, number] => [cx + Math.cos(th) * r, cy + Math.sin(th) * r * SQ];
+      const path = (pts: [number, number][], close = false) => {
+        g.beginPath();
+        pts.forEach(([x, y], k) => (k ? g.lineTo(x, y) : g.moveTo(x, y)));
+        if (close) g.closePath();
+      };
+      const circle = (r: number, wob = 0, seed = 0, t = 0) => {
+        const pts: [number, number][] = [];
+        for (let k = 0; k <= 140; k++) {
+          const th = (k / 140) * TAU;
+          pts.push(pt(r * (1 + wob * (Math.sin(th * 7 + t / 190 + seed) * 0.6 + Math.sin(th * 13 - t / 130 + seed * 2) * 0.4)), th));
+        }
+        return pts;
+      };
+      const glow = (rgb: string, a: number, w: number) => {
+        g.strokeStyle = `rgb(${rgb} / ${a})`;
+        g.lineWidth = w;
+        g.stroke();
+      };
+      // a line of light: wide soft halo, body, bright core
+      const light = (a: number, rgb = '80 205 255', w = 1) => {
+        glow('40 130 255', 0.14 * a, 26 * w);
+        glow(rgb, 0.4 * a, 8 * w);
+        glow('225 248 255', 0.9 * a, 1.8 * w);
+      };
+      type Spark = { th: number; r: number; vr: number; up: number; vu: number; age: number; life: number; size: number; violet: boolean };
+      const sparks: Spark[] = [];
+      const wisps = Array.from({ length: 7 }, (_, k) => ({ a0: (k / 7) * TAU + rnd(-0.3, 0.3), spin: rnd(0.5, 1.1) * (k % 2 ? 1 : -1), lag: rnd(0.78, 0.94), len: rnd(0.5, 1) }));
+      const RINGS = 3, GAP = 280, RUNE = 1300, RAYS = 800;
+      let t0 = 0, prev = 0;
       const frame = (now: number) => {
-        if (!t0) t0 = now;
+        if (!t0) t0 = prev = now;
         const t = now - t0;
+        const dt = Math.min((now - prev) / 1000, 0.05);
+        prev = now;
         g.setTransform(dpr, 0, 0, dpr, 0, 0);
         g.clearRect(0, 0, W, H);
         g.globalCompositeOperation = 'lighter';
-        // a flash where it starts
-        if (t < 600) {
-          const k = 1 - t / 600;
-          const fl = g.createRadialGradient(cx, cy, 0, cx, cy, 160);
-          fl.addColorStop(0, `rgb(150 230 255 / ${0.55 * k})`);
-          fl.addColorStop(1, 'rgb(40 160 255 / 0)');
+        g.lineCap = 'round';
+        g.lineJoin = 'round';
+
+        // flash and rays from the middle
+        if (t < RAYS) {
+          const q = t / RAYS, k = (1 - q) ** 2;
+          const fl = g.createRadialGradient(cx, cy, 0, cx, cy, 220);
+          fl.addColorStop(0, `rgb(190 240 255 / ${0.6 * k})`);
+          fl.addColorStop(0.4, `rgb(110 140 255 / ${0.22 * k})`);
+          fl.addColorStop(1, 'rgb(40 120 255 / 0)');
           g.fillStyle = fl;
-          g.fillRect(cx - 160, cy - 160, 320, 320);
+          g.fillRect(cx - 220, cy - 220, 440, 440);
+          const L = 90 + 420 * ease(q);
+          for (let n = 0; n < 16; n++) {
+            const th = (n / 16) * TAU + t / 2600 + (n % 2) * 0.08;
+            const len = L * (n % 2 ? 0.62 : 1);
+            const w = 0.035;
+            path([pt(26, th), pt(len, th - w), pt(len * 1.08, th), pt(len, th + w)], true);
+            g.fillStyle = `rgb(${n % 4 === 0 ? '190 160 255' : '130 220 255'} / ${0.2 * k})`;
+            g.fill();
+          }
         }
-        let alive = t < 600;
+
+        // the rune circle: rings, tick marks, small diamonds, and two triangles turning against it
+        if (t < RUNE) {
+          const q = t / RUNE;
+          const R = 70 + 300 * ease(q);
+          const a = Math.min(1, q * 7) * (1 - q) ** 1.4;
+          const rot = t / 1100;
+          path(circle(R));
+          light(a);
+          path(circle(R * 0.84));
+          glow('150 225 255', 0.7 * a, 1.4);
+          for (let n = 0; n < 36; n++) {
+            const th = (n / 36) * TAU + rot;
+            if (n % 3 === 0) {
+              const m = R * 0.92, d = R * 0.045, dth = 0.03;
+              path([pt(m - d, th), pt(m, th - dth), pt(m + d, th), pt(m, th + dth)], true);
+              g.fillStyle = `rgb(215 200 255 / ${0.85 * a})`;
+              g.fill();
+            } else {
+              path([pt(R * 0.88, th), pt(R * 0.96, th)]);
+              glow('170 235 255', 0.75 * a, 1.3);
+            }
+          }
+          for (const flip of [0, Math.PI]) {
+            path([0, 1, 2].map((n) => pt(R * 0.84, flip - rot * 1.6 + (n / 3) * TAU)), true);
+            glow('170 150 255', 0.55 * a, 1.5);
+          }
+          g.setLineDash([3, 9]);
+          path(circle(R * 0.5));
+          glow('200 240 255', 0.8 * a, 1.6);
+          g.setLineDash([]);
+        }
+
+        // the wave fronts
+        let alive = t < RUNE;
         for (let i = 0; i < RINGS; i++) {
           const p = (t - i * GAP) / RUN;
           if (p < 1) alive = true;
           if (p <= 0 || p >= 1) continue;
-          const rx = ease(p) * far;
-          const a = (1 - p) ** 1.3 * (i === 0 ? 1 : 0.65);
-          g.beginPath();
-          g.ellipse(cx, cy, rx, rx * SQ, 0, 0, Math.PI * 2);
-          g.strokeStyle = `rgb(30 150 255 / ${0.16 * a})`;
-          g.lineWidth = 30;
-          g.stroke();
-          g.strokeStyle = `rgb(80 205 255 / ${0.4 * a})`;
-          g.lineWidth = 9;
-          g.stroke();
-          g.strokeStyle = `rgb(215 247 255 / ${0.9 * a})`;
-          g.lineWidth = 2;
-          g.stroke();
+          const R = ease(p) * far;
+          const a = (1 - p) ** 1.3 * (i === 0 ? 1 : 0.6);
+          // a violet swell just behind the edge
+          path(circle(R * 0.965, 0.012, i, t));
+          glow('120 90 255', 0.1 * a, 54);
+          path(circle(R, 0.014, i * 3, t));
+          light(a, i === 1 ? '150 150 255' : '80 205 255');
+          // a fine second line riding ahead of it
+          path(circle(R * 1.025, 0.02, i * 5 + 1, t));
+          glow('190 240 255', 0.35 * a, 1);
+
+          if (i === 0) {
+            // wisps: arcs of light swept along behind the first front
+            for (const w of wisps) {
+              const pts: [number, number][] = [];
+              const head = w.a0 + w.spin * p * 2.2;
+              for (let k = 0; k <= 24; k++) pts.push(pt(R * (w.lag - 0.05 * (k / 24)), head - Math.sign(w.spin) * w.len * (k / 24)));
+              for (let k = 1; k < pts.length; k++) {
+                const f = 1 - k / pts.length;
+                path([pts[k - 1], pts[k]]);
+                glow('160 200 255', 0.5 * a * f, 1 + 5 * f);
+              }
+            }
+            // sparks thrown up along the edge
+            for (let n = 0; n < 7; n++) sparks.push({ th: rnd(0, TAU), r: R * rnd(0.97, 1.01), vr: rnd(-40, 60), up: 0, vu: rnd(18, 80), age: 0, life: rnd(600, 1500), size: rnd(1.5, 4.5), violet: Math.random() < 0.3 });
+          }
         }
+
+        // sparks: four-pointed glints that rise off the ground and twinkle out
+        for (let n = sparks.length - 1; n >= 0; n--) {
+          const sp = sparks[n];
+          sp.age += dt * 1000;
+          if (sp.age >= sp.life) { sparks.splice(n, 1); continue; }
+          sp.r += sp.vr * dt;
+          sp.up += sp.vu * dt;
+          const k = sp.age / sp.life;
+          const [x, y0] = pt(sp.r, sp.th);
+          const y = y0 - sp.up;
+          const z = sp.size * (0.7 + 0.5 * Math.sin(sp.age / 70 + sp.th * 9)) * (1 - k * 0.5);
+          g.fillStyle = `rgb(${sp.violet ? '200 180 255' : '190 240 255'} / ${Math.min(1, k * 8) * (1 - k) ** 1.2})`;
+          g.beginPath();
+          g.moveTo(x, y - z * 2.6);
+          g.quadraticCurveTo(x + z * 0.25, y - z * 0.25, x + z * 2.6, y);
+          g.quadraticCurveTo(x + z * 0.25, y + z * 0.25, x, y + z * 2.6);
+          g.quadraticCurveTo(x - z * 0.25, y + z * 0.25, x - z * 2.6, y);
+          g.quadraticCurveTo(x - z * 0.25, y - z * 0.25, x, y - z * 2.6);
+          g.fill();
+        }
+        if (sparks.length) alive = true;
+
         if (alive) {
           requestAnimationFrame(frame);
         } else {
