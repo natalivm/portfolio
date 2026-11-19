@@ -204,9 +204,9 @@ const years = projects.map((p) => p.year);
     overflow: hidden;
     transition: transform var(--t-med) var(--ease-out), box-shadow var(--t-med) var(--ease-out);
   }
-  .bs-logo {
+  .bs-tile :global(.bs-logo) {
     display: block;
-    width: min(100%, 520px);
+    width: min(62%, 420px); /* room on either side */
     height: auto;
     overflow: visible;
     transition: filter var(--t-med) var(--ease-out);
@@ -248,7 +248,7 @@ const years = projects.map((p) => p.year);
       transform: translateY(-4px);
       box-shadow: var(--shadow-lift);
     }
-    .bs-tile:hover .bs-logo {
+    .bs-tile:hover :global(.bs-logo) {
       filter: brightness(1.18) saturate(1.1);
     }
     /* a little buzz in SABER while pointed at, once the sign is on */
@@ -370,8 +370,8 @@ const years = projects.map((p) => p.year);
       min-height: 220px;
     }
     /* leave the arrow its corner */
-    .bs-logo {
-      width: 80%;
+    .bs-tile :global(.bs-logo) {
+      width: 70%;
     }
   }
 </style>
