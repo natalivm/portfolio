@@ -256,6 +256,14 @@ html[data-theme='space'] :is(.back, .round, .pager-card, .tile, .ptile, .pill-li
 html[data-theme='space'] .round:hover {
   --btn-bg: #eef6ff;
 }
+/* Veiled: only the space, the logo and its Reveal button until the page is revealed */
+html[data-veil] {
+  overflow: hidden;
+}
+html[data-veil] body > :not(main, dialog),
+html[data-veil] main > :not(.space-field, .stage, .reveal-fx) {
+  visibility: hidden;
+}
 html[data-theme='space'] .jump {
   --surface: #ffffff;
   --surface-2: #e8eaee;
