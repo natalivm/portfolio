@@ -181,13 +181,77 @@ const space = p.theme === 'space';
 </script>
 
 <script>
-  // Beat Saber opens veiled: the space, the logo and a Reveal button. Pressing it (or scrolling, or a
-  // key) sends glowing blue rings out across the ground, wider than they are tall, and each part of
-  // the page appears as the first ring reaches it.
+  // Beat Saber opens veiled: the space, the logo and a Reveal button. The page does not scroll until
+  // it is revealed. Pressing the button plays a plasma reveal, drawn by a fragment shader over the
+  // whole window: a ring of energy charges round the button, bursts into rays, and a cloud of violet
+  // smoke shot through with lightning rolls out to the edges, then thins from the middle to leave
+  // the page standing there.
   const root = document.documentElement;
   const btn = document.querySelector<HTMLButtonElement>('[data-reveal]');
   const fx = document.querySelector<HTMLCanvasElement>('.reveal-fx');
   if (btn && fx && root.hasAttribute('data-veil')) {
+    const FRAG = `
+      precision highp float;
+      uniform vec2 uRes;
+      uniform vec2 uC;
+      uniform float uT;
+      uniform float uFar;
+      float hash(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
+      float noise(vec2 p) {
+        vec2 i = floor(p), f = fract(p);
+        f = f * f * (3.0 - 2.0 * f);
+        return mix(mix(hash(i), hash(i + vec2(1.0, 0.0)), f.x), mix(hash(i + vec2(0.0, 1.0)), hash(i + vec2(1.0, 1.0)), f.x), f.y);
+      }
+      float fbm(vec2 p) {
+        float v = 0.0, a = 0.5;
+        for (int i = 0; i < 5; i++) { v += a * noise(p); p = p * 2.03 + vec2(1.7, 9.2); a *= 0.5; }
+        return v;
+      }
+      void main() {
+        vec2 p = (gl_FragCoord.xy - uC) / uRes.y;
+        float d = length(p);
+        float ang = atan(p.y, p.x);
+        float t = uT;
+
+        // smoke: warped noise, flowing outward
+        vec2 q = p * 3.0;
+        vec2 w = vec2(fbm(q + vec2(0.0, t * 0.35)), fbm(q + vec2(5.2, -t * 0.3)));
+        float n = fbm(q * 1.2 + w * 1.7 - normalize(p + 0.0001) * t * 0.45);
+        float edge = (n - 0.5) * 0.4;
+        float front = uFar * 1.2 * (1.0 - exp(-max(t - 0.45, 0.0) * 2.4)); // the cloud's leading edge
+        float clear = uFar * 1.35 * smoothstep(1.0, 2.7, t);              // the clearing that follows
+        float inside = smoothstep(front + 0.02, front - 0.14, d + edge);
+        float outside = smoothstep(clear - 0.3, clear + 0.06, d + edge * 1.6);
+        float dens = inside * outside * (0.5 + 0.8 * n) * step(0.45, t) * (1.0 - smoothstep(2.4, 3.2, t));
+
+        vec3 col = mix(vec3(0.07, 0.02, 0.24), vec3(0.8, 0.18, 0.92), smoothstep(0.34, 0.8, n));
+        col *= 0.55 + 0.75 * smoothstep(0.25, 0.8, fbm(q * 2.2 + w * 3.0)); // folds and billows
+        col = mix(col, vec3(0.22, 0.52, 1.0), smoothstep(0.5, 0.9, w.x) * 0.65);
+        col = mix(col, vec3(1.0, 0.25, 0.4), smoothstep(0.62, 0.95, w.y) * 0.35); // a little of the logo's red
+        // lightning: thin bright veins through the smoke
+        float v = abs(fbm(q * 2.6 + w * 2.2 + t * 0.5) - 0.5);
+        float arcs = smoothstep(0.012, 0.0, v) * smoothstep(0.45, 0.7, fbm(q * 0.9 - t * 0.3)); // only here and there
+        col += vec3(0.7, 0.8, 1.0) * (arcs * 1.3 + smoothstep(0.06, 0.0, v) * 0.12);
+        // the hot rim of the front
+        float rim = exp(-abs(d + edge - front) * 16.0) * step(0.45, t) * (1.0 - smoothstep(1.5, 2.3, t));
+        float a = clamp(dens * 1.15, 0.0, 1.0);
+        col = col * a + vec3(0.95, 0.55, 1.0) * rim * 1.1;
+        a = clamp(a + rim * 0.7, 0.0, 1.0);
+
+        // the charge: a ring of energy round the button
+        float ch = smoothstep(0.0, 0.25, t) * (1.0 - smoothstep(0.45, 0.62, t));
+        float rr = 0.05 + 0.035 * smoothstep(0.0, 0.45, t) + (fbm(vec2(ang * 3.0, t * 5.0)) - 0.5) * 0.035;
+        float ring = (exp(-abs(d - rr) * 55.0) + 0.35 * exp(-abs(d - rr) * 12.0)) * ch;
+        // the burst: rays and a flash
+        float bt = clamp((t - 0.4) / 0.7, 0.0, 1.0);
+        float rays = pow(abs(cos(ang * 3.0 + 0.6)), 48.0) + 0.7 * pow(abs(cos(ang * 5.0 - 1.1)), 80.0) + 0.5 * pow(abs(cos(ang * 2.0 + 2.0)), 120.0);
+        float reach = bt * uFar * 1.3;
+        float spike = rays * smoothstep(reach, reach * 0.15, d) * (1.0 - bt) * step(0.4, t) * exp(-d * 1.2) * 3.0;
+        float flash = exp(-d * 5.0) * step(0.38, t) * (1.0 - smoothstep(0.4, 1.2, t)) * 2.2;
+        col += vec3(1.0, 0.5, 1.0) * ring * 1.8 + mix(vec3(0.5, 0.7, 1.0), vec3(1.0, 0.45, 0.9), 0.5 + 0.5 * sin(ang * 3.0)) * spike + vec3(1.0, 0.82, 1.0) * flash;
+        a = clamp(a + ring + spike * 0.6 + flash, 0.0, 1.0);
+        gl_FragColor = vec4(col, a);
+      }`;
     let done = false;
     const reveal = () => {
       if (done) return;
@@ -196,89 +260,63 @@ const space = p.theme === 'space';
       const cx = b.left + b.width / 2;
       const cy = b.top + b.height / 2;
       const W = innerWidth, H = innerHeight;
-      const SQ = 0.5; // ripples on the ground: half as tall as they are wide
-      const far = Math.max(...[[0, 0], [W, 0], [0, H], [W, H]].map(([x, y]) => Math.hypot(x - cx, (y - cy) / SQ)));
-      const RUN = 1700; // the first ring's time to the farthest corner
-      const ease = (p: number) => 1 - (1 - p) ** 3;
-      const reachAt = (d: number) => (1 - Math.cbrt(1 - Math.min(1, d / far))) * RUN;
+      const END = 3300; // ms
+      const COVERED = 950; // by now the smoke hides the window: the page comes in underneath it
 
-      // the parts of the page in view appear as the first ring passes over them
       const parts = [...document.querySelectorAll<HTMLElement>('body > :not(main, dialog, script, .skip), main > :not(.space-field, .stage, .reveal-fx, script)')];
       root.setAttribute('data-revealing', '');
       root.removeAttribute('data-veil');
       for (const el of parts) {
         const r = el.getBoundingClientRect();
         if (!r.width || r.bottom < 0 || r.top > H) continue;
-        const nx = Math.max(r.left, Math.min(cx, r.right));
-        const ny = Math.max(r.top, Math.min(cy, r.bottom));
-        el.animate(
-          [
-            { opacity: 0, transform: 'translateY(10px)', filter: 'blur(6px)' },
-            { opacity: 1, transform: 'none', filter: 'blur(0)' },
-          ],
-          { duration: 700, delay: reachAt(Math.hypot(nx - cx, (ny - cy) / SQ)) + 60, easing: 'cubic-bezier(0.16, 1, 0.3, 1)', fill: 'backwards' },
-        );
+        el.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 500, delay: COVERED, easing: 'ease-out', fill: 'backwards' });
       }
-      btn.animate([{ opacity: 1, transform: 'scale(1)' }, { opacity: 0, transform: 'scale(1.2)' }], { duration: 420, easing: 'ease-out', fill: 'forwards' })
+      btn.animate([{ opacity: 1, transform: 'scale(1)' }, { opacity: 0, transform: 'scale(0.85)' }], { duration: 380, easing: 'ease-in', fill: 'forwards' })
         .finished.then(() => { btn.hidden = true; });
 
-      // the rings
-      const g = fx.getContext('2d')!;
-      const dpr = Math.min(devicePixelRatio || 1, 2);
+      const finish = () => {
+        fx.width = fx.height = 0;
+        root.removeAttribute('data-revealing');
+      };
+      const gl = fx.getContext('webgl', { premultipliedAlpha: true, alpha: true });
+      if (!gl) { setTimeout(finish, COVERED + 500); return; }
+      const dpr = Math.min(devicePixelRatio || 1, 1.5) * (W * H > 1.6e6 ? 0.75 : 1); // smoke is soft: fewer pixels are fine
       fx.width = Math.round(W * dpr);
       fx.height = Math.round(H * dpr);
-      const RINGS = 3, GAP = 260;
+      const sh = (type: number, src: string) => {
+        const o = gl.createShader(type)!;
+        gl.shaderSource(o, src);
+        gl.compileShader(o);
+        return o;
+      };
+      const prog = gl.createProgram()!;
+      gl.attachShader(prog, sh(gl.VERTEX_SHADER, 'attribute vec2 a; void main() { gl_Position = vec4(a, 0.0, 1.0); }'));
+      gl.attachShader(prog, sh(gl.FRAGMENT_SHADER, FRAG));
+      gl.linkProgram(prog);
+      if (!gl.getProgramParameter(prog, gl.LINK_STATUS)) { setTimeout(finish, COVERED + 500); return; }
+      gl.useProgram(prog);
+      gl.bindBuffer(gl.ARRAY_BUFFER, gl.createBuffer());
+      gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 1, -1, -1, 1, 1, 1]), gl.STATIC_DRAW);
+      const loc = gl.getAttribLocation(prog, 'a');
+      gl.enableVertexAttribArray(loc);
+      gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
+      gl.viewport(0, 0, fx.width, fx.height);
+      gl.uniform2f(gl.getUniformLocation(prog, 'uRes'), fx.width, fx.height);
+      gl.uniform2f(gl.getUniformLocation(prog, 'uC'), cx * dpr, (H - cy) * dpr);
+      gl.uniform1f(gl.getUniformLocation(prog, 'uFar'), Math.max(...[[0, 0], [W, 0], [0, H], [W, H]].map(([x, y]) => Math.hypot(x - cx, y - cy))) / H);
+      const uT = gl.getUniformLocation(prog, 'uT');
       let t0 = 0;
       const frame = (now: number) => {
         if (!t0) t0 = now;
         const t = now - t0;
-        g.setTransform(dpr, 0, 0, dpr, 0, 0);
-        g.clearRect(0, 0, W, H);
-        g.globalCompositeOperation = 'lighter';
-        // a flash where it starts
-        if (t < 600) {
-          const k = 1 - t / 600;
-          const fl = g.createRadialGradient(cx, cy, 0, cx, cy, 160);
-          fl.addColorStop(0, `rgb(150 230 255 / ${0.55 * k})`);
-          fl.addColorStop(1, 'rgb(40 160 255 / 0)');
-          g.fillStyle = fl;
-          g.fillRect(cx - 160, cy - 160, 320, 320);
-        }
-        let alive = t < 600;
-        for (let i = 0; i < RINGS; i++) {
-          const p = (t - i * GAP) / RUN;
-          if (p < 1) alive = true;
-          if (p <= 0 || p >= 1) continue;
-          const rx = ease(p) * far;
-          const a = (1 - p) ** 1.3 * (i === 0 ? 1 : 0.65);
-          g.beginPath();
-          g.ellipse(cx, cy, rx, rx * SQ, 0, 0, Math.PI * 2);
-          g.strokeStyle = `rgb(30 150 255 / ${0.16 * a})`;
-          g.lineWidth = 30;
-          g.stroke();
-          g.strokeStyle = `rgb(80 205 255 / ${0.4 * a})`;
-          g.lineWidth = 9;
-          g.stroke();
-          g.strokeStyle = `rgb(215 247 255 / ${0.9 * a})`;
-          g.lineWidth = 2;
-          g.stroke();
-        }
-        if (alive) {
-          requestAnimationFrame(frame);
-        } else {
-          g.clearRect(0, 0, W, H);
-          fx.width = fx.height = 0;
-          root.removeAttribute('data-revealing');
-        }
+        if (t >= END) { finish(); return; }
+        gl.uniform1f(uT, t / 1000);
+        gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+        requestAnimationFrame(frame);
       };
       requestAnimationFrame(frame);
     };
     btn.addEventListener('click', reveal);
-    addEventListener('wheel', reveal, { passive: true });
-    addEventListener('touchmove', reveal, { passive: true });
-    addEventListener('keydown', (e) => {
-      if (e.target !== btn && [' ', 'Enter', 'ArrowDown', 'PageDown', 'End'].includes(e.key)) reveal();
-    });
   }
 </script>
 
@@ -376,11 +414,11 @@ const space = p.theme === 'space';
   @keyframes reveal-pulse {
     50% { box-shadow: 0 0 30px rgb(60 190 255 / 0.8), inset 0 0 18px rgb(60 190 255 / 0.45); }
   }
-  /* the waves the button sends out, drawn behind the page as it appears */
+  /* the plasma the button sets off, drawn over the whole window while the page comes in under it */
   .reveal-fx {
     position: fixed;
     inset: 0;
-    z-index: -1;
+    z-index: 60;
     width: 100%;
     height: 100%;
     pointer-events: none;

@@ -257,8 +257,11 @@ html[data-theme='space'] .round:hover {
   --btn-bg: #eef6ff;
 }
 /* Veiled: only the space, the logo and its Reveal button until the page is revealed */
-html[data-veil] {
+html[data-veil],
+html[data-veil] body {
   overflow: hidden;
+  overscroll-behavior: none;
+  touch-action: none;
 }
 html[data-veil] body > :not(main, dialog),
 html[data-veil] main > :not(.space-field, .stage, .reveal-fx) {
