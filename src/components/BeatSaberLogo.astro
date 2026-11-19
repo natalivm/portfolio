@@ -1,0 +1,50 @@
+---
+/**
+ * The Beat Saber logo, redrawn as neon tubes: each letter is one centreline stroked four times
+ * (a wide blurred glow, a softer halo, the tube, a pale core), then slanted. BEAT and SABER are
+ * groups of their own (.bs-beat, .bs-saber) so each can be lit separately. The E in BEAT flickers
+ * like a failing tube (the style inside the SVG).
+ * The same drawing, on its dark ground, is the project cover: public/covers/beat-saber.svg.
+ */
+interface Props {
+  class?: string;
+}
+const { class: cls = '' } = Astro.props;
+---
+
+<svg class={cls} xmlns="http://www.w3.org/2000/svg" viewBox="-87.8 -40 603.8 326.0" role="img" aria-label="Beat Saber">
+  <style is:inline>
+    .bs-e { animation: bs-flicker 4.2s steps(1, end) infinite; }
+    @keyframes bs-flicker {
+      0%, 100% { opacity: 1; }
+      31% { opacity: .18; } 32% { opacity: 1; } 34% { opacity: .3; } 36% { opacity: 1; }
+      58% { opacity: .55; } 59% { opacity: 1; }
+      78% { opacity: .12; } 83% { opacity: .85; } 84% { opacity: .15; } 86% { opacity: 1; }
+    }
+    @media (prefers-reduced-motion: reduce) { .bs-e { animation: none; } }
+  </style>
+  <defs>
+    <filter id="bs-glow" filterUnits="userSpaceOnUse" x="-200" y="-120" width="1000" height="520"><feGaussianBlur stdDeviation="11"/></filter>
+    <filter id="bs-soft" filterUnits="userSpaceOnUse" x="-200" y="-120" width="1000" height="520"><feGaussianBlur stdDeviation="3"/></filter>
+  </defs>
+  <g transform="skewX(-11)" fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <g class="bs-beat">
+      <g stroke="#ff1f35" stroke-width="40" opacity=".7" filter="url(#bs-glow)"><path transform="translate(48.0 0)" d="M0 100 V0 H50 Q70 0 70 20 V26 Q70 46 50 46 H15"/><path transform="translate(48.0 0)" d="M12 46 H54 Q74 46 74 66 V80 Q74 100 54 100 H0"/><path transform="translate(240.0 0)" d="M0 100 L38 0 L76 100"/><path transform="translate(240.0 0)" d="M17 64 H74 Q84 64 84 74 V80"/><path transform="translate(350.0 0)" d="M0 0 H66 Q78 0 78 12 V18"/><path transform="translate(350.0 0)" d="M36 15 V100"/></g>
+      <g stroke="#ff3a4c" stroke-width="19" opacity=".9" filter="url(#bs-soft)"><path transform="translate(48.0 0)" d="M0 100 V0 H50 Q70 0 70 20 V26 Q70 46 50 46 H15"/><path transform="translate(48.0 0)" d="M12 46 H54 Q74 46 74 66 V80 Q74 100 54 100 H0"/><path transform="translate(240.0 0)" d="M0 100 L38 0 L76 100"/><path transform="translate(240.0 0)" d="M17 64 H74 Q84 64 84 74 V80"/><path transform="translate(350.0 0)" d="M0 0 H66 Q78 0 78 12 V18"/><path transform="translate(350.0 0)" d="M36 15 V100"/></g>
+      <g stroke="#ff5a68" stroke-width="13"><path transform="translate(48.0 0)" d="M0 100 V0 H50 Q70 0 70 20 V26 Q70 46 50 46 H15"/><path transform="translate(48.0 0)" d="M12 46 H54 Q74 46 74 66 V80 Q74 100 54 100 H0"/><path transform="translate(240.0 0)" d="M0 100 L38 0 L76 100"/><path transform="translate(240.0 0)" d="M17 64 H74 Q84 64 84 74 V80"/><path transform="translate(350.0 0)" d="M0 0 H66 Q78 0 78 12 V18"/><path transform="translate(350.0 0)" d="M36 15 V100"/></g>
+      <g stroke="#ffe6e8" stroke-width="5.2"><path transform="translate(48.0 0)" d="M0 100 V0 H50 Q70 0 70 20 V26 Q70 46 50 46 H15"/><path transform="translate(48.0 0)" d="M12 46 H54 Q74 46 74 66 V80 Q74 100 54 100 H0"/><path transform="translate(240.0 0)" d="M0 100 L38 0 L76 100"/><path transform="translate(240.0 0)" d="M17 64 H74 Q84 64 84 74 V80"/><path transform="translate(350.0 0)" d="M0 0 H66 Q78 0 78 12 V18"/><path transform="translate(350.0 0)" d="M36 15 V100"/></g>
+      <g class="bs-e">
+        <g stroke="#ff1f35" stroke-width="40" opacity=".7" filter="url(#bs-glow)"><path transform="translate(148.0 0)" d="M66 0 H0 V100 H66"/><path transform="translate(148.0 0)" d="M16 50 H58"/></g>
+        <g stroke="#ff3a4c" stroke-width="19" opacity=".9" filter="url(#bs-soft)"><path transform="translate(148.0 0)" d="M66 0 H0 V100 H66"/><path transform="translate(148.0 0)" d="M16 50 H58"/></g>
+        <g stroke="#ff5a68" stroke-width="13"><path transform="translate(148.0 0)" d="M66 0 H0 V100 H66"/><path transform="translate(148.0 0)" d="M16 50 H58"/></g>
+        <g stroke="#ffe6e8" stroke-width="5.2"><path transform="translate(148.0 0)" d="M66 0 H0 V100 H66"/><path transform="translate(148.0 0)" d="M16 50 H58"/></g>
+      </g>
+    </g>
+    <g class="bs-saber">
+      <g stroke="#168dff" stroke-width="40" opacity=".7" filter="url(#bs-glow)"><path transform="translate(0.0 146)" d="M70 18 V14 Q70 0 54 0 H20 Q0 0 0 22 V26 Q0 48 22 48 H50 Q72 48 72 70 V78 Q72 100 50 100 H2"/><path transform="translate(98.0 146)" d="M0 100 L38 0 L76 100"/><path transform="translate(98.0 146)" d="M17 64 H74 Q84 64 84 74 V80"/><path transform="translate(208.0 146)" d="M0 100 V0 H50 Q70 0 70 20 V26 Q70 46 50 46 H15"/><path transform="translate(208.0 146)" d="M12 46 H54 Q74 46 74 66 V80 Q74 100 54 100 H0"/><path transform="translate(308.0 146)" d="M66 0 H0 V100 H66"/><path transform="translate(308.0 146)" d="M16 50 H58"/><path transform="translate(400.0 146)" d="M0 100 V0 H48 Q70 0 70 22 V26 Q70 48 48 48 H15"/><path transform="translate(400.0 146)" d="M44 48 L76 100"/></g>
+      <g stroke="#2f9dff" stroke-width="19" opacity=".9" filter="url(#bs-soft)"><path transform="translate(0.0 146)" d="M70 18 V14 Q70 0 54 0 H20 Q0 0 0 22 V26 Q0 48 22 48 H50 Q72 48 72 70 V78 Q72 100 50 100 H2"/><path transform="translate(98.0 146)" d="M0 100 L38 0 L76 100"/><path transform="translate(98.0 146)" d="M17 64 H74 Q84 64 84 74 V80"/><path transform="translate(208.0 146)" d="M0 100 V0 H50 Q70 0 70 20 V26 Q70 46 50 46 H15"/><path transform="translate(208.0 146)" d="M12 46 H54 Q74 46 74 66 V80 Q74 100 54 100 H0"/><path transform="translate(308.0 146)" d="M66 0 H0 V100 H66"/><path transform="translate(308.0 146)" d="M16 50 H58"/><path transform="translate(400.0 146)" d="M0 100 V0 H48 Q70 0 70 22 V26 Q70 48 48 48 H15"/><path transform="translate(400.0 146)" d="M44 48 L76 100"/></g>
+      <g stroke="#4fb2ff" stroke-width="13"><path transform="translate(0.0 146)" d="M70 18 V14 Q70 0 54 0 H20 Q0 0 0 22 V26 Q0 48 22 48 H50 Q72 48 72 70 V78 Q72 100 50 100 H2"/><path transform="translate(98.0 146)" d="M0 100 L38 0 L76 100"/><path transform="translate(98.0 146)" d="M17 64 H74 Q84 64 84 74 V80"/><path transform="translate(208.0 146)" d="M0 100 V0 H50 Q70 0 70 20 V26 Q70 46 50 46 H15"/><path transform="translate(208.0 146)" d="M12 46 H54 Q74 46 74 66 V80 Q74 100 54 100 H0"/><path transform="translate(308.0 146)" d="M66 0 H0 V100 H66"/><path transform="translate(308.0 146)" d="M16 50 H58"/><path transform="translate(400.0 146)" d="M0 100 V0 H48 Q70 0 70 22 V26 Q70 48 48 48 H15"/><path transform="translate(400.0 146)" d="M44 48 L76 100"/></g>
+      <g stroke="#e8f6ff" stroke-width="5.2"><path transform="translate(0.0 146)" d="M70 18 V14 Q70 0 54 0 H20 Q0 0 0 22 V26 Q0 48 22 48 H50 Q72 48 72 70 V78 Q72 100 50 100 H2"/><path transform="translate(98.0 146)" d="M0 100 L38 0 L76 100"/><path transform="translate(98.0 146)" d="M17 64 H74 Q84 64 84 74 V80"/><path transform="translate(208.0 146)" d="M0 100 V0 H50 Q70 0 70 20 V26 Q70 46 50 46 H15"/><path transform="translate(208.0 146)" d="M12 46 H54 Q74 46 74 66 V80 Q74 100 54 100 H0"/><path transform="translate(308.0 146)" d="M66 0 H0 V100 H66"/><path transform="translate(308.0 146)" d="M16 50 H58"/><path transform="translate(400.0 146)" d="M0 100 V0 H48 Q70 0 70 22 V26 Q70 48 48 48 H15"/><path transform="translate(400.0 146)" d="M44 48 L76 100"/></g>
+    </g>
+  </g>
+</svg>
