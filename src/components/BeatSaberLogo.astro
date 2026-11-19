@@ -2,8 +2,8 @@
 /**
  * The Beat Saber logo, redrawn as neon tubes: each letter is one centreline stroked four times
  * (a wide blurred glow, a softer halo, the tube, a pale core), then slanted. BEAT and SABER are
- * groups of their own (.bs-beat, .bs-saber) so each can be lit separately. The E in BEAT is a
- * broken letter: it hangs crooked off one mount and flickers (the style inside the SVG).
+ * groups of their own (.bs-beat, .bs-saber) so each can be lit separately. The E in BEAT flickers
+ * like a failing tube (the style inside the SVG).
  * The same drawing, on its dark ground, is the project cover: public/covers/beat-saber.svg.
  */
 interface Props {
@@ -33,7 +33,7 @@ const { class: cls = '' } = Astro.props;
       <g stroke="#ff3a4c" stroke-width="19" opacity=".9" filter="url(#bs-soft)"><path transform="translate(48.0 0)" d="M0 100 V0 H50 Q70 0 70 20 V26 Q70 46 50 46 H15"/><path transform="translate(48.0 0)" d="M12 46 H54 Q74 46 74 66 V80 Q74 100 54 100 H0"/><path transform="translate(240.0 0)" d="M0 100 L38 0 L76 100"/><path transform="translate(240.0 0)" d="M17 64 H74 Q84 64 84 74 V80"/><path transform="translate(350.0 0)" d="M0 0 H66 Q78 0 78 12 V18"/><path transform="translate(350.0 0)" d="M36 15 V100"/></g>
       <g stroke="#ff5a68" stroke-width="13"><path transform="translate(48.0 0)" d="M0 100 V0 H50 Q70 0 70 20 V26 Q70 46 50 46 H15"/><path transform="translate(48.0 0)" d="M12 46 H54 Q74 46 74 66 V80 Q74 100 54 100 H0"/><path transform="translate(240.0 0)" d="M0 100 L38 0 L76 100"/><path transform="translate(240.0 0)" d="M17 64 H74 Q84 64 84 74 V80"/><path transform="translate(350.0 0)" d="M0 0 H66 Q78 0 78 12 V18"/><path transform="translate(350.0 0)" d="M36 15 V100"/></g>
       <g stroke="#ffe6e8" stroke-width="5.2"><path transform="translate(48.0 0)" d="M0 100 V0 H50 Q70 0 70 20 V26 Q70 46 50 46 H15"/><path transform="translate(48.0 0)" d="M12 46 H54 Q74 46 74 66 V80 Q74 100 54 100 H0"/><path transform="translate(240.0 0)" d="M0 100 L38 0 L76 100"/><path transform="translate(240.0 0)" d="M17 64 H74 Q84 64 84 74 V80"/><path transform="translate(350.0 0)" d="M0 0 H66 Q78 0 78 12 V18"/><path transform="translate(350.0 0)" d="M36 15 V100"/></g>
-      <g class="bs-e" transform="translate(5 3) rotate(7 148.0 0)">
+      <g class="bs-e">
         <g stroke="#ff1f35" stroke-width="40" opacity=".7" filter="url(#bs-glow)"><path transform="translate(148.0 0)" d="M66 0 H0 V100 H66"/><path transform="translate(148.0 0)" d="M16 50 H58"/></g>
         <g stroke="#ff3a4c" stroke-width="19" opacity=".9" filter="url(#bs-soft)"><path transform="translate(148.0 0)" d="M66 0 H0 V100 H66"/><path transform="translate(148.0 0)" d="M16 50 H58"/></g>
         <g stroke="#ff5a68" stroke-width="13"><path transform="translate(148.0 0)" d="M66 0 H0 V100 H66"/><path transform="translate(148.0 0)" d="M16 50 H58"/></g>
