@@ -2,7 +2,7 @@
 import Layout from '../layouts/Layout.astro';
 import Tile from '../components/Tile.astro';
 import ProtoTile from '../components/ProtoTile.astro';
-import Cover from '../components/Cover.astro';
+import BeatSaberLogo from '../components/BeatSaberLogo.astro';
 import Icon from '../components/Icon.astro';
 import { site } from '../data/site';
 import { projects, featured as allFeatured } from '../data/projects';
@@ -10,7 +10,6 @@ import { projects, featured as allFeatured } from '../data/projects';
 const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 const showcase = projects.find((p) => p.prototype);
 const featured = allFeatured.filter((p) => p !== showcase).slice(0, showcase ? 4 : 6);
-const rest = projects.filter((p) => !p.featured);
 const years = projects.map((p) => p.year);
 ---
 
@@ -56,19 +55,9 @@ const years = projects.map((p) => p.year);
         </li>
       ))}
       <li class="all">
-        <a class="all-tile" href={`${base}/work/`} data-work-link>
-          <div class="sheet" aria-hidden="true">
-            {rest.slice(0, 18).map((p) => (
-              <div class="thumb"><Cover project={p} ratio="1/1" /></div>
-            ))}
-          </div>
-          <div class="all-text">
-            <p class="all-num">{projects.length}</p>
-            <p class="all-label">
-              View all projects
-              <span class="arrow"><Icon name="arrow-right" size={14} /></span>
-            </p>
-          </div>
+        <a class="bs-tile" href={`${base}/work/beat-saber/`} aria-label="Beat Saber: the case study" data-neon>
+          <BeatSaberLogo class="bs-logo" />
+          <span class="bs-go" aria-hidden="true"><Icon name="arrow-right" size={14} /></span>
         </a>
       </li>
     </ul>
@@ -198,72 +187,82 @@ const years = projects.map((p) => p.year);
   .feat-grid > li.proto {
     grid-row: span 2;
   }
-  .all-tile {
+  /* Beat Saber: the neon logo on black, a red glow above and a blue one below, as in the game */
+  .bs-tile {
     position: relative;
     display: grid;
-    grid-template-columns: 1fr auto;
-    align-items: end;
-    gap: 24px;
+    place-items: center;
     height: 100%;
     min-height: 260px;
-    padding: 20px 28px 24px 20px;
+    padding: clamp(20px, 3vw, 36px);
     border-radius: var(--radius-lg);
-    background: var(--btn-bg);
-    color: var(--btn-ink);
+    background:
+      radial-gradient(70% 70% at 50% 8%, rgb(122 6 16 / 0.85), transparent 70%),
+      radial-gradient(70% 70% at 50% 100%, rgb(6 42 110 / 0.8), transparent 70%),
+      #07070b;
     text-decoration: none;
     overflow: hidden;
     transition: transform var(--t-med) var(--ease-out), box-shadow var(--t-med) var(--ease-out);
   }
-  .sheet {
-    align-self: stretch;
-    display: grid;
-    grid-template-columns: repeat(6, 1fr);
-    gap: 6px;
-    align-content: start;
+  .bs-logo {
+    display: block;
+    width: min(100%, 520px);
+    height: auto;
+    overflow: visible;
+    transition: filter var(--t-med) var(--ease-out);
   }
-  .thumb {
-    border-radius: 8px;
-    overflow: hidden;
-    opacity: 0.88;
-    transition: opacity var(--t-med) var(--ease-out), transform var(--t-med) var(--ease-out);
-  }
-  .all-text {
-    text-align: right;
-  }
-  .all-num {
-    font-family: var(--font-display);
-    font-size: clamp(4rem, 9vw, 7.5rem);
-    font-weight: 600;
-    letter-spacing: -0.04em;
-    line-height: 0.9;
-  }
-  .all-label {
-    display: inline-flex;
-    align-items: center;
-    gap: 10px;
-    margin-top: 10px;
-    font-weight: 600;
-  }
-  .all-label .arrow {
-    width: 1.75rem;
-    height: 1.75rem;
-    border-radius: 50%;
+  .bs-go {
+    position: absolute;
+    right: 20px;
+    bottom: 20px;
     display: grid;
     place-items: center;
-    background: var(--btn-ink);
-    color: var(--btn-bg);
+    width: 2rem;
+    height: 2rem;
+    border-radius: 50%;
+    background: #fff;
+    color: #07070b;
+    transition: transform var(--t-med) var(--ease-out);
+  }
+  /* the sign switches on when it comes into view: BEAT first, then SABER, with a neon stutter */
+  [data-neon][data-armed]:not(.done) :global(.bs-beat),
+  [data-neon][data-armed]:not(.done) :global(.bs-saber) {
+    opacity: 0.08;
+  }
+  [data-neon].lit:not(.done) :global(.bs-beat) {
+    animation: neon-on 900ms linear 150ms both;
+  }
+  [data-neon].lit:not(.done) :global(.bs-saber) {
+    animation: neon-on 900ms linear 480ms both;
+  }
+  @keyframes neon-on {
+    0% { opacity: 0.08; }
+    10% { opacity: 1; }
+    16% { opacity: 0.2; }
+    24% { opacity: 0.9; }
+    30% { opacity: 0.35; }
+    46%, 100% { opacity: 1; }
   }
   @media (hover: hover) {
-    .all-tile:hover {
+    .bs-tile:hover {
       transform: translateY(-4px);
       box-shadow: var(--shadow-lift);
     }
-    .all-tile:hover .thumb {
-      opacity: 1;
+    .bs-tile:hover .bs-logo {
+      filter: brightness(1.18) saturate(1.1);
     }
-    .all-tile:hover .thumb:nth-child(3n) {
-      transform: translateY(-3px);
+    /* a little buzz in SABER while pointed at, once the sign is on */
+    .bs-tile.done:hover :global(.bs-saber) {
+      animation: neon-buzz 2.4s linear infinite;
     }
+    .bs-tile:hover .bs-go {
+      transform: translateX(3px);
+    }
+  }
+  @keyframes neon-buzz {
+    0%, 62%, 66%, 70%, 100% { opacity: 1; }
+    64% { opacity: 0.45; }
+    68% { opacity: 0.7; }
   }
 
   .about {
@@ -367,18 +366,29 @@ const years = projects.map((p) => p.year);
       flex-direction: column;
       gap: 0;
     }
-    .all-tile {
-      min-height: 0;
+    .bs-tile {
+      min-height: 220px;
     }
-    .sheet {
-      grid-template-columns: repeat(9, 1fr);
-      gap: 4px;
-    }
-    .all-tile {
-      grid-template-columns: 1fr;
-    }
-    .all-text {
-      text-align: left;
+    /* leave the arrow its corner */
+    .bs-logo {
+      width: 80%;
     }
   }
 </style>
+
+<script>
+  // The neon sign switches on the first time it comes into view, then stays on
+  const sign = document.querySelector<HTMLElement>('[data-neon]');
+  if (sign && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    sign.setAttribute('data-armed', '');
+    sign.addEventListener('animationend', (e) => {
+      if (e.animationName.includes('neon-on') && (e.target as Element).classList.contains('bs-saber')) sign.classList.add('done');
+    });
+    const io = new IntersectionObserver((es) => {
+      if (!es.some((e) => e.isIntersecting)) return;
+      io.disconnect();
+      sign.classList.add('lit');
+    }, { threshold: 0.4 });
+    io.observe(sign);
+  }
+</script>
