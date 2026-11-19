@@ -181,8 +181,8 @@ const space = p.theme === 'space';
 </script>
 
 <script>
-  // Beat Saber opens veiled: the space, the logo and a Reveal button. Pressing it (or scrolling, or a
-  // key) sends glowing blue rings out across the ground, wider than they are tall, and each part of
+  // Beat Saber opens veiled: the space, the logo and a Reveal button. The page does not scroll until
+  // it is revealed. Pressing the button sends glowing blue rings out across the ground, wider than they are tall, and each part of
   // the page appears as the first ring reaches it.
   const root = document.documentElement;
   const btn = document.querySelector<HTMLButtonElement>('[data-reveal]');
@@ -391,11 +391,6 @@ const space = p.theme === 'space';
       requestAnimationFrame(frame);
     };
     btn.addEventListener('click', reveal);
-    addEventListener('wheel', reveal, { passive: true });
-    addEventListener('touchmove', reveal, { passive: true });
-    addEventListener('keydown', (e) => {
-      if (e.target !== btn && [' ', 'Enter', 'ArrowDown', 'PageDown', 'End'].includes(e.key)) reveal();
-    });
   }
 </script>
 
