@@ -102,7 +102,6 @@ const space = p.theme === 'space';
         <div class="hero-clouds" aria-hidden="true">
           <img class="c1" src={`${base}/cases/balloon-sprint/cloud.webp`} width="760" height="409" alt="" decoding="async" />
           <img class="c2" src={`${base}/cases/balloon-sprint/cloud.webp`} width="760" height="409" alt="" decoding="async" />
-          <img class="c3" src={`${base}/cases/balloon-sprint/cloud.webp`} width="760" height="409" alt="" decoding="async" />
         </div>
       )}
       <div class="hero-frame" style="view-transition-name: hero-still">
@@ -496,7 +495,7 @@ const space = p.theme === 'space';
     position: relative;
     margin-block: 0;
   }
-  /* Balloon Sprint: huge clouds behind the cover, each centred on an edge of the frame so half shows */
+  /* Balloon Sprint: huge clouds behind the cover, each centred on a side of the frame so half shows */
   .hero-clouds {
     position: absolute;
     inset: 0 var(--gutter);
@@ -518,12 +517,6 @@ const space = p.theme === 'space';
     width: 46%;
     translate: 50% -50%;
     scale: -1 1;
-  }
-  .hero-clouds .c3 {
-    left: 64%;
-    bottom: 0;
-    width: 44%;
-    translate: -50% 50%;
   }
   .hero-clouds ~ .hero-frame {
     position: relative;
