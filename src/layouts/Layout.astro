@@ -14,7 +14,7 @@ interface Props {
 }
 
 const { title, description = site.intro, current, theme } = Astro.props;
-const themeColor = theme === 'blue' ? '#4c96ff' : theme === 'space' ? '#0a0b18' : theme === 'river' ? '#3ab5c3' : '#f2f3f5';
+const themeColor = theme === 'blue' ? '#4c96ff' : theme === 'space' ? '#0a0b18' : theme === 'river' ? '#3ab5c3' : theme === 'sky' ? '#8fd3f5' : '#f2f3f5';
 const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 const pageTitle = title ? `${title} · ${site.name}` : `${site.name}, ${site.role}`;
 ---

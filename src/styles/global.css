@@ -279,6 +279,35 @@ html[data-theme='space'] .jump {
   color: var(--ink);
 }
 
+/* ---------- Page theme: sky ----------
+   For Balloon Sprint: the event's open sky. Deep navy ink; white surfaces keep the site's own ink. */
+html[data-theme='sky'] {
+  --bg: #8fd3f5;
+  --surface-2: rgb(255 255 255 / 0.35);
+  --ink: #06263f; /* 9.4:1 on the ground */
+  --ink-2: #0a3a5c; /* 7.2:1 */
+  --ink-3: #114a72;
+  --line: rgb(6 38 63 / 0.2);
+  --accent: #06263f;
+  --accent-ink: #ffffff;
+  --shadow-tile: 0 1px 2px rgb(6 38 63 / 0.16), 0 16px 34px -16px rgb(6 38 63 / 0.4);
+  --shadow-lift: 0 2px 4px rgb(6 38 63 / 0.18), 0 24px 46px -18px rgb(6 38 63 / 0.5);
+  scrollbar-color: #4aa9de var(--bg);
+}
+html[data-theme='sky'] .site-header {
+  background: rgb(143 211 245 / 0.85);
+}
+html[data-theme='sky'] :is(.tile, .ptile, .pager-card, .pill-light, .round, .back, .find, .jump) {
+  --ink: #16171a;
+  --ink-2: #5d6169;
+  --ink-3: #767a82;
+  --line: #dcdfe4;
+  --surface-2: #e8eaee;
+  --accent: #3346d3;
+  --accent-ink: #ffffff;
+  color: var(--ink);
+}
+
 /* ---------- Page theme: river ----------
    For River Race: the turquoise of the race's river. White cannot reach 4.5:1 on it, so the ink is
    a deep teal. Tiles, light pills and round buttons keep the site's own white and ink. */
