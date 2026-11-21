@@ -1,0 +1,52 @@
+---
+import MkIcon from '../MkIcon.astro';
+interface Props {
+  variant: 'good' | 'bad';
+}
+const { variant } = Astro.props;
+---
+
+<div class="mk">
+  <div class="mk-card mk-col mk-gap-12">
+    <div class="mk-spread">
+      <span class="mk-row mk-gap-6">
+        <span class="mk-ico is-green"><MkIcon name="wallet" size={14} /></span>
+        <span class="mk-h">My budget</span>
+      </span>
+      <span class="mk-avatar is-sm is-4">A</span>
+    </div>
+    <div class="mk-grid-2 mk-gap-6">
+      <div class="mk-flat mk-col mk-gap-2"><span class="mk-xs">Spent in May</span><span class="mk-b">€1,240</span></div>
+      <div class="mk-flat mk-col mk-gap-2"><span class="mk-xs">Left to spend</span><span class="mk-b">€560</span></div>
+    </div>
+    <div class="mk-sunk mk-col mk-gap-8">
+      <div class="mk-spread">
+        <span class="mk-b">Free trial</span>
+        <span class="mk-s">2 days left</span>
+      </div>
+      {variant === 'good' ? (
+        <>
+          <div class="mk-progress" style="--v: 88%; --c: var(--mk-red)"></div>
+          <p class="mk-s">In 12 days you have:</p>
+          <ul class="mk-col mk-gap-4 mk-t">
+            <li class="mk-row mk-gap-6"><span class="sc-ok"><MkIcon name="check" size={12} /></span><span>Created <b>25 categories</b></span></li>
+            <li class="mk-row mk-gap-6"><span class="sc-ok"><MkIcon name="check" size={12} /></span><span>Logged <b>145 transactions</b></span></li>
+          </ul>
+          <span class="mk-btn mk-btn-sec mk-btn-block mk-mt-4">Keep my budget and data</span>
+        </>
+      ) : (
+        <>
+          <div class="mk-progress" style="--v: 88%"></div>
+          <span class="mk-btn mk-btn-sec mk-btn-block mk-mt-4">Upgrade</span>
+        </>
+      )}
+    </div>
+  </div>
+</div>
+
+<style>
+  .sc-ok {
+    display: inline-flex;
+    color: var(--mk-green);
+  }
+</style>

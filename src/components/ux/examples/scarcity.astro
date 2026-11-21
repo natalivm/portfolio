@@ -1,0 +1,80 @@
+---
+import MkIcon from '../MkIcon.astro';
+interface Props {
+  variant: 'good' | 'bad';
+}
+const { variant } = Astro.props;
+---
+
+{variant === 'good' ? (
+  <div class="mk">
+    <div class="mk-card mk-col">
+      <div class="mk-img is-6 photo"><MkIcon name="bed" size={28} /></div>
+      <div class="mk-col mk-gap-4">
+        <p class="mk-h">Sea-view suite</p>
+        <div class="mk-row mk-gap-12 mk-xs">
+          <span class="mk-row mk-gap-4"><MkIcon name="eye" size={12} />20 viewing</span>
+          <span class="mk-row mk-gap-4"><MkIcon name="users" size={12} />5 booked today</span>
+        </div>
+      </div>
+      <div class="mk-alert is-blue"><MkIcon name="info" size={13} />2 rooms left at this price</div>
+      <div class="mk-row mk-gap-6">
+        <span class="mk-price-big">$129</span>
+        <span class="mk-s mk-strike">$389</span>
+        <span class="mk-xs">per night</span>
+      </div>
+      <span class="mk-btn mk-btn-pri mk-btn-block">Book room</span>
+      <p class="mk-xs mk-center">Free cancellation within 24 hours</p>
+    </div>
+  </div>
+) : (
+  <div class="mk">
+    <div class="mk-card mk-col">
+      <div class="urgent"><MkIcon name="fire" size={12} />URGENT OFFER!!! HURRY!</div>
+      <div class="mk-img is-6 photo is-short"><MkIcon name="bed" size={28} /></div>
+      <div class="mk-col mk-gap-2">
+        <p class="mk-h">Sea-view suite!</p>
+        <p class="shout">ONLY 2 ROOMS LEFT!!!</p>
+        <p class="shout">20+ PEOPLE LOOKING RIGHT NOW!</p>
+        <p class="shout">BOOKED 5 TIMES IN THE LAST HOUR!</p>
+      </div>
+      <div class="mk-col mk-gap-2">
+        <span class="mk-b mk-t">$129</span>
+        <span class="mk-xs mk-strike">$389</span>
+      </div>
+      <span class="mk-btn mk-btn-danger mk-btn-block">BOOK NOW!!!</span>
+      <p class="tiny mk-center">Offer valid for only 2 minutes! 01:59</p>
+    </div>
+  </div>
+)}
+
+<style>
+  .photo {
+    aspect-ratio: 2.6 / 1;
+  }
+  .photo.is-short {
+    aspect-ratio: 3 / 1;
+  }
+  .urgent {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    height: 24px;
+    border: 1.5px solid var(--mk-red);
+    border-radius: 99px;
+    color: var(--mk-red);
+    font-size: 10px;
+    font-weight: 700;
+  }
+  .shout {
+    color: var(--mk-red);
+    font-size: 9.5px;
+    font-weight: 700;
+    line-height: 1.35;
+  }
+  .tiny {
+    color: var(--mk-red);
+    font-size: 9px;
+  }
+</style>

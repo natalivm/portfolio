@@ -1,0 +1,121 @@
+---
+import MkIcon from '../MkIcon.astro';
+interface Props {
+  variant: 'good' | 'bad';
+}
+const { variant } = Astro.props;
+const core = [
+  { icon: 'chart', label: 'Dashboard' },
+  { icon: 'card', label: 'My cards' },
+  { icon: 'swap', label: 'Transfers' },
+  { icon: 'clock', label: 'Transactions' },
+] as const;
+const rest = [
+  { icon: 'car', label: 'Transport' },
+  { icon: 'file', label: 'Payments' },
+  { icon: 'shield', label: 'Insurance' },
+  { icon: 'heart', label: 'Charity' },
+] as const;
+const items = variant === 'good' ? core : [...core, ...rest];
+---
+
+<div class="mk">
+  <div class:list={['mk-card', 'side', variant === 'bad' && 'is-long']}>
+    <div class="mk-row brand">
+      <span class="logo"></span>
+      <span class="mk-b">Finch</span>
+    </div>
+    <p class="sec">Main</p>
+    <ul class="mk-col nav">
+      {items.map((it, i) => (
+        <li class:list={['item', { 'is-on': i === 0 }]}>
+          {it.icon === 'swap' ? (
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex: none"><path d="M4 8h15M15 4l4 4-4 4M20 16H5M9 12l-4 4 4 4" /></svg>
+          ) : (
+            <MkIcon name={it.icon} size={14} />
+          )}
+          <span class="mk-grow">{it.label}</span>
+          {i === 0 && <MkIcon name="chevron-right" size={12} />}
+        </li>
+      ))}
+    </ul>
+    {variant === 'good' && (
+      <div class="mk-spread sec other">
+        <span>Other</span>
+        <MkIcon name="plus" size={12} />
+      </div>
+    )}
+  </div>
+</div>
+
+<style>
+  .side {
+    position: relative;
+    padding: 12px 10px;
+  }
+  .brand {
+    gap: 6px;
+    padding: 0 6px 10px;
+    font-size: 12px;
+  }
+  .logo {
+    width: 14px;
+    height: 14px;
+    border-radius: 4px;
+    background: var(--mk-pri);
+  }
+  .sec {
+    padding: 4px 8px;
+    font-size: 9.5px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--mk-3);
+  }
+  .nav {
+    gap: 2px;
+    margin-top: 2px;
+  }
+  .item {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    height: 32px;
+    padding: 0 8px;
+    border-radius: 8px;
+    font-size: 12px;
+    color: var(--mk-2);
+  }
+  .item.is-on {
+    background: var(--mk-bg);
+    color: var(--mk-ink);
+    font-weight: 600;
+  }
+  .item.is-on > :global(svg:first-child) {
+    color: var(--mk-blue);
+  }
+  .item.is-on::before {
+    content: '';
+    position: absolute;
+    left: -10px;
+    top: 7px;
+    bottom: 7px;
+    width: 3px;
+    border-radius: 0 3px 3px 0;
+    background: var(--mk-blue);
+  }
+  .other {
+    margin-top: 8px;
+    padding-top: 10px;
+    border-top: 1px solid var(--mk-line);
+    border-radius: 0;
+  }
+  .is-long .item {
+    height: 25px;
+    font-size: 11px;
+  }
+  .is-long .nav {
+    gap: 1px;
+  }
+</style>

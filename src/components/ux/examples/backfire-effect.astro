@@ -1,0 +1,67 @@
+---
+import MkIcon from '../MkIcon.astro';
+interface Props { variant: 'good' | 'bad' }
+const { variant } = Astro.props;
+---
+
+{variant === 'good' ? (
+  <div class="mk">
+    <div class="mk-card mk-col mk-gap-12">
+      <p class="mk-h">Add a bank account</p>
+      <div class="mk-field">
+        <span class="mk-label">Account holder</span>
+        <div class="mk-input">Jordan Ellis</div>
+      </div>
+      <div class="mk-field">
+        <span class="mk-label">IBAN</span>
+        <div class="mk-input is-error iban"><span class="pre">DE</span><span>89 3704 0044 0532 0130</span></div>
+        <p class="mk-error hint"><MkIcon name="info" size={11} />22 characters, starting with DE. 20 so far.</p>
+      </div>
+      <span class="mk-btn mk-btn-pri mk-btn-block">Save account</span>
+    </div>
+  </div>
+) : (
+  <div class="mk">
+    <div class="mk-card mk-col mk-gap-12">
+      <p class="mk-h">Add a bank account</p>
+      <div class="mk-field">
+        <span class="mk-label">Account holder</span>
+        <div class="mk-input">Jordan Ellis</div>
+      </div>
+      <div class="mk-field">
+        <span class="mk-label">IBAN</span>
+        <div class="mk-input is-error">8937040044053201</div>
+        <p class="shout">YOU ENTERED AN INVALID NUMBER!!!! FIX THE ERROR AND TRY AGAIN!</p>
+      </div>
+      <span class="mk-btn mk-btn-pri mk-btn-block">Save account</span>
+    </div>
+  </div>
+)}
+
+<style>
+  .iban {
+    padding-left: 0;
+  }
+  .pre {
+    align-self: stretch;
+    display: grid;
+    place-items: center;
+    padding: 0 9px;
+    border-right: 1px solid var(--mk-line);
+    background: var(--mk-bg);
+    color: var(--mk-2);
+    font-weight: 600;
+  }
+  .hint {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .shout {
+    margin-top: 4px;
+    color: var(--mk-red);
+    font-size: 10px;
+    font-weight: 800;
+    line-height: 1.3;
+  }
+</style>

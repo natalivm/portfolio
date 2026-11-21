@@ -1,0 +1,91 @@
+---
+interface Props {
+  variant: 'good' | 'bad';
+}
+const { variant } = Astro.props;
+const vague = [
+  { t: 'Come visit us again', when: '2h ago' },
+  { t: 'We miss you', when: '1h ago' },
+  { t: 'Check out the app today', when: 'now' },
+];
+---
+
+<div class="mk">
+  <div class="mk-phone lock">
+    <p class="mk-xs mk-center date">Tuesday 12 May</p>
+    <p class="time">12:10</p>
+    {variant === 'good' ? (
+      <div class="mk-col mk-gap-6">
+        <div class="note">
+          <div class="mk-row mk-gap-6">
+            <span class="app">S</span>
+            <span class="mk-xs mk-b ink">Spoonbird</span>
+            <span class="mk-xs mk-muted when">now</span>
+          </div>
+          <p class="mk-b mk-t">Your cart is waiting</p>
+          <p class="mk-xs ink2">Pad thai and spring rolls, $18.40. Tap to finish your order.</p>
+        </div>
+      </div>
+    ) : (
+      <div class="mk-col mk-gap-6">
+        {vague.map((n) => (
+          <div class="note">
+            <div class="mk-row mk-gap-6">
+              <span class="app">S</span>
+              <span class="mk-xs mk-b ink">Spoonbird</span>
+              <span class="mk-xs mk-muted when">{n.when}</span>
+            </div>
+            <p class="mk-t">{n.t}</p>
+          </div>
+        ))}
+      </div>
+    )}
+  </div>
+</div>
+
+<style>
+  .lock {
+    min-height: 268px;
+    background: linear-gradient(165deg, #dfe6f7, #efe3ee 60%, #f6eadf);
+  }
+  .date {
+    color: #4b5060;
+  }
+  .time {
+    margin: 0 0 12px;
+    font-size: 38px;
+    font-weight: 600;
+    line-height: 1.05;
+    text-align: center;
+    color: #22252c;
+  }
+  .note {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    padding: 8px 9px;
+    border-radius: 12px;
+    background: rgb(255 255 255 / 0.85);
+    box-shadow: 0 4px 12px -6px rgb(20 22 28 / 0.25);
+  }
+  .app {
+    display: grid;
+    place-items: center;
+    width: 16px;
+    height: 16px;
+    border-radius: 4px;
+    background: var(--mk-green);
+    color: #fff;
+    font-size: 9.5px;
+    font-weight: 700;
+  }
+  .ink {
+    color: var(--mk-ink);
+  }
+  .ink2 {
+    color: #3a3e47;
+  }
+  .when {
+    margin-left: auto;
+  }
+</style>

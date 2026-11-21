@@ -1,0 +1,103 @@
+---
+interface Props {
+  variant: 'good' | 'bad';
+}
+const { variant } = Astro.props;
+const good = variant === 'good';
+const questions = good
+  ? ['What would you do first on this page?', 'What did you expect to happen?', 'Is there anything you would change?']
+  : ['Isn’t the new checkout easy to use?', 'You’d tap the big green button, right?', 'You like it more than the old one?'];
+const notes = good
+  ? [
+      { tone: 'is-green', text: 'Found the Pay button in 4 s' },
+      { tone: 'is-red', text: 'Missed the promo code field' },
+      { tone: 'is-amber', text: 'Unsure about the delivery fee' },
+    ]
+  : [
+      { tone: 'is-green', text: 'Loved the new design' },
+      { tone: 'is-green', text: 'Said checkout felt fast' },
+      { tone: 'is-green', text: 'Liked the colours' },
+    ];
+---
+
+<div class="mk">
+  <div class="mk-card mk-col mk-gap-8">
+    <div class="mk-spread">
+      <span class="mk-h">Session script</span>
+      <span class="mk-xs">Checkout v2 · P4</span>
+    </div>
+    <ol class="mk-col mk-gap-4">
+      {questions.map((q, i) => (
+        <li class="q">
+          <span class="n">{i + 1}</span>
+          <span>{q}</span>
+        </li>
+      ))}
+    </ol>
+    <hr class="mk-divider mk-mt-4" />
+    <div class="mk-spread">
+      <span class="mk-b mk-t">Observations</span>
+      {good ? <span class="mk-chip sm">All notes</span> : <span class="mk-chip sm is-on">Positive only</span>}
+    </div>
+    <ul class="mk-col mk-gap-4">
+      {notes.map((n) => (
+        <li class:list={['note', n.tone]}>
+          <i></i>
+          {n.text}
+        </li>
+      ))}
+    </ul>
+  </div>
+</div>
+
+<style>
+  .q {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 8px;
+    border-radius: 8px;
+    background: var(--mk-bg);
+    font-size: 11px;
+  }
+  .n {
+    flex: none;
+    display: grid;
+    place-items: center;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: var(--mk-card);
+    border: 1px solid var(--mk-line);
+    font-size: 9px;
+    font-weight: 700;
+    color: var(--mk-2);
+  }
+  .sm {
+    height: 20px;
+    padding: 0 8px;
+    font-size: 10px;
+  }
+  .note {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    font-size: 11px;
+    color: var(--mk-2);
+  }
+  .note i {
+    flex: none;
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+  }
+  .note.is-green i {
+    background: var(--mk-green);
+  }
+  .note.is-red i {
+    background: var(--mk-red);
+  }
+  .note.is-amber i {
+    background: var(--mk-amber);
+  }
+</style>

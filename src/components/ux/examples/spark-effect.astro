@@ -1,0 +1,73 @@
+---
+import MkIcon from '../MkIcon.astro';
+interface Props {
+  variant: 'good' | 'bad';
+}
+const { variant } = Astro.props;
+// A four-pointed star of radius 1, centred on 0,0
+const star = 'M0 -1 L0.2 -0.2 L1 0 L0.2 0.2 L0 1 L-0.2 0.2 L-1 0 L-0.2 -0.2Z';
+---
+
+{variant === 'good' ? (
+  <div class="mk">
+    <div class="mk-card box">
+      <svg class="sparks" width="132" height="62" viewBox="0 0 132 62" aria-hidden="true">
+        <path class="s-amber" d={star} transform="translate(66 31) scale(26)" />
+        <path class="s-blue" d={star} transform="translate(30 18) scale(11)" />
+        <path class="s-violet" d={star} transform="translate(104 42) scale(12)" />
+        <path class="s-pink" d={star} transform="translate(98 12) scale(7)" />
+        <path class="s-blue" d={star} transform="translate(22 46) scale(6)" />
+        <circle class="s-pink" cx="44" cy="50" r="3" />
+        <circle class="s-amber" cx="114" cy="22" r="2.5" />
+        <circle class="s-violet" cx="12" cy="28" r="2" />
+        <circle class="s-blue" cx="86" cy="56" r="2" />
+      </svg>
+      <p class="mk-h-lg">Your order is in</p>
+      <p class="mk-s">We’re already packing it and will get it to your door as fast as we can.</p>
+      <span class="mk-badge is-green"><MkIcon name="truck" size={11} />Arrives Thursday</span>
+      <span class="mk-btn mk-btn-pri mk-btn-block">Track my order</span>
+    </div>
+  </div>
+) : (
+  <div class="mk">
+    <div class="mk-card box">
+      <span class="tick"><MkIcon name="check" size={26} stroke={2.6} /></span>
+      <p class="mk-h-lg">Order created</p>
+      <p class="mk-s">Order ID: 100482-17. Status: PROCESSING.</p>
+      <span class="mk-badge">Ref. 0x4F2A</span>
+      <span class="mk-btn mk-btn-sec mk-btn-block">OK</span>
+    </div>
+  </div>
+)}
+
+<style>
+  .box {
+    display: grid;
+    justify-items: center;
+    align-content: center;
+    gap: 8px;
+    min-height: 236px;
+    text-align: center;
+  }
+  .box .mk-btn {
+    margin-top: 6px;
+  }
+  .sparks {
+    display: block;
+    margin-bottom: 2px;
+  }
+  .s-amber { fill: #f2a91c; }
+  .s-blue { fill: #4fb6e8; }
+  .s-violet { fill: var(--mk-violet); }
+  .s-pink { fill: #f37a9c; }
+  .tick {
+    display: grid;
+    place-items: center;
+    width: 52px;
+    height: 52px;
+    margin: 5px 0;
+    border-radius: 50%;
+    background: var(--mk-green);
+    color: #fff;
+  }
+</style>

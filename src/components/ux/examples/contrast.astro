@@ -1,0 +1,66 @@
+---
+import MkIcon from '../MkIcon.astro';
+interface Props {
+  variant: 'good' | 'bad';
+}
+const { variant } = Astro.props;
+---
+
+{variant === 'good' ? (
+  <div class="mk">
+    <div class="mk-card mk-col mk-gap-8">
+      <span class="mk-chip chip">Local news</span>
+      <h3 class="hl">Storm warning issued for the coast tonight</h3>
+      <p class="mk-s">Strong winds and heavy rain are expected from 6 pm. Officials advise drivers to…</p>
+      <p class="mk-xs mk-muted">2 h ago · 3 min read</p>
+      <span class="mk-btn mk-btn-pri cta">Read more <MkIcon name="arrow-right" size={12} /></span>
+    </div>
+  </div>
+) : (
+  <div class="mk">
+    <div class="mk-card mk-col mk-gap-8">
+      <span class="mk-chip chip faint-chip">Local news</span>
+      <h3 class="hl-flat">Storm warning issued for the coast tonight</h3>
+      <p class="pale">Strong winds and heavy rain are expected from 6 pm. Officials advise drivers to…</p>
+      <p class="pale">2 h ago · 3 min read</p>
+      <span class="mk-btn cta ghost">Read more <MkIcon name="arrow-right" size={12} /></span>
+    </div>
+  </div>
+)}
+
+<style>
+  .chip {
+    align-self: flex-start;
+    background: var(--mk-bg);
+    color: var(--mk-2);
+  }
+  .hl {
+    font-size: 19px;
+    font-weight: 700;
+    line-height: 1.2;
+  }
+  .cta {
+    align-self: flex-start;
+    margin-top: 4px;
+  }
+  .faint-chip {
+    background: var(--mk-card);
+    border-color: #f0f1f4;
+    color: #c3c7cd;
+  }
+  .hl-flat {
+    font-size: 11px;
+    font-weight: 400;
+    line-height: 1.4;
+    color: #a9adb4;
+  }
+  .pale {
+    font-size: 11px;
+    color: #a9adb4;
+  }
+  .ghost {
+    background: transparent;
+    border-color: #eef0f3;
+    color: #cdd0d5;
+  }
+</style>

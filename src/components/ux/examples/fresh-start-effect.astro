@@ -1,0 +1,103 @@
+---
+import MkIcon from '../MkIcon.astro';
+interface Props {
+  variant: 'good' | 'bad';
+}
+const { variant } = Astro.props;
+---
+
+{variant === 'good' ? (
+  <div class="mk">
+    <div class="mk-card mk-col mk-gap-8">
+      <div>
+        <p class="mk-xs">Monday, 1 July</p>
+        <p class="mk-h">Hello, July. A fresh month starts today</p>
+      </div>
+      <div class="mk-sunk recap">
+        <p class="mk-xs">Your June</p>
+        <div class="mk-grid-3 mk-mt-4">
+          <div class="stat is-v"><span class="mk-ico is-violet is-round"><MkIcon name="leaf" size={12} /></span><b>15</b><span class="mk-xs">meditations</span></div>
+          <div class="stat is-a"><span class="mk-ico is-amber is-round"><MkIcon name="book" size={12} /></span><b>3</b><span class="mk-xs">books</span></div>
+          <div class="stat is-b"><span class="mk-ico is-blue is-round"><MkIcon name="dumbbell" size={12} /></span><b>12</b><span class="mk-xs">workouts</span></div>
+        </div>
+      </div>
+      <p class="mk-s">Set new goals for July?</p>
+      <ul class="mk-list is-ruled goals">
+        <li class="mk-li">Meditation <span class="inc is-v">+5 days</span><MkIcon name="chevron-right" size={12} class="mk-chev" /></li>
+        <li class="mk-li">Reading <span class="inc is-a">+1 book</span><MkIcon name="chevron-right" size={12} class="mk-chev" /></li>
+        <li class="mk-li">Workouts <span class="inc is-b">+3 days</span><MkIcon name="chevron-right" size={12} class="mk-chev" /></li>
+      </ul>
+      <span class="mk-btn mk-btn-pri mk-btn-block">Start July with new goals</span>
+    </div>
+  </div>
+) : (
+  <div class="mk">
+    <div class="mk-card mk-col mk-gap-12">
+      <div>
+        <p class="mk-xs">Monday, 1 July</p>
+        <p class="mk-h">My habits</p>
+      </div>
+      <ul class="mk-col mk-gap-12">
+        <li>
+          <div class="mk-spread"><span class="mk-t">Morning meditation</span><span class="mk-xs">15/30 days</span></div>
+          <div class="mk-progress is-thin mk-mt-4" style="--v: 50%; --c: var(--mk-blue)"></div>
+        </li>
+        <li>
+          <div class="mk-spread"><span class="mk-t">Reading</span><span class="mk-xs">8/30 days</span></div>
+          <div class="mk-progress is-thin mk-mt-4" style="--v: 27%; --c: var(--mk-blue)"></div>
+        </li>
+        <li>
+          <div class="mk-spread"><span class="mk-t">Workouts</span><span class="mk-xs">12/30 days</span></div>
+          <div class="mk-progress is-thin mk-mt-4" style="--v: 40%; --c: var(--mk-blue)"></div>
+        </li>
+      </ul>
+      <span class="mk-btn mk-btn-sec mk-btn-block">Add habit</span>
+    </div>
+  </div>
+)}
+
+<style>
+  .recap {
+    padding: 8px 10px;
+  }
+  .stat {
+    display: grid;
+    justify-items: center;
+    gap: 1px;
+    text-align: center;
+  }
+  .stat .mk-ico {
+    width: 22px;
+    height: 22px;
+  }
+  .stat b {
+    font-size: 15px;
+    line-height: 1.15;
+  }
+  .stat.is-v b,
+  .inc.is-v {
+    color: var(--mk-violet);
+  }
+  .stat.is-a b,
+  .inc.is-a {
+    color: var(--mk-amber);
+  }
+  .stat.is-b b,
+  .inc.is-b {
+    color: var(--mk-blue);
+  }
+  .goals .mk-li {
+    min-height: 26px;
+    padding: 3px 0;
+    font-size: 11px;
+    font-weight: 500;
+  }
+  .inc {
+    margin-left: auto;
+    font-size: 11px;
+    font-weight: 600;
+  }
+  .goals :global(.mk-chev) {
+    margin-left: 0;
+  }
+</style>

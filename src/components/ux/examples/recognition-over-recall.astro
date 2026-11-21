@@ -1,0 +1,86 @@
+---
+import MkIcon from '../MkIcon.astro';
+interface Props {
+  variant: 'good' | 'bad';
+}
+const { variant } = Astro.props;
+---
+
+{variant === 'good' ? (
+  <div class="mk">
+    <div class="mk-card mk-col mk-gap-12">
+      <div class="mk-row mk-gap-6">
+        <div class="mk-input is-focus mk-grow"><span class="caret"></span><span class="ph">Search articles</span></div>
+        <span class="mk-btn mk-btn-pri go"><MkIcon name="search" size={14} /></span>
+      </div>
+      <div class="mk-col mk-gap-6">
+        <p class="sec"><MkIcon name="tag" size={12} />Popular tags</p>
+        <div class="mk-row mk-gap-4 mk-wrap">
+          <span class="mk-chip tg"># javascript</span>
+          <span class="mk-chip tg"># frontend</span>
+          <span class="mk-chip tg"># ux</span>
+        </div>
+      </div>
+      <div class="mk-col mk-gap-2">
+        <p class="sec"><MkIcon name="clock" size={12} />Recent searches</p>
+        <div class="mk-list">
+          <div class="mk-li rec"><MkIcon name="clock" size={12} class="mk-muted" />what is a design token</div>
+          <div class="mk-li rec"><MkIcon name="clock" size={12} class="mk-muted" />how to write button labels</div>
+        </div>
+      </div>
+    </div>
+  </div>
+) : (
+  <div class="mk">
+    <div class="mk-card mk-col mk-gap-8">
+      <div class="mk-row mk-gap-6">
+        <div class="mk-input mk-grow">javscript, ui-ux<span class="caret"></span></div>
+        <span class="mk-btn mk-btn-pri go"><MkIcon name="search" size={14} /></span>
+      </div>
+      <p class="mk-xs">Enter tag names exactly, separated by commas.</p>
+      <div class="none">
+        <p class="mk-s">No articles found for “javscript, ui-ux”</p>
+      </div>
+    </div>
+  </div>
+)}
+
+<style>
+  .go {
+    width: 30px;
+    padding: 0;
+  }
+  .caret {
+    width: 1.5px;
+    height: 14px;
+    margin-right: -4px;
+    background: var(--mk-ink);
+  }
+  .sec {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--mk-2);
+  }
+  .tg {
+    border-color: transparent;
+    background: var(--mk-bg);
+  }
+  .rec {
+    min-height: 26px;
+    padding: 3px 0;
+    font-size: 11.5px;
+  }
+  .none {
+    display: grid;
+    place-items: center;
+    min-height: 112px;
+    margin-top: 4px;
+    border: 1px dashed var(--mk-line);
+    border-radius: 9px;
+    text-align: center;
+    padding: 0 12px;
+  }
+</style>

@@ -1,0 +1,86 @@
+---
+import MkIcon from '../MkIcon.astro';
+interface Props { variant: 'good' | 'bad' }
+const { variant } = Astro.props;
+const brands = [
+  ['Volta', '128', true],
+  ['Kestrel', '96', false],
+  ['Nimbus', '54', false],
+] as const;
+---
+
+{variant === 'good' ? (
+  <div class="mk">
+    <div class="mk-card mk-col mk-gap-12">
+      <div class="mk-spread"><p class="mk-h">Filters</p><span class="mk-link mk-xs">Clear all</span></div>
+      <div class="mk-col mk-gap-8">
+        <span class="mk-label">Price</span>
+        <div class="range"><i class="fill"></i><i class="knob" style="left: 30%"></i><i class="knob" style="left: 62%"></i></div>
+        <div class="mk-grid-2 mk-gap-6">
+          <div class="mk-input is-sm"><span class="ph">from</span>$300</div>
+          <div class="mk-input is-sm"><span class="ph">to</span>$500</div>
+        </div>
+      </div>
+      <hr class="mk-divider" />
+      <div class="mk-col mk-gap-6">
+        <div class="mk-spread"><span class="mk-label">Brand</span><span class="mk-link mk-xs">See all 12</span></div>
+        {brands.map(([name, n, on]) => (
+          <div class="mk-row mk-gap-6 opt">
+            <i class={on ? 'mk-check is-on' : 'mk-check'}></i>
+            <span>{name}</span>
+            <span class="mk-muted">{n}</span>
+          </div>
+        ))}
+      </div>
+      <hr class="mk-divider" />
+      <div class="mk-spread"><span class="opt">In stock only <span class="mk-muted">545</span></span><span class="mk-toggle is-on"></span></div>
+    </div>
+  </div>
+) : (
+  <div class="mk">
+    <div class="mk-card mk-col mk-gap-8">
+      <p class="mk-h">Search filter</p>
+      <div class="mk-input mk-mt-4"><span class="ph">Price from-to</span></div>
+      <div class="mk-input"><span class="ph mk-grow">Brand</span><span class="mk-muted"><MkIcon name="chevron-down" size={12} /></span></div>
+      <div class="mk-input"><span class="ph mk-grow">Availability</span><span class="mk-muted"><MkIcon name="chevron-down" size={12} /></span></div>
+      <div class="mk-input"><span class="ph mk-grow">Rating</span><span class="mk-muted"><MkIcon name="chevron-down" size={12} /></span></div>
+      <span class="mk-btn mk-btn-pri mk-btn-block mk-mt-8">Apply</span>
+    </div>
+  </div>
+)}
+
+<style>
+  .mk-label {
+    margin-bottom: 0;
+  }
+  .opt {
+    font-size: 11px;
+  }
+  .range {
+    position: relative;
+    height: 4px;
+    margin: 4px 6px;
+    border-radius: 99px;
+    background: var(--mk-line);
+  }
+  .range i {
+    position: absolute;
+  }
+  .fill {
+    inset: 0 38% 0 30%;
+    border-radius: inherit;
+    background: var(--mk-blue);
+  }
+  .knob {
+    top: 50%;
+    width: 12px;
+    height: 12px;
+    border: 2px solid var(--mk-blue);
+    border-radius: 50%;
+    background: #fff;
+    transform: translate(-50%, -50%);
+  }
+  .is-sm .ph {
+    margin-right: 2px;
+  }
+</style>

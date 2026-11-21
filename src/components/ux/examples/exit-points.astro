@@ -1,0 +1,108 @@
+---
+import MkIcon from '../MkIcon.astro';
+interface Props {
+  variant: 'good' | 'bad';
+}
+const { variant } = Astro.props;
+---
+
+{variant === 'good' ? (
+  <div class="mk">
+    <div class="mk-card mk-col mk-gap-12">
+      <div class="mk-row mk-gap-4 ex-crumbs">
+        <span class="ex-crumb is-done"><MkIcon name="check-circle" size={14} />Contact</span>
+        <span class="mk-muted ex-ic"><MkIcon name="chevron-right" size={12} /></span>
+        <span class="ex-crumb is-now"><i>2</i>Delivery</span>
+        <span class="mk-muted ex-ic"><MkIcon name="chevron-right" size={12} /></span>
+        <span class="ex-crumb"><i>3</i>Payment</span>
+      </div>
+      <div class="mk-col mk-gap-8">
+        <span class="mk-row mk-gap-6 mk-b"><span class="mk-radio is-on"></span>Parcel locker</span>
+        <div class="mk-grid-2">
+          <div class="mk-field">
+            <span class="mk-label">City <span class="req">*</span></span>
+            <div class="mk-input">Porto<span class="mk-muted ex-end"><MkIcon name="chevron-down" size={13} /></span></div>
+          </div>
+          <div class="mk-field">
+            <span class="mk-label">Locker <span class="req">*</span></span>
+            <div class="mk-input">No. 12<span class="mk-muted ex-end"><MkIcon name="chevron-down" size={13} /></span></div>
+          </div>
+        </div>
+        <span class="mk-row mk-gap-6"><span class="mk-radio"></span>Courier</span>
+        <span class="mk-row mk-gap-6"><span class="mk-radio"></span>Self-pickup</span>
+      </div>
+      <div class="mk-grid-2">
+        <span class="mk-btn mk-btn-sec mk-btn-lg"><MkIcon name="bookmark" size={13} />Save and exit</span>
+        <span class="mk-btn mk-btn-pri mk-btn-lg">Continue<MkIcon name="chevron-right" size={13} /></span>
+      </div>
+    </div>
+  </div>
+) : (
+  <div class="mk">
+    <div class="mk-card mk-col mk-gap-12">
+      <span class="mk-h">Step 2 of 3. Delivery</span>
+      <div class="mk-col mk-gap-8">
+        <span class="mk-row mk-gap-6 mk-b"><span class="mk-radio is-on"></span>Parcel locker</span>
+        <div class="mk-grid-2">
+          <div class="mk-field">
+            <span class="mk-label">City <span class="req">*</span></span>
+            <div class="mk-input"><span class="ph">City</span><span class="mk-muted ex-end"><MkIcon name="chevron-down" size={13} /></span></div>
+          </div>
+          <div class="mk-field">
+            <span class="mk-label">Locker <span class="req">*</span></span>
+            <div class="mk-input"><span class="ph">Locker</span><span class="mk-muted ex-end"><MkIcon name="chevron-down" size={13} /></span></div>
+          </div>
+        </div>
+        <span class="mk-row mk-gap-6"><span class="mk-radio"></span>Courier</span>
+        <span class="mk-row mk-gap-6"><span class="mk-radio"></span>Self-pickup</span>
+      </div>
+      <span class="mk-btn mk-btn-pri mk-btn-lg mk-btn-block">Continue<MkIcon name="chevron-right" size={13} /></span>
+    </div>
+  </div>
+)}
+
+<style>
+  .ex-crumbs {
+    font-size: 11px;
+  }
+  .ex-crumb {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    color: var(--mk-3);
+    white-space: nowrap;
+  }
+  .ex-crumb i {
+    display: grid;
+    place-items: center;
+    width: 15px;
+    height: 15px;
+    border: 1.5px solid var(--mk-line);
+    border-radius: 50%;
+    font-style: normal;
+    font-size: 9px;
+    font-weight: 700;
+  }
+  .ex-crumb.is-done {
+    color: var(--mk-green);
+    font-weight: 600;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+  .ex-crumb.is-now {
+    color: var(--mk-ink);
+    font-weight: 600;
+  }
+  .ex-crumb.is-now i {
+    border-color: var(--mk-pri);
+    background: var(--mk-pri);
+    color: #fff;
+  }
+  .ex-ic,
+  .ex-end {
+    display: inline-flex;
+  }
+  .ex-end {
+    margin-left: auto;
+  }
+</style>

@@ -1,0 +1,109 @@
+---
+import MkIcon from '../MkIcon.astro';
+interface Props {
+  variant: 'good' | 'bad';
+}
+const { variant } = Astro.props;
+const good = variant === 'good';
+const steps = [
+  { title: 'Personal details', note: 'Imported at sign-up' },
+  { title: 'Contact details', note: 'Imported at sign-up' },
+  { title: 'Company details', note: 'Add your legal details' },
+  { title: 'Confirmation', note: 'Review and sign' },
+];
+// In the good version the first two steps arrive already done
+const state = (i: number) => (good ? (i < 2 ? 'done' : i === 2 ? 'now' : 'next') : i === 0 ? 'now' : 'next');
+---
+
+<div class="mk">
+  <div class="mk-card mk-col mk-gap-8">
+    <div class="mk-spread">
+      <span class="mk-h">Set up your account</span>
+      <span class="mk-xs">{good ? '2 of 4 done' : '4 steps'}</span>
+    </div>
+    <div class="mk-progress is-thin" style={`--v: ${good ? 50 : 0}%; --c: var(--mk-green)`}></div>
+    <div class="mk-col mk-gap-4 mk-mt-4">
+      {steps.map((s, i) => {
+        const st = state(i);
+        return (
+          <div class:list={['row', `is-${st}`]}>
+            <span class="dot">{st === 'done' ? <MkIcon name="check" size={11} stroke={3} /> : i + 1}</span>
+            <span class="mk-grow">
+              <span class="name">{s.title}</span>
+              {good && <span class="note">{s.note}</span>}
+            </span>
+            {st === 'done' && <span class="edit">Edit</span>}
+            {st === 'now' && <MkIcon name="chevron-right" size={12} class="mk-chev" />}
+          </div>
+        );
+      })}
+    </div>
+  </div>
+</div>
+
+<style>
+  .row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 34px;
+    padding: 6px 8px;
+    border-radius: 9px;
+    background: var(--mk-bg);
+    color: var(--mk-3);
+  }
+  .row.is-now {
+    background: var(--mk-card);
+    border: 1px solid var(--mk-line);
+    color: var(--mk-ink);
+  }
+  .row.is-done {
+    background: #eef6f1;
+    color: var(--mk-2);
+  }
+  .dot {
+    flex: none;
+    display: grid;
+    place-items: center;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    border: 1px solid var(--mk-line);
+    background: var(--mk-card);
+    font-size: 9.5px;
+    font-weight: 700;
+  }
+  .is-now .dot {
+    border-color: var(--mk-blue);
+    background: var(--mk-blue);
+    color: #fff;
+  }
+  .is-done .dot {
+    border-color: var(--mk-green);
+    background: var(--mk-green);
+    color: #fff;
+  }
+  .name {
+    display: block;
+    font-size: 11px;
+    font-weight: 600;
+    line-height: 1.25;
+  }
+  .note {
+    display: block;
+    font-size: 9.5px;
+    line-height: 1.3;
+  }
+  .is-done .note {
+    color: var(--mk-green);
+    font-weight: 600;
+  }
+  .is-now .note {
+    color: var(--mk-2);
+  }
+  .edit {
+    font-size: 9.5px;
+    text-decoration: underline;
+    color: var(--mk-2);
+  }
+</style>

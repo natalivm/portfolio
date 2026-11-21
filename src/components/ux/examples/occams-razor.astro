@@ -1,0 +1,67 @@
+---
+import MkIcon from '../MkIcon.astro';
+interface Props {
+  variant: 'good' | 'bad';
+}
+const { variant } = Astro.props;
+---
+
+{variant === 'good' ? (
+  <div class="mk">
+    <div class="mk-card mk-col mk-gap-12">
+      <div class="mk-spread">
+        <span class="mk-h">Subscribe to newsletter</span>
+        <span class="mk-muted"><MkIcon name="x" size={14} /></span>
+      </div>
+      <hr class="mk-divider" />
+      <p class="mk-s">One short email a week with our best new articles.</p>
+      <div class="mk-field">
+        <span class="mk-label">Your email</span>
+        <div class="mk-input"><span class="mk-muted oc-i"><MkIcon name="mail" size={14} /></span><span class="ph">name@example.com</span></div>
+      </div>
+      <span class="mk-btn mk-btn-pri mk-btn-block mk-btn-lg">Subscribe</span>
+      <p class="mk-xs mk-center">Unsubscribe at any time.</p>
+    </div>
+  </div>
+) : (
+  <div class="mk">
+    <div class="mk-card mk-col mk-gap-8">
+      <div class="mk-spread">
+        <span class="mk-h">Subscribe to newsletter</span>
+        <span class="mk-muted"><MkIcon name="x" size={14} /></span>
+      </div>
+      <hr class="mk-divider" />
+      <div class="mk-field">
+        <span class="mk-label">Full name</span>
+        <div class="mk-input"><span class="ph">First and last name</span></div>
+      </div>
+      <div class="mk-field">
+        <span class="mk-label">Your email</span>
+        <div class="mk-input"><span class="mk-muted oc-i"><MkIcon name="mail" size={14} /></span><span class="ph">name@example.com</span></div>
+      </div>
+      <div class="mk-field">
+        <span class="mk-label">Date of birth</span>
+        <div class="mk-input"><span class="ph">DD/MM/YYYY</span><span class="mk-muted oc-end"><MkIcon name="calendar" size={14} /></span></div>
+      </div>
+      <div class="mk-field">
+        <span class="mk-label">How often?</span>
+        <div class="mk-row mk-gap-12 mk-t">
+          <span class="mk-row mk-gap-4"><span class="mk-radio"></span>Daily</span>
+          <span class="mk-row mk-gap-4"><span class="mk-radio is-on"></span>Weekly</span>
+          <span class="mk-row mk-gap-4"><span class="mk-radio"></span>Monthly</span>
+        </div>
+      </div>
+      <span class="mk-btn mk-btn-pri mk-btn-block mk-btn-lg mk-mt-4">Subscribe</span>
+    </div>
+  </div>
+)}
+
+<style>
+  .oc-i {
+    display: inline-flex;
+  }
+  .oc-end {
+    display: inline-flex;
+    margin-left: auto;
+  }
+</style>

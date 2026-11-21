@@ -1,0 +1,105 @@
+---
+import MkIcon from '../MkIcon.astro';
+interface Props {
+  variant: 'good' | 'bad';
+}
+const { variant } = Astro.props;
+const rows = [
+  { label: 'New', sub: '2,400 per day', pct: '10.5%', n: '1,234' },
+  { label: 'Active', sub: '1,800 per day', pct: '12.2%', n: '3,544' },
+  { label: 'Inactive', sub: '1,200 per day', pct: '8.3%', n: '4,783' },
+  { label: 'Mobile', sub: '1,100 per day', pct: '5.5%', n: '1,489' },
+  { label: 'Desktop', sub: '900 per day', pct: '2.5%', n: '2,333' },
+];
+const line = 'M0 80 C 22 74, 40 56, 64 54 S 104 50, 124 52 S 156 70, 178 68 S 226 40, 252 22 S 272 10, 280 8';
+---
+
+{variant === 'good' ? (
+  <div class="mk">
+    <div class="mk-card">
+      <div class="mk-spread">
+        <span class="mk-row mk-gap-6 mk-s"><MkIcon name="users" size={13} />Total users</span>
+        <span class="mk-ico"><MkIcon name="chart" size={13} /></span>
+      </div>
+      <div class="mk-row mk-mt-4">
+        <span class="mk-h-xl">9,452</span>
+        <span class="mk-badge is-green"><MkIcon name="arrow-up" size={9} stroke={2.6} />18%</span>
+      </div>
+      <svg class="chart" viewBox="0 0 280 100" preserveAspectRatio="none">
+        {[40, 80, 120, 160, 200, 240].map((x) => (
+          <line class="grid" x1={x} y1="0" x2={x} y2="100" vector-effect="non-scaling-stroke" />
+        ))}
+        <path class="area" d={`${line} L 280 100 L 0 100 Z`} />
+        <path class="ln" d={line} vector-effect="non-scaling-stroke" />
+      </svg>
+      <div class="mk-spread mk-xs mk-mt-4"><span>1 Oct</span><span>31 Oct</span></div>
+    </div>
+  </div>
+) : (
+  <div class="mk">
+    <div class="mk-card">
+      <div class="mk-spread">
+        <span class="mk-row mk-gap-6 mk-s"><MkIcon name="users" size={13} />Total users</span>
+        <span class="mk-ico"><MkIcon name="chart" size={13} /></span>
+      </div>
+      <div class="mk-row mk-mt-4">
+        <span class="mk-h-xl">9,452</span>
+        <span class="mk-badge is-green"><MkIcon name="arrow-up" size={9} stroke={2.6} />18%</span>
+      </div>
+      <table class="mk-table mk-mt-8">
+        {rows.map((r) => (
+          <tr>
+            <td><b>{r.label}</b><span class="sub">{r.sub}</span></td>
+            <td class="num">{r.pct}</td>
+            <td class="num">{r.n}</td>
+          </tr>
+        ))}
+      </table>
+    </div>
+  </div>
+)}
+
+<style>
+  .chart {
+    display: block;
+    width: 100%;
+    height: 124px;
+    margin-top: 10px;
+    overflow: visible;
+  }
+  .grid {
+    stroke: var(--mk-line);
+    stroke-width: 1;
+    stroke-dasharray: 3 3;
+  }
+  .area {
+    fill: var(--mk-blue);
+    opacity: 0.1;
+  }
+  .ln {
+    fill: none;
+    stroke: var(--mk-blue);
+    stroke-width: 2.25;
+    stroke-linecap: round;
+  }
+  .mk-table td {
+    padding: 4px 4px;
+  }
+  .mk-table tr:last-child td {
+    border-bottom: 0;
+  }
+  .mk-table b {
+    display: block;
+    font-weight: 600;
+    font-size: 10.5px;
+  }
+  .sub {
+    display: block;
+    font-size: 9px;
+    color: var(--mk-3);
+  }
+  .num {
+    text-align: right;
+    color: var(--mk-2);
+  }
+</style>

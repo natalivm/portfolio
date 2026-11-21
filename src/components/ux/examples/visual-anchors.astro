@@ -1,0 +1,73 @@
+---
+import MkIcon from '../MkIcon.astro';
+interface Props {
+  variant: 'good' | 'bad';
+}
+const { variant } = Astro.props;
+const orders = [
+  { no: '73737', meta: '12 Nov · €48.00', status: 'Delivered', tone: 'green', icon: 'check-circle' },
+  { no: '65352', meta: '9 Nov · €19.90', status: 'Cancelled', tone: 'red', icon: 'x-circle' },
+  { no: '27721', meta: '7 Nov · €112.50', status: 'Processing', tone: 'amber', icon: 'refresh' },
+  { no: '18240', meta: '2 Nov · €35.00', status: 'Delivered', tone: 'green', icon: 'check-circle' },
+] as const;
+---
+
+{variant === 'good' ? (
+  <div class="mk">
+    <div class="mk-card">
+      <div class="mk-spread">
+        <p class="mk-h">My orders</p>
+        <span class="mk-xs">Last 30 days</span>
+      </div>
+      <ul class="mk-list is-ruled mk-mt-8">
+        {orders.map((o) => (
+          <li class="mk-li">
+            <div class="mk-grow">
+              <p class="mk-t mk-b">Order #{o.no}</p>
+              <p class="mk-xs">{o.meta}</p>
+            </div>
+            <span class="st">
+              <span class={`mk-badge stb is-${o.tone}`}><MkIcon name={o.icon} size={11} stroke={2.4} />{o.status}</span>
+            </span>
+          </li>
+        ))}
+      </ul>
+    </div>
+  </div>
+) : (
+  <div class="mk">
+    <div class="mk-card">
+      <div class="mk-spread">
+        <p class="mk-h">My orders</p>
+        <span class="mk-xs">Last 30 days</span>
+      </div>
+      <ul class="mk-list is-ruled mk-mt-8">
+        {orders.map((o) => (
+          <li class="mk-li">
+            <div class="mk-grow">
+              <p class="mk-t mk-b">Order #{o.no}</p>
+              <p class="mk-xs">{o.meta}</p>
+            </div>
+            <span class="st mk-s">{o.status}</span>
+          </li>
+        ))}
+      </ul>
+    </div>
+  </div>
+)}
+
+<style>
+  .mk-li {
+    min-height: 44px;
+  }
+  .st {
+    flex: none;
+    width: 96px;
+  }
+  .stb {
+    height: 21px;
+    padding: 0 8px 0 6px;
+    gap: 4px;
+    font-size: 10.5px;
+  }
+</style>

@@ -1,0 +1,70 @@
+---
+import MkIcon from '../MkIcon.astro';
+interface Props { variant: 'good' | 'bad' }
+const { variant } = Astro.props;
+---
+
+{variant === 'good' ? (
+  <div class="mk">
+    <div class="mk-overlay">
+      <div class="mk-dialog mk-col mk-center dlg">
+        <span class="close"><MkIcon name="x" size={12} /></span>
+        <p class="mk-h">Stay in the loop</p>
+        <p class="mk-s">Get 20% off your first order and the occasional deal worth knowing about.</p>
+        <div class="mk-field left">
+          <span class="mk-label">Email</span>
+          <div class="mk-input"><MkIcon name="mail" size={12} class="mk-muted" /><span class="ph">name@email.com</span></div>
+        </div>
+        <span class="mk-btn mk-btn-pri mk-btn-block">Subscribe</span>
+        <p class="mk-xs">Unsubscribe any time. We never share your email.</p>
+      </div>
+    </div>
+  </div>
+) : (
+  <div class="mk">
+    <div class="mk-overlay">
+      <div class="mk-dialog mk-col mk-center dlg">
+        <span class="mk-badge is-red timer"><MkIcon name="clock" size={10} />Ends in 04:59</span>
+        <p class="shout">DON’T MISS 20% OFF!!!</p>
+        <p class="mk-s">Subscribe now, before it’s too late!</p>
+        <div class="mk-field left">
+          <span class="mk-label">Email</span>
+          <div class="mk-input"><MkIcon name="mail" size={12} class="mk-muted" /><span class="ph">name@email.com</span></div>
+        </div>
+        <span class="mk-btn mk-btn-danger mk-btn-block">YES, I WANT TO SAVE!!!</span>
+        <span class="mk-btn mk-btn-sec mk-btn-block mk-btn-sm">No, I hate saving money</span>
+      </div>
+    </div>
+  </div>
+)}
+
+<style>
+  .dlg {
+    position: relative;
+    padding-top: 18px;
+  }
+  .left {
+    text-align: left;
+  }
+  .close {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    display: grid;
+    place-items: center;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: var(--mk-bg);
+    color: var(--mk-2);
+  }
+  .timer {
+    align-self: center;
+  }
+  .shout {
+    color: var(--mk-red);
+    font-size: 15px;
+    font-weight: 800;
+    line-height: 1.15;
+  }
+</style>

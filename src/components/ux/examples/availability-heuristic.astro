@@ -1,0 +1,62 @@
+---
+import MkIcon from '../MkIcon.astro';
+interface Props {
+  variant: 'good' | 'bad';
+}
+const { variant } = Astro.props;
+---
+
+{variant === 'good' ? (
+  <div class="mk">
+    <div class="mk-card mk-col">
+      <div class="mk-spread">
+        <p class="mk-h">Log in to your account</p>
+        <span class="close"><MkIcon name="x" size={11} /></span>
+      </div>
+      <div class="mk-input"><span class="ph">Email</span></div>
+      <div class="mk-col mk-gap-4">
+        <div class="mk-input"><span class="ph mk-grow">Password</span><span class="mk-muted"><MkIcon name="eye" size={13} /></span></div>
+        <span class="mk-xs mk-b ink right">Forgot password?</span>
+      </div>
+      <span class="mk-btn mk-btn-pri mk-btn-block">Log in</span>
+      <div class="mk-row mk-gap-6 mk-xs"><span class="mk-divider mk-grow"></span>or log in with<span class="mk-divider mk-grow"></span></div>
+      <div class="mk-grid-2 mk-gap-6">
+        <span class="mk-btn mk-btn-sec mk-btn-sm"><MkIcon name="key" size={12} />Passkey</span>
+        <span class="mk-btn mk-btn-sec mk-btn-sm"><MkIcon name="phone" size={12} />Phone</span>
+      </div>
+      <p class="mk-xs mk-center">No account yet? <b class="ink">Sign up</b></p>
+    </div>
+  </div>
+) : (
+  <div class="mk">
+    <div class="mk-card mk-col">
+      <div class="mk-spread">
+        <p class="mk-h">Log in to your account</p>
+        <span class="close"><MkIcon name="x" size={11} /></span>
+      </div>
+      <span class="mk-btn mk-btn-sec mk-btn-block">Log in via authentication system</span>
+      <div class="mk-input"><span class="ph">Your ID</span></div>
+      <div class="mk-input"><span class="ph">Password</span></div>
+      <span class="mk-btn mk-btn-pri mk-btn-block">Log in</span>
+      <p class="mk-xs">Use the credentials issued to you by the system.</p>
+    </div>
+  </div>
+)}
+
+<style>
+  .close {
+    display: grid;
+    place-items: center;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: var(--mk-bg);
+    color: var(--mk-2);
+  }
+  .ink {
+    color: var(--mk-ink);
+  }
+  .right {
+    align-self: flex-end;
+  }
+</style>

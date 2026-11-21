@@ -1,0 +1,102 @@
+---
+import MkIcon from '../MkIcon.astro';
+interface Props {
+  variant: 'good' | 'bad';
+}
+const { variant } = Astro.props;
+---
+
+<div class="mk">
+  <div class="mk-sunk mk-col panel">
+    <div class="mk-spread">
+      <p class="mk-b mk-t">Notifications</p>
+      <span class="mk-xs">Today</span>
+    </div>
+    {variant === 'good' ? (
+      <div class="mk-col mk-gap-6">
+        <div class="note">
+          <span class="mk-ico is-violet"><MkIcon name="heart" size={13} /></span>
+          <div class="mk-col mk-gap-2">
+            <p class="mk-b mk-t">Share your best moments</p>
+            <p class="mk-xs">Your travel post got 128 reactions this week.</p>
+          </div>
+        </div>
+        <div class="note">
+          <span class="mk-ico is-green"><MkIcon name="trophy" size={13} /></span>
+          <div class="mk-col mk-gap-2">
+            <p class="mk-b mk-t">You’re close to passing your friends in the ranking</p>
+            <p class="mk-xs">Two posts this week would put your profile in the spotlight.</p>
+          </div>
+        </div>
+        <div class="note">
+          <span class="mk-ico is-blue"><MkIcon name="sparkle" size={13} /></span>
+          <div class="mk-col mk-gap-2">
+            <p class="mk-b mk-t">Try something new</p>
+            <p class="mk-xs">A $9.99 booster makes your profile stand out for a week.</p>
+          </div>
+        </div>
+      </div>
+    ) : (
+      <div class="mk-col mk-gap-6">
+        <div class="note is-red">
+          <span class="mk-ico"><MkIcon name="arrow-down" size={13} /></span>
+          <div class="mk-col mk-gap-2">
+            <p class="mk-b mk-t">You’re losing followers!</p>
+            <p class="mk-xs">−15 in the last week</p>
+          </div>
+        </div>
+        <div class="note is-yellow">
+          <span class="mk-ico"><MkIcon name="frown" size={13} /></span>
+          <div class="mk-col mk-gap-2">
+            <p class="mk-t">You have the <b>worst rating</b> of all your friends!</p>
+            <p class="mk-xs">Everyone else posted this week.</p>
+          </div>
+        </div>
+        <div class="note is-salmon">
+          <span class="mk-ico"><MkIcon name="warning" size={13} /></span>
+          <div class="mk-col mk-gap-2">
+            <p class="mk-t">Buy a booster <b>for $9.99</b> now to win your popularity back!</p>
+            <p class="mk-xs">Before it’s too late.</p>
+          </div>
+        </div>
+      </div>
+    )}
+  </div>
+</div>
+
+<style>
+  .panel {
+    gap: 10px;
+    padding: 12px;
+  }
+  .note {
+    display: flex;
+    align-items: flex-start;
+    gap: 9px;
+    padding: 9px 10px;
+    border-radius: 10px;
+    background: var(--mk-card);
+    box-shadow: 0 1px 2px rgb(20 22 28 / 0.06);
+  }
+  .note.is-red {
+    background: var(--mk-red);
+    color: #fff;
+  }
+  .note.is-red .mk-xs {
+    color: rgb(255 255 255 / 0.85);
+  }
+  .note.is-yellow {
+    background: #ffd84a;
+  }
+  .note.is-salmon {
+    background: #ff9c8f;
+  }
+  .note.is-yellow .mk-xs,
+  .note.is-salmon .mk-xs {
+    color: #3a2a1a;
+  }
+  .note[class*='is-'] .mk-ico {
+    background: rgb(255 255 255 / 0.35);
+    color: inherit;
+  }
+</style>

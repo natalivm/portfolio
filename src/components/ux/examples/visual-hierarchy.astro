@@ -1,0 +1,83 @@
+---
+import MkIcon from '../MkIcon.astro';
+interface Props {
+  variant: 'good' | 'bad';
+}
+const { variant } = Astro.props;
+---
+
+{variant === 'good' ? (
+  <div class="mk">
+    <div class="mk-card mk-col mk-gap-12 card">
+      <div class="mk-col mk-gap-6">
+        <span class="mk-badge is-green new">In stock</span>
+        <p class="mk-h-xl">Aurora X2 Pro</p>
+        <p class="specs">
+          <span><MkIcon name="phone" size={11} />6.9″</span><i>·</i>
+          <span><MkIcon name="sun" size={11} />OLED</span><i>·</i>
+          <span><MkIcon name="camera" size={11} />48 MP</span>
+        </p>
+      </div>
+      <p class="price">$1,099</p>
+      <div class="mk-grid-2">
+        <span class="mk-btn mk-btn-soft mk-btn-lg">Add to cart</span>
+        <span class="mk-btn mk-btn-pri mk-btn-lg">Buy now</span>
+      </div>
+    </div>
+  </div>
+) : (
+  <div class="mk">
+    <div class="mk-card mk-col mk-gap-6 card flat">
+      <p>In stock</p>
+      <p>Aurora X2 Pro</p>
+      <p>Display size: 6.9 inches</p>
+      <p>Screen type: OLED</p>
+      <p>Camera: 48 MP</p>
+      <p>$1,099</p>
+      <div class="mk-grid-2 mk-mt-4">
+        <span class="mk-btn same">Add to cart</span>
+        <span class="mk-btn same">Buy now</span>
+      </div>
+    </div>
+  </div>
+)}
+
+<style>
+  .card {
+    padding: 16px;
+  }
+  .new {
+    align-self: flex-start;
+  }
+  .specs {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+    color: var(--mk-3);
+  }
+  .specs span {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+  }
+  .specs i {
+    font-style: normal;
+  }
+  .price {
+    font-size: 28px;
+    font-weight: 700;
+    line-height: 1;
+  }
+  .flat p {
+    font-size: 12px;
+    font-weight: 400;
+  }
+  .same {
+    height: 30px;
+    background: #f1e7ea;
+    color: var(--mk-ink);
+    font-weight: 400;
+  }
+</style>

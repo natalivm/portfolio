@@ -1,0 +1,65 @@
+---
+import MkIcon from '../MkIcon.astro';
+interface Props { variant: 'good' | 'bad' }
+const { variant } = Astro.props;
+---
+
+{variant === 'good' ? (
+  <div class="mk">
+    <div class="mk-card mk-col post">
+      <div class="mk-row">
+        <span class="mk-avatar is-3">NH</span>
+        <div class="mk-grow"><p class="mk-b">Nina Hale</p><p class="mk-xs">Yesterday</p></div>
+        <MkIcon name="more" />
+      </div>
+      <div class="mk-img is-1 is-wide"><MkIcon name="music" size={24} /></div>
+      <div class="mk-spread">
+        <div class="mk-row mk-gap-12">
+          <span class="act"><MkIcon name="heart" size={17} />155</span>
+          <span class="act"><MkIcon name="chat" size={17} />24</span>
+          <span class="act"><MkIcon name="send" size={17} />7</span>
+        </div>
+        <MkIcon name="bookmark" size={17} />
+      </div>
+      <p class="mk-s"><b>Nina Hale</b> Late-night study session, playlist on.</p>
+    </div>
+  </div>
+) : (
+  <div class="mk">
+    <div class="mk-card mk-col post">
+      <div class="mk-row">
+        <span class="mk-avatar is-3">NH</span>
+        <div class="mk-grow"><p class="mk-b">Nina Hale</p><p class="mk-xs">Yesterday</p></div>
+        <MkIcon name="more" />
+      </div>
+      <div class="mk-img is-1 is-wide"><MkIcon name="music" size={24} /></div>
+      <div class="mk-spread">
+        <div class="mk-row mk-gap-12">
+          <span class="act"><MkIcon name="bookmark" size={17} /></span>
+          <span class="act"><MkIcon name="settings" size={17} /></span>
+          <span class="act"><MkIcon name="edit" size={17} /></span>
+        </div>
+        <MkIcon name="send" size={17} />
+      </div>
+      <p class="mk-s"><b>Nina Hale</b> Late-night study session, playlist on.</p>
+    </div>
+  </div>
+)}
+
+<style>
+  .post {
+    gap: 10px;
+    padding: 12px;
+  }
+  .act {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    min-height: 17px;
+    font-size: 11px;
+    font-weight: 600;
+  }
+  .mk-s b {
+    color: var(--mk-ink);
+  }
+</style>

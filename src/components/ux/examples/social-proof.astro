@@ -1,0 +1,53 @@
+---
+import MkIcon from '../MkIcon.astro';
+interface Props {
+  variant: 'good' | 'bad';
+}
+const { variant } = Astro.props;
+---
+
+{variant === 'good' ? (
+  <div class="mk">
+    <div class="mk-card mk-col">
+      <div class="mk-img is-1 photo"><MkIcon name="pizza" size={28} /></div>
+      <div class="mk-col mk-gap-2">
+        <div class="mk-spread">
+          <p class="mk-h">Trattoria Lume</p>
+          <span class="mk-row mk-gap-4 mk-s"><span class="star">★</span><b class="ink">4.9</b><span class="mk-muted">(133)</span></span>
+        </div>
+        <span class="mk-row mk-gap-4 mk-xs"><MkIcon name="eye" size={12} />20 people viewing now</span>
+      </div>
+      <p class="mk-s">Fresh pasta, risotto and wood-fired pizza in a quiet courtyard, with a short list of local wines.</p>
+      <div class="mk-alert is-blue"><MkIcon name="users" size={13} />150 bookings this week</div>
+      <span class="mk-btn mk-btn-pri mk-btn-block">Book a table</span>
+    </div>
+  </div>
+) : (
+  <div class="mk">
+    <div class="mk-card mk-col">
+      <div class="mk-img is-1 photo"><MkIcon name="pizza" size={28} /></div>
+      <p class="mk-h">Trattoria Lume</p>
+      <p class="mk-s">Fresh pasta, risotto and wood-fired pizza in a quiet courtyard, with a short list of local wines.</p>
+      <div class="mk-alert vague">Lots of people choose this restaurant!</div>
+      <span class="mk-btn mk-btn-pri mk-btn-block">Book a table</span>
+    </div>
+  </div>
+)}
+
+<style>
+  .photo {
+    aspect-ratio: 2.6 / 1;
+  }
+  .star {
+    color: #f2a91c;
+    font-size: 12px;
+    line-height: 1;
+  }
+  .ink {
+    color: var(--mk-ink);
+  }
+  .vague {
+    background: var(--mk-violet-soft);
+    color: #4a2a85;
+  }
+</style>

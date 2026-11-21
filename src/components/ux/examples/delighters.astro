@@ -1,0 +1,80 @@
+---
+interface Props {
+  variant: 'good' | 'bad';
+}
+const { variant } = Astro.props;
+---
+
+{variant === 'good' ? (
+  <div class="mk">
+    <div class="mk-card mk-col mk-gap-12 order">
+      <div class="mk-spread">
+        <p class="mk-t mk-b">Order #2481</p>
+        <span class="mk-xs">Noodle bowl, spring rolls</span>
+      </div>
+      <div class="mk-sunk mk-center mk-col mk-gap-4 wait">
+        <svg class="pot" width="84" height="58" viewBox="0 0 84 58" fill="none" aria-hidden="true">
+          <path d="M30 10c-3-3 3-5 0-9M42 12c-3-3 3-5 0-9M54 10c-3-3 3-5 0-9" stroke="#b4b8bf" stroke-width="1.8" stroke-linecap="round" />
+          <path d="M60 14c4-6 10-6 14-2-4 5-10 6-14 2z" fill="#17914b" />
+          <circle cx="16" cy="12" r="4" fill="#f59a3c" />
+          <circle cx="16" cy="12" r="1.6" fill="#ffd8a8" />
+          <rect x="24" y="15" width="36" height="4" rx="2" transform="rotate(-8 24 15)" fill="#c2453b" />
+          <rect x="39" y="10" width="6" height="4" rx="2" transform="rotate(-8 39 10)" fill="#c2453b" />
+          <rect x="18" y="24" width="48" height="5" rx="2.5" fill="#c2453b" />
+          <rect x="12" y="27" width="8" height="4" rx="2" fill="#c2453b" />
+          <rect x="64" y="27" width="8" height="4" rx="2" fill="#c2453b" />
+          <path d="M21 29h42v12a6 6 0 0 1-6 6H27a6 6 0 0 1-6-6z" fill="#e2574c" />
+          <rect x="16" y="49" width="52" height="3" rx="1.5" fill="#5f646d" />
+          <path d="M30 58c-3-2-3-5 0-7 3 2 3 5 0 7zM42 58c-3-2-3-5 0-7 3 2 3 5 0 7zM54 58c-3-2-3-5 0-7 3 2 3 5 0 7z" fill="#2f6bff" />
+        </svg>
+        <p class="cap">Ready in</p>
+        <p class="timer">12<span>:45</span></p>
+      </div>
+      <p class="mk-s mk-center">Good things take a moment. The chef is adding the secret final touch.</p>
+    </div>
+  </div>
+) : (
+  <div class="mk">
+    <div class="mk-card mk-col mk-gap-12 order">
+      <div class="mk-spread">
+        <p class="mk-t mk-b">Order #2481</p>
+        <span class="mk-xs">Noodle bowl, spring rolls</span>
+      </div>
+      <div class="mk-sunk mk-center mk-col mk-gap-8 wait plain">
+        <div class="mk-progress" style="--v: 70%; --c: var(--mk-blue)"></div>
+        <p class="mk-t">Preparing your order</p>
+      </div>
+    </div>
+  </div>
+)}
+
+<style>
+  .order {
+    min-height: 224px;
+  }
+  .wait {
+    align-items: center;
+    padding: 12px 10px 10px;
+  }
+  .wait.plain {
+    flex: 1;
+    justify-content: center;
+    align-items: stretch;
+    padding: 16px;
+  }
+  .cap {
+    font-size: 9.5px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--mk-2);
+  }
+  .timer {
+    font-size: 26px;
+    font-weight: 700;
+    line-height: 1;
+  }
+  .timer span {
+    color: var(--mk-3);
+  }
+</style>

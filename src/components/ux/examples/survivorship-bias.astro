@@ -1,0 +1,142 @@
+---
+import MkIcon from '../MkIcon.astro';
+interface Props {
+  variant: 'good' | 'bad';
+}
+const { variant } = Astro.props;
+const drops = [
+  { i: 'mail', l: 'Email verification', n: '180', p: '36%' },
+  { i: 'key', l: 'Password rules', n: '165', p: '33%' },
+  { i: 'card', l: 'Payment step', n: '160', p: '31%' },
+] as const;
+const reviews = [
+  { a: 'JL', c: '', q: '“So easy to use”' },
+  { a: 'RK', c: 'is-2', q: '“Love the new design”' },
+  { a: 'MO', c: 'is-3', q: '“Checkout took seconds”' },
+];
+---
+
+{variant === 'good' ? (
+  <div class="mk mk-wide">
+    <div class="mk-sunk mk-col">
+      <div class="mk-spread">
+        <p class="mk-t mk-b">Sign-up funnel</p>
+        <span class="mk-badge">Last 30 days</span>
+      </div>
+      <div class="mk-grid-3 mk-gap-6">
+        <div class="kpi">
+          <span class="mk-ico is-round sm"><MkIcon name="users" size={12} /></span>
+          <p class="mk-xs">Total users</p>
+          <p class="num">6,240</p>
+          <span class="mk-badge is-red">−2%</span>
+        </div>
+        <div class="kpi">
+          <span class="mk-ico is-round sm"><MkIcon name="cart" size={12} /></span>
+          <p class="mk-xs">Sales</p>
+          <p class="num">2,343</p>
+          <span class="mk-badge is-green">+24/mo</span>
+        </div>
+        <div class="kpi">
+          <span class="mk-ico is-round is-red sm"><MkIcon name="x-circle" size={12} /></span>
+          <p class="mk-xs">Drop-offs</p>
+          <p class="num red">505</p>
+          <span class="mk-badge is-red">+19/mo</span>
+        </div>
+      </div>
+      <p class="mk-xs mk-b ink">Where people give up</p>
+      <div class="mk-flat mk-list is-ruled rows">
+        {drops.map((d) => (
+          <div class="mk-li">
+            <span class="mk-ico is-round sm"><MkIcon name={d.i} size={12} /></span>
+            <span class="mk-grow mk-s ink">{d.l}</span>
+            <span class="mk-t mk-b">{d.n}</span>
+            <span class="mk-badge is-red">{d.p}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  </div>
+) : (
+  <div class="mk mk-wide">
+    <div class="mk-sunk mk-col">
+      <div class="mk-spread">
+        <p class="mk-t mk-b">Customer feedback</p>
+        <span class="mk-badge">Last 30 days</span>
+      </div>
+      <div class="mk-flat mk-row mk-gap-12 score">
+        <p class="big">4.9</p>
+        <span class="vr"></span>
+        <div class="mk-col mk-gap-4">
+          <span class="mk-stars stars" style="--v: 92%"></span>
+          <p class="mk-xs">from <span class="mk-link u">158 reviews</span></p>
+          <span class="mk-badge is-green">Top rated</span>
+        </div>
+      </div>
+      <p class="mk-xs mk-b ink">What users say</p>
+      <div class="mk-flat mk-list is-ruled rows">
+        {reviews.map((r) => (
+          <div class="mk-li">
+            <span class={`mk-avatar is-sm ${r.c}`}>{r.a}</span>
+            <span class="mk-grow mk-s ink">{r.q}</span>
+            <span class="mk-stars" style="--v: 100%"></span>
+          </div>
+        ))}
+      </div>
+    </div>
+  </div>
+)}
+
+<style>
+  .kpi {
+    display: grid;
+    justify-items: start;
+    gap: 2px;
+    padding: 8px;
+    border-radius: 10px;
+    background: var(--mk-card);
+    border: 1px solid var(--mk-line);
+  }
+  .kpi .sm {
+    margin-bottom: 2px;
+  }
+  .sm {
+    width: 22px;
+    height: 22px;
+  }
+  .num {
+    font-size: 15px;
+    font-weight: 700;
+    line-height: 1.1;
+  }
+  .red {
+    color: var(--mk-red);
+  }
+  .ink {
+    color: var(--mk-ink);
+  }
+  .rows {
+    padding: 2px 10px;
+  }
+  .rows .mk-li {
+    min-height: 30px;
+  }
+  .score {
+    padding: 12px 14px;
+  }
+  .big {
+    font-size: 38px;
+    font-weight: 700;
+    line-height: 1;
+  }
+  .vr {
+    align-self: stretch;
+    width: 1px;
+    background: var(--mk-line);
+  }
+  .stars {
+    font-size: 14px;
+  }
+  .u {
+    text-decoration: underline;
+  }
+</style>

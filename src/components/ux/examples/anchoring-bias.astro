@@ -1,0 +1,79 @@
+---
+import MkIcon from '../MkIcon.astro';
+interface Props {
+  variant: 'good' | 'bad';
+}
+const { variant } = Astro.props;
+const express = { icon: 'zap', tone: 'is-green', name: 'Express courier', sub: 'Arrives today, our fastest', price: '€9.90' } as const;
+const standard = { icon: 'truck', tone: 'is-blue', name: 'Standard post', sub: '2–4 working days', price: '€4.90' } as const;
+const pickup = { icon: 'pin', tone: 'is-amber', name: 'Pickup point', sub: 'Collect in 3–5 days', price: 'Free' } as const;
+---
+
+{variant === 'good' ? (
+  <div class="mk">
+    <div class="mk-card mk-col mk-gap-8">
+      <p class="mk-h">Delivery method</p>
+      {[express, standard, pickup].map((o, i) => (
+        <div class:list={['opt', { 'is-hi': i === 0 }]}>
+          <span class={`mk-ico is-lg ${o.tone}`}><MkIcon name={o.icon} size={16} /></span>
+          <div class="mk-grow">
+            <p class="mk-t mk-b">{o.name}</p>
+            <p class="sub">{o.sub}</p>
+          </div>
+          <span class="price">{o.price}</span>
+        </div>
+      ))}
+    </div>
+  </div>
+) : (
+  <div class="mk">
+    <div class="mk-card mk-col mk-gap-8">
+      <p class="mk-h">Delivery method</p>
+      {[standard, pickup, express].map((o) => (
+        <div class="opt">
+          <span class={`mk-ico is-lg ${o.tone}`}><MkIcon name={o.icon} size={16} /></span>
+          <div class="mk-grow">
+            <p class="mk-t mk-b">{o.name}</p>
+            <p class="sub">{o.sub}</p>
+          </div>
+          <span class="price">{o.price}</span>
+        </div>
+      ))}
+    </div>
+  </div>
+)}
+
+<style>
+  .opt {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-height: 56px;
+    padding: 8px 12px 8px 10px;
+    border: 1px solid var(--mk-line);
+    border-radius: 10px;
+    background: var(--mk-card);
+  }
+  .opt.is-hi {
+    background: var(--mk-green-soft);
+    border-color: var(--mk-green);
+  }
+  .is-hi .mk-ico {
+    background: var(--mk-green);
+    color: #fff;
+  }
+  .sub {
+    margin-top: 1px;
+    font-size: 10px;
+    color: var(--mk-2);
+  }
+  .is-hi .sub {
+    color: var(--mk-green);
+    font-weight: 600;
+  }
+  .price {
+    font-size: 12px;
+    font-weight: 700;
+    white-space: nowrap;
+  }
+</style>

@@ -1,0 +1,80 @@
+---
+import MkIcon from '../MkIcon.astro';
+interface Props {
+  variant: 'good' | 'bad';
+}
+const { variant } = Astro.props;
+---
+
+{variant === 'good' ? (
+  <div class="mk">
+    <div class="mk-col mk-gap-12">
+      <div class="mk-card box">
+        <p class="mk-xs mk-b">Files</p>
+        <ul class="mk-list is-ruled">
+          <li class="mk-li"><span class="mk-ico is-blue"><MkIcon name="file" size={13} /></span><span class="mk-grow mk-t">report.pdf</span><span class="mk-btn mk-btn-sec mk-btn-xs">Open</span></li>
+          <li class="mk-li"><span class="mk-ico is-blue"><MkIcon name="image" size={13} /></span><span class="mk-grow mk-t">cover.jpg</span><span class="mk-btn mk-btn-sec mk-btn-xs">Open</span></li>
+          <li class="mk-li"><span class="mk-ico is-blue"><MkIcon name="play" size={13} /></span><span class="mk-grow mk-t">intro.mp4</span><span class="mk-btn mk-btn-sec mk-btn-xs">Open</span></li>
+        </ul>
+      </div>
+      <div class="mk-col mk-gap-4">
+        <div class="mk-alert is-green note"><span class="ic ok"><MkIcon name="check-circle" size={14} /></span><span class="mk-grow">Saved successfully</span><span class="x"><MkIcon name="x" size={11} /></span></div>
+        <div class="mk-alert is-red note"><span class="ic err"><MkIcon name="x-circle" size={14} /></span><span class="mk-grow">Something went wrong</span><span class="x"><MkIcon name="x" size={11} /></span></div>
+        <div class="mk-alert is-amber note"><span class="ic warn"><MkIcon name="warning" size={14} /></span><span class="mk-grow">Verification required</span><span class="x"><MkIcon name="x" size={11} /></span></div>
+      </div>
+    </div>
+  </div>
+) : (
+  <div class="mk">
+    <div class="mk-col mk-gap-12">
+      <div class="mk-card box">
+        <p class="mk-xs mk-b">Files</p>
+        <ul class="mk-list is-ruled">
+          <li class="mk-li"><span class="mk-ico"><MkIcon name="file" size={13} /></span><span class="mk-grow mk-t">report.pdf</span><span class="mk-btn mk-btn-pri mk-btn-xs">Open</span></li>
+          <li class="mk-li"><span class="mk-ico is-blue"><MkIcon name="image" size={13} /></span><span class="mk-grow mk-t">cover.jpg</span><span class="mk-btn mk-btn-sec mk-btn-xs">Open</span></li>
+          <li class="mk-li"><span class="mk-ico is-green"><MkIcon name="play" size={13} /></span><span class="mk-grow mk-t">intro.mp4</span><span class="mk-btn mk-btn-soft mk-btn-xs">Open</span></li>
+        </ul>
+      </div>
+      <div class="mk-col mk-gap-4">
+        <div class="mk-alert note n1"><span class="ic grey"><MkIcon name="check-circle" size={14} /></span><span class="mk-grow">Saved successfully</span><span class="x red"><MkIcon name="x" size={11} /></span></div>
+        <div class="mk-alert note n2"><span class="ic warn"><MkIcon name="x-circle" size={14} /></span><span class="mk-grow">Something went wrong</span><span class="x"><MkIcon name="x" size={11} /></span></div>
+        <div class="mk-alert note n3"><span class="ic err"><MkIcon name="warning" size={14} /></span><span class="mk-grow">Verification required</span><span class="x red"><MkIcon name="x" size={11} /></span></div>
+      </div>
+    </div>
+  </div>
+)}
+
+<style>
+  .box {
+    padding: 10px 12px 6px;
+  }
+  .box .mk-li {
+    min-height: 36px;
+  }
+  .note {
+    align-items: center;
+    padding: 8px 10px;
+    color: var(--mk-ink);
+    font-weight: 500;
+  }
+  .ic,
+  .x {
+    display: inline-flex;
+  }
+  .ok { color: var(--mk-green); }
+  .err { color: var(--mk-red); }
+  .warn { color: var(--mk-amber); }
+  .grey { color: var(--mk-3); }
+  .x { color: var(--mk-3); }
+  .x.red { color: var(--mk-red); }
+  .n1 {
+    background: var(--mk-card);
+    box-shadow: inset 0 0 0 1px var(--mk-line);
+  }
+  .n2 {
+    background: #fff7f8;
+  }
+  .n3 {
+    background: var(--mk-bg);
+  }
+</style>

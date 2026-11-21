@@ -1,0 +1,109 @@
+---
+import MkIcon from '../MkIcon.astro';
+interface Props {
+  variant: 'good' | 'bad';
+}
+const { variant } = Astro.props;
+const clips = ['Weekly update', 'Onboarding tour', 'Bug repro'];
+---
+
+<div class="mk mk-wide">
+  <div class="mk-window">
+    <div class="mk-bar"><i></i><i></i><i></i></div>
+    {variant === 'good' ? (
+      <div class="ml-top mk-spread">
+        <span class="ml-logo"><span class="ml-mark"><MkIcon name="play" size={9} /></span>clipnote</span>
+        <span class="mk-row mk-gap-6">
+          <span class="ml-ic"><MkIcon name="search" size={14} /></span>
+          <span class="ml-ic ml-rel"><MkIcon name="bell" size={14} /><i class="ml-dot"></i></span>
+          <span class="mk-btn mk-btn-sec mk-btn-xs"><MkIcon name="calendar" size={11} />Schedule</span>
+          <span class="mk-btn mk-btn-blue mk-btn-xs"><MkIcon name="plus" size={11} />New clip</span>
+        </span>
+      </div>
+    ) : (
+      <div class="ml-top ml-3">
+        <span class="mk-row mk-gap-6">
+          <span class="ml-ic"><MkIcon name="search" size={14} /></span>
+          <span class="mk-btn mk-btn-blue mk-btn-xs"><MkIcon name="plus" size={11} />New clip</span>
+        </span>
+        <span class="ml-logo"><span class="ml-mark"><MkIcon name="play" size={9} /></span>clipnote</span>
+        <span class="mk-row mk-gap-6 ml-end">
+          <span class="ml-ic ml-rel"><MkIcon name="bell" size={14} /><i class="ml-dot"></i></span>
+          <span class="mk-btn mk-btn-sec mk-btn-xs"><MkIcon name="calendar" size={11} />Schedule</span>
+        </span>
+      </div>
+    )}
+    <div class="mk-body mk-col mk-gap-8">
+      <div class="mk-spread">
+        <span class="mk-b">My library</span>
+        <span class="mk-xs">12 clips</span>
+      </div>
+      <div class="mk-grid-3">
+        {clips.map((c, i) => (
+          <div class="mk-col mk-gap-4">
+            <div class={`mk-img is-wide is-${i + 3}`}><MkIcon name="play" size={12} /></div>
+            <span class="ml-t">{c}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+  .ml-top {
+    height: 38px;
+    padding: 0 10px;
+    border-bottom: 1px solid var(--mk-line);
+  }
+  .ml-3 {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    gap: 6px;
+  }
+  .ml-end {
+    justify-content: flex-end;
+  }
+  .ml-logo {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: -0.2px;
+  }
+  .ml-mark {
+    display: grid;
+    place-items: center;
+    width: 16px;
+    height: 16px;
+    border-radius: 5px;
+    background: var(--mk-violet);
+    color: #fff;
+  }
+  .ml-ic {
+    display: inline-flex;
+    color: var(--mk-2);
+  }
+  .ml-rel {
+    position: relative;
+  }
+  .ml-dot {
+    position: absolute;
+    top: -1px;
+    right: -1px;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--mk-red);
+    box-shadow: 0 0 0 1.5px #fff;
+  }
+  .ml-t {
+    font-size: 10px;
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+</style>

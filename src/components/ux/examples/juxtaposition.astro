@@ -1,0 +1,67 @@
+---
+import MkIcon from '../MkIcon.astro';
+interface Props {
+  variant: 'good' | 'bad';
+}
+const { variant } = Astro.props;
+---
+
+{variant === 'good' ? (
+  <div class="mk">
+    <div class="mk-card mk-col mk-gap-12">
+      <div class="mk-spread">
+        <p class="mk-h">Edit project</p>
+        <span class="mk-muted"><MkIcon name="x" size={14} /></span>
+      </div>
+      <div class="mk-field">
+        <span class="mk-label">Name</span>
+        <div class="mk-input">Spring campaign</div>
+      </div>
+      <div class="mk-field">
+        <span class="mk-label">Description</span>
+        <div class="mk-input is-area text">Landing page and two emails for the April launch.</div>
+      </div>
+      <div class="mk-grid-3 mk-gap-6">
+        <span class="mk-btn mk-btn-pri">Save</span>
+        <span class="mk-btn mk-btn-sec">Cancel</span>
+        <span class="mk-btn del">Delete</span>
+      </div>
+    </div>
+  </div>
+) : (
+  <div class="mk">
+    <div class="mk-card mk-col mk-gap-12">
+      <div class="mk-spread">
+        <p class="mk-h">Edit project</p>
+        <span class="mk-muted"><MkIcon name="x" size={14} /></span>
+      </div>
+      <div class="mk-field">
+        <span class="mk-label">Name</span>
+        <div class="mk-input">Spring campaign</div>
+      </div>
+      <div class="mk-field">
+        <span class="mk-label">Description</span>
+        <div class="mk-input is-area text">Landing page and two emails for the April launch.</div>
+      </div>
+      <div class="mk-grid-3 mk-gap-6">
+        <span class="mk-btn mk-btn-sec same">Save</span>
+        <span class="mk-btn mk-btn-sec same">Cancel</span>
+        <span class="mk-btn mk-btn-sec same">Delete</span>
+      </div>
+    </div>
+  </div>
+)}
+
+<style>
+  .text {
+    white-space: normal;
+  }
+  .del {
+    background: var(--mk-red-soft);
+    color: var(--mk-red);
+  }
+  .same {
+    color: var(--mk-2);
+    font-weight: 500;
+  }
+</style>

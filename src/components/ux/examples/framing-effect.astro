@@ -1,0 +1,71 @@
+---
+import MkIcon from '../MkIcon.astro';
+interface Props {
+  variant: 'good' | 'bad';
+}
+const { variant } = Astro.props;
+---
+
+{variant === 'good' ? (
+  <div class="mk">
+    <div class="mk-card mk-col mk-gap-12">
+      <div class="mk-col mk-gap-4">
+        <p class="mk-h-lg">Give children a healthy future</p>
+        <p class="mk-s">Every $10 pays for one day of treatment.</p>
+      </div>
+      <div class="mk-col mk-gap-4">
+        <div class="mk-progress" style="--v: 72%; --c: var(--mk-green)"></div>
+        <div class="mk-spread mk-xs">
+          <span class="green mk-b">$13,000 raised</span>
+          <span>of $18,000</span>
+        </div>
+      </div>
+      <p class="mk-row mk-gap-6 green mk-b mk-t"><MkIcon name="check-circle" size={14} />345 children already treated</p>
+      <div class="mk-grid-3 mk-gap-6">
+        <span class="mk-btn mk-btn-sec mk-btn-sm">$10</span>
+        <span class="mk-btn mk-btn-sec mk-btn-sm is-on">$25</span>
+        <span class="mk-btn mk-btn-sec mk-btn-sm">$50</span>
+      </div>
+      <span class="mk-btn mk-btn-pri mk-btn-block">Give $25</span>
+    </div>
+  </div>
+) : (
+  <div class="mk">
+    <div class="mk-card mk-col mk-gap-12">
+      <div class="mk-col mk-gap-4">
+        <p class="mk-h-lg">Help the children!</p>
+        <p class="mk-s">We don’t have enough money for treatment!</p>
+      </div>
+      <div class="mk-col mk-gap-4">
+        <div class="mk-progress gap" style="--v: 72%; --c: #cfd2d8"></div>
+        <div class="mk-spread mk-xs">
+          <span>Goal $18,000</span>
+          <span class="red mk-b">$5,000 still missing</span>
+        </div>
+      </div>
+      <p class="mk-row mk-gap-6 red mk-b mk-t"><MkIcon name="warning" size={14} />We can’t manage without you!</p>
+      <div class="mk-grid-3 mk-gap-6">
+        <span class="mk-btn mk-btn-sec mk-btn-sm">$10</span>
+        <span class="mk-btn mk-btn-sec mk-btn-sm is-on">$25</span>
+        <span class="mk-btn mk-btn-sec mk-btn-sm">$50</span>
+      </div>
+      <span class="mk-btn mk-btn-pri mk-btn-block">Donate!</span>
+    </div>
+  </div>
+)}
+
+<style>
+  .green {
+    color: var(--mk-green);
+  }
+  .red {
+    color: var(--mk-red);
+  }
+  .gap {
+    background: var(--mk-red);
+  }
+  .is-on {
+    border-color: var(--mk-pri);
+    box-shadow: inset 0 0 0 1px var(--mk-pri);
+  }
+</style>

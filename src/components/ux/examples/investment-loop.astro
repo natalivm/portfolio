@@ -1,0 +1,84 @@
+---
+import MkIcon from '../MkIcon.astro';
+interface Props {
+  variant: 'good' | 'bad';
+}
+const { variant } = Astro.props;
+---
+
+{variant === 'good' ? (
+  <div class="mk">
+    <div class="mk-card mk-col mk-gap-12">
+      <div class="banner">
+        <span class="mk-ico is-round medal"><MkIcon name="trophy" size={15} /></span>
+        <div class="mk-col mk-gap-2">
+          <p class="mk-b mk-t">Learning progress</p>
+          <p class="mk-xs green">2/3 daily tasks · 12-day streak</p>
+        </div>
+      </div>
+      <p class="mk-b mk-t">This week you learned</p>
+      <div class="mk-grid-2">
+        <div class="mk-sunk mk-col mk-gap-2">
+          <MkIcon name="book" size={15} />
+          <p class="mk-h">+50 words</p>
+          <p class="mk-xs">1,555 in total</p>
+        </div>
+        <div class="mk-sunk mk-col mk-gap-2">
+          <MkIcon name="bookmark" size={15} />
+          <p class="mk-h">+7 rules</p>
+          <p class="mk-xs">86 in total</p>
+        </div>
+      </div>
+      <span class="mk-btn mk-btn-pri mk-btn-block">Continue learning</span>
+    </div>
+  </div>
+) : (
+  <div class="mk">
+    <div class="mk-card mk-col mk-gap-12">
+      <div class="mk-col mk-gap-6 plain">
+        <div class="mk-spread">
+          <p class="mk-b mk-t">Learning progress</p>
+          <span class="mk-s">2/50 lessons</span>
+        </div>
+        <div class="mk-progress is-thin" style="--v: 4%; --c: var(--mk-violet)"></div>
+      </div>
+      <p class="mk-b mk-t">Still ahead</p>
+      <div class="mk-grid-2">
+        <div class="mk-sunk mk-col mk-gap-2">
+          <MkIcon name="book" size={15} />
+          <p class="mk-h">48 lessons</p>
+          <p class="mk-xs">left in this course</p>
+        </div>
+        <div class="mk-sunk mk-col mk-gap-2">
+          <MkIcon name="clock" size={15} />
+          <p class="mk-h">24 hours</p>
+          <p class="mk-xs">of study to go</p>
+        </div>
+      </div>
+      <span class="mk-btn mk-btn-pri mk-btn-block">Continue lesson</span>
+    </div>
+  </div>
+)}
+
+<style>
+  .banner {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    border-radius: 10px;
+    background: var(--mk-green-soft);
+  }
+  .medal {
+    background: var(--mk-card);
+    color: var(--mk-green);
+  }
+  .green {
+    color: var(--mk-green);
+    font-weight: 600;
+  }
+  .plain {
+    min-height: 46px;
+    justify-content: center;
+  }
+</style>

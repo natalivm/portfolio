@@ -1,0 +1,60 @@
+---
+import MkIcon from '../MkIcon.astro';
+interface Props {
+  variant: 'good' | 'bad';
+}
+const { variant } = Astro.props;
+---
+
+{variant === 'good' ? (
+  <div class="mk">
+    <div class="mk-overlay">
+      <div class="mk-dialog mk-col mk-gap-8">
+        <span class="mk-ico is-amber is-lg"><MkIcon name="warning" size={18} /></span>
+        <p class="mk-h">Delete account</p>
+        <p class="mk-s">You will permanently lose:</p>
+        <ul class="mk-col mk-gap-6 loss">
+          <li><MkIcon name="clock" size={13} /> 3 years of activity history</li>
+          <li><MkIcon name="star" size={13} /> 2,450 points and bonuses</li>
+          <li><MkIcon name="trophy" size={13} /> Gold status and 14 badges</li>
+        </ul>
+        <hr class="mk-divider" />
+        <div class="mk-grid-2 mk-gap-6">
+          <span class="mk-btn mk-btn-sec mk-btn-sm">Keep account</span>
+          <span class="mk-btn mk-btn-pri mk-btn-sm">Delete anyway</span>
+        </div>
+      </div>
+    </div>
+  </div>
+) : (
+  <div class="mk">
+    <div class="mk-overlay">
+      <div class="mk-dialog mk-col mk-gap-8">
+        <span class="mk-ico is-amber is-lg"><MkIcon name="warning" size={18} /></span>
+        <p class="mk-h">Delete account</p>
+        <p class="mk-s">Are you sure you want to delete your account?</p>
+        <hr class="mk-divider" />
+        <div class="mk-grid-2 mk-gap-6">
+          <span class="mk-btn mk-btn-sec mk-btn-sm">Cancel</span>
+          <span class="mk-btn mk-btn-pri mk-btn-sm">Delete</span>
+        </div>
+      </div>
+    </div>
+  </div>
+)}
+
+<style>
+  .mk-overlay {
+    min-height: 268px;
+  }
+  .loss li {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    font-size: 11px;
+    font-weight: 500;
+  }
+  .loss :global(svg) {
+    color: var(--mk-2);
+  }
+</style>

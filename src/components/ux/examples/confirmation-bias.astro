@@ -1,0 +1,164 @@
+---
+import MkIcon from '../MkIcon.astro';
+interface Props {
+  variant: 'good' | 'bad';
+}
+const { variant } = Astro.props;
+const dist = [
+  { n: 5, v: 62 },
+  { n: 4, v: 19 },
+  { n: 3, v: 9 },
+  { n: 2, v: 5 },
+  { n: 1, v: 5 },
+];
+const reviews = [
+  { who: 'AM', name: 'Alex M.', text: 'The best phone I’ve ever owned.' },
+  { who: 'JK', name: 'Jo K.', text: 'Incredible. Buy it now.' },
+  { who: 'SR', name: 'Sam R.', text: 'Nothing else even comes close.' },
+];
+---
+
+{variant === 'good' ? (
+  <div class="mk">
+    <div class="mk-card mk-col mk-gap-8">
+      <p class="mk-h">Lumo 16 Pro reviews</p>
+      <div class="mk-row mk-gap-12 meta">
+        <span class="mk-row mk-gap-4"><span class="star"><MkIcon name="star" size={12} /></span><b>4.3</b></span>
+        <span class="mk-row mk-gap-4"><span class="up"><MkIcon name="thumb-up" size={12} /></span>248</span>
+        <span class="mk-row mk-gap-4"><span class="down"><MkIcon name="thumb-down" size={12} /></span>64</span>
+      </div>
+      <div class="mk-grid-2 pc">
+        <div>
+          <p class="pros">Pros</p>
+          <ul><li>Great camera</li><li>Fast charging</li><li>Smooth performance</li></ul>
+        </div>
+        <div>
+          <p class="cons">Cons</p>
+          <ul><li>Battery drains fast</li><li>Runs warm</li><li>Heavy in the hand</li></ul>
+        </div>
+      </div>
+      <ul class="dist">
+        {dist.map((d) => (
+          <li>
+            <span class="n">{d.n}<span class="star"><MkIcon name="star" size={9} /></span></span>
+            <span class="bar"><span style={`width:${d.v}%`}></span></span>
+            <span class="v">{d.v}%</span>
+          </li>
+        ))}
+      </ul>
+    </div>
+  </div>
+) : (
+  <div class="mk">
+    <div class="mk-card mk-col mk-gap-8">
+      <p class="mk-h">Lumo 16 Pro reviews</p>
+      <div class="mk-row mk-gap-6 meta">
+        <span class="mk-stars" style="--v:100%"></span><b>5.0</b><span class="mk-muted">Featured reviews</span>
+      </div>
+      <ul class="mk-col mk-gap-6">
+        {reviews.map((r, i) => (
+          <li class="mk-sunk rv">
+            <div class="mk-row mk-gap-6">
+              <span class={`mk-avatar is-sm${i ? ` is-${i + 1}` : ''}`}>{r.who}</span>
+              <span class="mk-xs mk-b who">{r.name}</span>
+              <span class="mk-stars" style="--v:100%"></span>
+            </div>
+            <p class="mk-t mk-mt-4">{r.text}</p>
+          </li>
+        ))}
+      </ul>
+    </div>
+  </div>
+)}
+
+<style>
+  .meta {
+    font-size: 11px;
+    color: var(--mk-2);
+  }
+  .meta b {
+    color: var(--mk-ink);
+  }
+  .star {
+    display: inline-flex;
+    color: #f2a91c;
+  }
+  .star :global(svg) {
+    fill: currentColor;
+  }
+  .up {
+    display: inline-flex;
+    color: var(--mk-green);
+  }
+  .down {
+    display: inline-flex;
+    color: var(--mk-red);
+  }
+  .pc {
+    padding: 8px 0;
+    border-block: 1px solid var(--mk-line);
+  }
+  .pros,
+  .cons {
+    margin-bottom: 3px;
+    font-size: 11px;
+    font-weight: 700;
+  }
+  .pros { color: var(--mk-green); }
+  .cons { color: var(--mk-red); }
+  .pc ul {
+    display: grid;
+    gap: 2px;
+    font-size: 10.5px;
+    color: var(--mk-2);
+  }
+  .pc li::before {
+    content: '•';
+    margin-right: 5px;
+    color: var(--mk-3);
+  }
+  .dist {
+    display: grid;
+    gap: 3px;
+  }
+  .dist li {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 10px;
+    color: var(--mk-2);
+  }
+  .n {
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
+    width: 18px;
+  }
+  .bar {
+    flex: 1;
+    height: 5px;
+    border-radius: 99px;
+    background: var(--mk-line);
+    overflow: hidden;
+  }
+  .bar span {
+    display: block;
+    height: 100%;
+    border-radius: inherit;
+    background: #f2a91c;
+  }
+  .v {
+    width: 26px;
+    text-align: right;
+  }
+  .rv {
+    padding: 9px 10px;
+  }
+  .who {
+    color: var(--mk-ink);
+  }
+  .rv .mk-stars {
+    margin-left: auto;
+    font-size: 10px;
+  }
+</style>

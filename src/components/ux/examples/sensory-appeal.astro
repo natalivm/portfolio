@@ -1,0 +1,111 @@
+---
+import MkIcon from '../MkIcon.astro';
+interface Props {
+  variant: 'good' | 'bad';
+}
+const { variant } = Astro.props;
+const good = variant === 'good';
+---
+
+<div class="mk">
+  <div class="mk-card mk-col mk-gap-12">
+    <div class="mk-spread">
+      <p class="mk-h">Notes</p>
+      <span class="mk-xs">12 notes</span>
+    </div>
+    <div class={`desk ${good ? 'is-good' : 'is-bad'}`}>
+      <div class="sheet is-new">
+        <p class="untitled">New note</p>
+        <i class="rule"></i><i class="rule"></i><i class="rule"></i><i class="rule"></i>
+      </div>
+      {good && (
+        <div class="sheet is-old"></div>
+      )}
+      {good && (
+        <svg class="swoosh" width="64" height="22" viewBox="0 0 64 22" fill="none" aria-hidden="true">
+          <path d="M60 18C46 2 22 2 8 14M8 14l1-6M8 14l6 1" stroke="var(--mk-violet)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+        </svg>
+      )}
+      <span class="fab"><MkIcon name="plus" size={16} stroke={2.4} /></span>
+    </div>
+    {good ? (
+      <div class="mk-row mk-wrap mk-gap-4">
+        <span class="mk-badge is-violet"><MkIcon name="zap" size={10} /> Button pulses</span>
+        <span class="mk-badge is-violet"><MkIcon name="book" size={10} /> Page turns</span>
+        <span class="mk-badge is-violet"><MkIcon name="music" size={10} /> Rustle + haptic</span>
+      </div>
+    ) : (
+      <div class="mk-row mk-wrap mk-gap-4">
+        <span class="mk-badge"><MkIcon name="x" size={10} /> Instant swap</span>
+        <span class="mk-badge"><MkIcon name="x" size={10} /> No sound</span>
+        <span class="mk-badge"><MkIcon name="x" size={10} /> No haptics</span>
+      </div>
+    )}
+  </div>
+</div>
+
+<style>
+  .desk {
+    position: relative;
+    height: 150px;
+    border-radius: var(--mk-r);
+    background: var(--mk-bg);
+    overflow: hidden;
+  }
+  .sheet {
+    position: absolute;
+    top: 14px;
+    bottom: 14px;
+    left: 50%;
+    width: 132px;
+    margin-left: -66px;
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 9px;
+    border-radius: 6px;
+    background: var(--mk-card);
+    box-shadow: 0 1px 3px rgb(20 22 28 / 0.12);
+  }
+  .untitled {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--mk-3);
+  }
+  .rule {
+    display: block;
+    height: 1px;
+    background: var(--mk-line);
+  }
+  .is-good .sheet {
+    margin-left: -34px;
+  }
+  .sheet.is-old {
+    transform-origin: left center;
+    transform: perspective(700px) rotateY(-122deg);
+    background: linear-gradient(90deg, #e9ebf0, #fff 70%);
+    box-shadow: -4px 4px 14px -6px rgb(20 22 28 / 0.35);
+  }
+  .swoosh {
+    position: absolute;
+    top: 0;
+    left: 50%;
+    margin-left: -78px;
+  }
+  .fab {
+    position: absolute;
+    right: 14px;
+    bottom: 12px;
+    display: grid;
+    place-items: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: var(--mk-pri);
+    color: #fff;
+  }
+  .is-good .fab {
+    background: var(--mk-violet);
+    box-shadow: 0 0 0 5px rgb(122 76 240 / 0.22), 0 0 0 10px rgb(122 76 240 / 0.1);
+  }
+</style>

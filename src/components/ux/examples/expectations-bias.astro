@@ -1,0 +1,76 @@
+---
+import MkIcon from '../MkIcon.astro';
+interface Props {
+  variant: 'good' | 'bad';
+}
+const { variant } = Astro.props;
+---
+
+{variant === 'good' ? (
+  <div class="mk">
+    <div class="mk-window">
+      <div class="mk-bar"><i></i><i></i><i></i></div>
+      <div class="site mk-spread">
+        <span class="logo"><span class="mark">T</span>Trailmark</span>
+        <span class="mk-row mk-gap-12">
+          <span class="mk-muted"><MkIcon name="search" size={14} /></span>
+          <span class="mk-btn mk-btn-pri mk-btn-sm"><MkIcon name="user" size={12} />Log in</span>
+        </span>
+      </div>
+      <div class="mk-body mk-col">
+        <span class="mk-xs">Step 2 of 3</span>
+        <p class="mk-h">Where are you heading?</p>
+        <div class="mk-input"><span class="mk-muted"><MkIcon name="pin" size={13} /></span><span class="ph">City or region</span></div>
+        <div class="mk-spread mk-mt-4">
+          <span class="mk-btn mk-btn-sec mk-btn-sm"><MkIcon name="arrow-left" size={12} />Back</span>
+          <span class="mk-btn mk-btn-pri mk-btn-sm">Next<MkIcon name="arrow-right" size={12} /></span>
+        </div>
+      </div>
+    </div>
+  </div>
+) : (
+  <div class="mk">
+    <div class="mk-window">
+      <div class="mk-bar"><i></i><i></i><i></i></div>
+      <div class="site mk-spread">
+        <span class="mk-btn mk-btn-pri mk-btn-sm"><MkIcon name="user" size={12} />Log in</span>
+        <span class="mk-muted"><MkIcon name="search" size={14} /></span>
+        <span class="logo"><span class="mark">T</span>Trailmark</span>
+      </div>
+      <div class="mk-body mk-col">
+        <span class="mk-xs">Step 2 of 3</span>
+        <p class="mk-h">Where are you heading?</p>
+        <div class="mk-input"><span class="mk-muted"><MkIcon name="pin" size={13} /></span><span class="ph">City or region</span></div>
+        <div class="mk-spread mk-mt-4">
+          <span class="mk-btn mk-btn-pri mk-btn-sm">Next<MkIcon name="arrow-right" size={12} /></span>
+          <span class="mk-btn mk-btn-sec mk-btn-sm"><MkIcon name="arrow-left" size={12} />Back</span>
+        </div>
+      </div>
+    </div>
+  </div>
+)}
+
+<style>
+  .site {
+    padding: 9px 12px;
+    border-bottom: 1px solid var(--mk-line);
+  }
+  .logo {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    font-weight: 700;
+  }
+  .mark {
+    display: grid;
+    place-items: center;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: var(--mk-pri);
+    color: #fff;
+    font-size: 10px;
+    font-weight: 700;
+  }
+</style>

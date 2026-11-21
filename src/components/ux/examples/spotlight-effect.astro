@@ -1,0 +1,147 @@
+---
+import MkIcon from '../MkIcon.astro';
+interface Props { variant: 'good' | 'bad' }
+const { variant } = Astro.props;
+---
+
+{variant === 'good' ? (
+  <div class="mk">
+    <div class="mk-card chat">
+      <div class="mk-row">
+        <span class="mk-avatar is-2">SP</span>
+        <div class="mk-grow">
+          <p class="mk-b">Sam Porter</p>
+          <p class="mk-xs">Last seen recently</p>
+        </div>
+        <MkIcon name="more" />
+      </div>
+      <div class="msgs">
+        <span class="day">Today</span>
+        <p class="in">Hi, how are you?</p>
+        <p class="out">All good, and you?</p>
+        <p class="in">Free to meet tonight?</p>
+      </div>
+    </div>
+    <div class="mk-card pop">
+      <div class="mk-row mk-gap-6"><MkIcon name="settings" size={12} /><span class="mk-b">Privacy</span></div>
+      <p class="mk-xs mk-mt-8">Who can see when I’m online</p>
+      <div class="mk-seg mk-mt-4"><span>Everyone</span><span>Contacts</span><span class="is-on">Nobody</span></div>
+      <div class="mk-spread mk-mt-8"><span class="mk-s ink">Read receipts</span><span class="mk-toggle"></span></div>
+    </div>
+  </div>
+) : (
+  <div class="mk">
+    <div class="mk-card chat">
+      <div class="mk-row">
+        <span class="mk-avatar is-2">SP</span>
+        <div class="mk-grow">
+          <p class="mk-b">Sam Porter</p>
+          <p class="mk-xs online"><i></i>Online</p>
+        </div>
+        <MkIcon name="more" />
+      </div>
+      <div class="msgs">
+        <span class="day">Today</span>
+        <p class="in">Hi, how are you? <time>11:25</time></p>
+        <p class="out">All good, and you? <time>11:26</time></p>
+        <p class="seen">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12.5l4.5 4.5L16 7.5M11 16l1 1 9.5-9.5" /></svg>
+          Read 11:26
+        </p>
+        <p class="in">Free to meet tonight? <time>11:27</time></p>
+      </div>
+    </div>
+    <div class="mk-card pop">
+      <div class="mk-row mk-gap-6"><MkIcon name="settings" size={12} /><span class="mk-b">Privacy</span></div>
+      <div class="mk-col mk-gap-6 mk-mt-8">
+        <div class="mk-spread"><span class="mk-s ink">Online status</span><span class="lock"><MkIcon name="lock" size={10} />Always visible</span></div>
+        <div class="mk-spread"><span class="mk-s ink">Last seen time</span><span class="lock"><MkIcon name="lock" size={10} />Always exact</span></div>
+        <div class="mk-spread"><span class="mk-s ink">Read receipts</span><span class="lock"><MkIcon name="lock" size={10} />Always on</span></div>
+      </div>
+    </div>
+  </div>
+)}
+
+<style>
+  .chat {
+    padding: 12px;
+  }
+  .msgs {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px solid var(--mk-line);
+  }
+  .day {
+    align-self: center;
+    padding: 1px 8px;
+    border-radius: 99px;
+    background: var(--mk-bg);
+    color: var(--mk-2);
+    font-size: 9.5px;
+  }
+  .in,
+  .out {
+    max-width: 78%;
+    padding: 5px 9px;
+    border-radius: 12px;
+    font-size: 11px;
+  }
+  .in {
+    align-self: flex-start;
+    background: var(--mk-bg);
+    border-bottom-left-radius: 4px;
+  }
+  .out {
+    align-self: flex-end;
+    background: var(--mk-blue);
+    color: #fff;
+    border-bottom-right-radius: 4px;
+  }
+  time {
+    margin-left: 4px;
+    font-size: 9px;
+    opacity: 0.7;
+  }
+  .seen {
+    align-self: flex-end;
+    display: flex;
+    align-items: center;
+    gap: 3px;
+    margin-top: -2px;
+    color: var(--mk-green);
+    font-size: 9.5px;
+    font-weight: 600;
+  }
+  .online {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    color: var(--mk-green);
+    font-weight: 600;
+  }
+  .online i {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--mk-green);
+  }
+  .pop {
+    position: relative;
+    width: 80%;
+    margin: -8px 0 0 auto;
+    padding: 12px;
+  }
+  .ink {
+    color: var(--mk-ink);
+  }
+  .lock {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    color: var(--mk-3);
+    font-size: 10px;
+  }
+</style>

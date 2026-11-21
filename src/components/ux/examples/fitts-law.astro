@@ -1,0 +1,76 @@
+---
+import MkIcon from '../MkIcon.astro';
+interface Props {
+  variant: 'good' | 'bad';
+}
+const { variant } = Astro.props;
+---
+
+{variant === 'good' ? (
+  <div class="mk">
+    <div class="mk-card mk-col mk-gap-8">
+      <span class="mk-label">Your message</span>
+      <div class="mk-input is-area area">
+        Hi, can I change the delivery address on order 4821?
+        <span class="grip"></span>
+      </div>
+      <div class="mk-row mk-gap-6 mk-mt-4">
+        <span class="sq"><MkIcon name="trash" size={13} /></span>
+        <span class="sq"><MkIcon name="more" size={13} /></span>
+        <span class="mk-btn mk-btn-pri mk-btn-lg mk-grow send">
+          <MkIcon name="send" size={14} />Send
+        </span>
+      </div>
+    </div>
+  </div>
+) : (
+  <div class="mk">
+    <div class="mk-card mk-col mk-gap-8">
+      <span class="mk-label">Your message</span>
+      <div class="mk-input is-area area">
+        Hi, can I change the delivery address on order 4821?
+        <span class="grip"></span>
+      </div>
+      <div class="mk-spread mk-mt-4">
+        <span class="sq"><MkIcon name="trash" size={13} /></span>
+        <span class="sq"><MkIcon name="more" size={13} /></span>
+        <span class="sq"><MkIcon name="send" size={13} /></span>
+      </div>
+    </div>
+  </div>
+)}
+
+<style>
+  .mk-input.area {
+    position: relative;
+    height: 100px;
+    white-space: normal;
+    line-height: 1.45;
+  }
+  .grip {
+    position: absolute;
+    right: 4px;
+    bottom: 4px;
+    width: 8px;
+    height: 8px;
+    border-right: 1.5px solid var(--mk-3);
+    border-bottom: 1.5px solid var(--mk-3);
+    border-bottom-right-radius: 2px;
+    opacity: 0.6;
+  }
+  .sq {
+    flex: none;
+    display: grid;
+    place-items: center;
+    width: 28px;
+    height: 28px;
+    border: 1px solid var(--mk-line);
+    border-radius: 7px;
+    background: var(--mk-card);
+    color: var(--mk-2);
+  }
+  .send {
+    height: 38px;
+    margin-left: 6px;
+  }
+</style>

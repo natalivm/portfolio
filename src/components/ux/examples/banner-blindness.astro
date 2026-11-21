@@ -1,0 +1,143 @@
+---
+import MkIcon from '../MkIcon.astro';
+interface Props {
+  variant: 'good' | 'bad';
+}
+const { variant } = Astro.props;
+---
+
+{variant === 'good' ? (
+  <div class="mk mk-wide">
+    <div class="mk-sunk page mk-col mk-gap-8">
+      <div class="mk-spread">
+        <p class="mk-h">Hi, Alex</p>
+        <span class="mk-avatar is-sm is-2">A</span>
+      </div>
+      <div class="mk-flat mk-col mk-gap-4">
+        <p class="mk-xs">Main account</p>
+        <p class="mk-price-big">$4,280.15</p>
+      </div>
+      <div class="note">
+        <div class="mk-row mk-gap-6 head">
+          <span class="bang">!</span>
+          <p class="mk-b mk-grow">Time to update your details</p>
+          <MkIcon name="x" size={12} class="mk-muted" />
+        </div>
+        <p class="mk-xs body">
+          Do it by <b>30 Nov 2026</b> to keep using online banking. It takes about 2 minutes.
+        </p>
+        <span class="mk-btn mk-btn-sec mk-btn-sm">Update now</span>
+      </div>
+    </div>
+  </div>
+) : (
+  <div class="mk mk-wide">
+    <div class="mk-sunk page mk-col mk-gap-8">
+      <div class="promo">
+        <div class="promo-text">
+          <span class="shout">ATTENTION!</span>
+          <p class="promo-h">You need to update your details</p>
+          <p class="promo-b">Update your details urgently to keep using our services!</p>
+          <span class="mk-btn mk-btn-danger mk-btn-sm caps">UPDATE NOW!!!</span>
+        </div>
+        <span class="giant">!</span>
+      </div>
+      <div class="mk-spread">
+        <p class="mk-h">Hi, Alex</p>
+        <span class="mk-avatar is-sm is-2">A</span>
+      </div>
+      <div class="mk-flat mk-col mk-gap-4">
+        <p class="mk-xs">Main account</p>
+        <p class="mk-price-big">$4,280.15</p>
+      </div>
+    </div>
+  </div>
+)}
+
+<style>
+  .page {
+    padding: 12px;
+  }
+  .note {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+    padding: 10px 12px 12px;
+    border-radius: var(--mk-r);
+    background: var(--mk-amber-soft);
+    box-shadow: 0 1px 2px rgb(20 22 28 / 0.06);
+  }
+  .head {
+    width: 100%;
+  }
+  .bang {
+    flex: none;
+    display: grid;
+    place-items: center;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: var(--mk-amber);
+    color: #fff;
+    font-size: 10px;
+    font-weight: 700;
+  }
+  .body b {
+    color: var(--mk-ink);
+  }
+  .promo {
+    position: relative;
+    display: flex;
+    gap: 8px;
+    padding: 12px;
+    border-radius: var(--mk-r);
+    background: #ffc9d6;
+    overflow: hidden;
+  }
+  .promo-text {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 5px;
+    max-width: 68%;
+  }
+  .shout {
+    padding: 1px 7px;
+    border-radius: 99px;
+    background: var(--mk-red);
+    color: #fff;
+    font-size: 9px;
+    font-weight: 700;
+  }
+  .promo-h {
+    font-size: 14px;
+    font-weight: 800;
+    line-height: 1.15;
+  }
+  .promo-b {
+    font-size: 10px;
+    color: #7c3a48;
+  }
+  .caps {
+    font-weight: 800;
+  }
+  .giant {
+    position: absolute;
+    top: 50%;
+    right: -14px;
+    display: grid;
+    place-items: center;
+    width: 104px;
+    height: 104px;
+    border-radius: 50%;
+    background: var(--mk-red);
+    color: #fff;
+    font-size: 64px;
+    font-weight: 800;
+    line-height: 1;
+    transform: translateY(-50%);
+  }
+</style>

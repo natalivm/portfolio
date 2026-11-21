@@ -1,0 +1,85 @@
+---
+import MkIcon from '../MkIcon.astro';
+interface Props {
+  variant: 'good' | 'bad';
+}
+const { variant } = Astro.props;
+---
+
+{variant === 'good' ? (
+  <div class="mk">
+    <div class="mk-card mk-col">
+      <div class="mk-img is-5 pic">
+        <MkIcon name="bed" size={38} stroke={1.6} />
+        <span class="flag">Quiet street</span>
+      </div>
+      <div class="mk-row mk-wrap mk-gap-4">
+        <span class="mk-badge is-green tag"><MkIcon name="leaf" size={11} />Park nearby</span>
+        <span class="mk-badge is-blue tag"><MkIcon name="book" size={11} />School 500 m away</span>
+      </div>
+      <div class="mk-spread top">
+        <div>
+          <p class="mk-h">2-bedroom apartment</p>
+          <p class="mk-xs">25 Central Street</p>
+        </div>
+        <div class="price">
+          <p class="mk-t mk-b">$1,200/mo</p>
+          <p class="mk-xs">+ utilities</p>
+        </div>
+      </div>
+      <span class="mk-btn mk-btn-pri mk-btn-block">Book a viewing</span>
+    </div>
+  </div>
+) : (
+  <div class="mk">
+    <div class="mk-card mk-col">
+      <div class="mk-img is-5 pic">
+        <MkIcon name="bed" size={38} stroke={1.6} />
+      </div>
+      <p class="mk-xs generic">Bright apartment in a good location.</p>
+      <div class="mk-spread top">
+        <div>
+          <p class="mk-h">2-bedroom apartment</p>
+          <p class="mk-xs">25 Central Street</p>
+        </div>
+        <div class="price">
+          <p class="mk-t mk-b">$1,200/mo</p>
+          <p class="mk-xs">&nbsp;</p>
+        </div>
+      </div>
+      <span class="mk-btn mk-btn-pri mk-btn-block">Details</span>
+    </div>
+  </div>
+)}
+
+<style>
+  .pic {
+    aspect-ratio: 2 / 1;
+  }
+  .flag {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    padding: 3px 8px;
+    border-radius: 99px;
+    background: var(--mk-violet);
+    color: #fff;
+    font-size: 10px;
+    font-weight: 600;
+  }
+  .tag {
+    height: 20px;
+    padding: 0 8px;
+    font-size: 10px;
+  }
+  .generic {
+    min-height: 20px;
+    line-height: 20px;
+  }
+  .top {
+    align-items: flex-start;
+  }
+  .price {
+    text-align: right;
+  }
+</style>

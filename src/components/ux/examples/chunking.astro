@@ -1,0 +1,98 @@
+---
+import MkIcon from '../MkIcon.astro';
+interface Props {
+  variant: 'good' | 'bad';
+}
+const { variant } = Astro.props;
+---
+
+{variant === 'good' ? (
+  <div class="mk">
+    <div class="mk-card mk-col mk-gap-12">
+      <div class="mk-spread">
+        <p class="mk-h">Payment</p>
+        <p class="mk-s">Total <b class="ink">$48.00</b></p>
+      </div>
+      <div class="mk-field">
+        <span class="mk-label">Card number</span>
+        <div class="mk-input">
+          <MkIcon name="card" size={14} class="mk-muted" />
+          <span class="mk-grow num">4829 1047 5563 0912</span>
+          <span class="marks"><i></i><i></i></span>
+        </div>
+      </div>
+      <div class="mk-grid-2">
+        <div class="mk-field">
+          <span class="mk-label">Expiry date</span>
+          <div class="mk-input"><span class="ph">MM / YY</span></div>
+        </div>
+        <div class="mk-field">
+          <span class="mk-label">CVV</span>
+          <div class="mk-input"><span class="ph mk-grow">123</span><span class="back"></span></div>
+        </div>
+      </div>
+      <span class="mk-btn mk-btn-pri mk-btn-block mk-btn-lg">Pay $48.00</span>
+    </div>
+  </div>
+) : (
+  <div class="mk">
+    <div class="mk-card mk-col mk-gap-12">
+      <div class="mk-spread">
+        <p class="mk-h">Payment</p>
+        <p class="mk-s">Total <b class="ink">$48.00</b></p>
+      </div>
+      <div class="mk-input">4829104755630912</div>
+      <div class="mk-input"><span class="ph">Expiry date</span></div>
+      <div class="mk-input"><span class="ph">CVV</span></div>
+      <span class="mk-btn mk-btn-pri mk-btn-block mk-btn-lg">Pay $48.00</span>
+    </div>
+  </div>
+)}
+
+<style>
+  .ink {
+    color: var(--mk-ink);
+  }
+  .num {
+    letter-spacing: 0.02em;
+  }
+  .marks {
+    display: flex;
+    gap: 3px;
+  }
+  .marks i {
+    width: 16px;
+    height: 11px;
+    border-radius: 2px;
+    background: var(--mk-blue);
+  }
+  .marks i + i {
+    background: var(--mk-amber);
+  }
+  .back {
+    position: relative;
+    width: 18px;
+    height: 12px;
+    border: 1px solid var(--mk-3);
+    border-radius: 2px;
+  }
+  .back::before {
+    content: '';
+    position: absolute;
+    top: 2px;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: var(--mk-3);
+  }
+  .back::after {
+    content: '';
+    position: absolute;
+    right: 2px;
+    bottom: 2px;
+    width: 6px;
+    height: 3px;
+    border-radius: 1px;
+    background: var(--mk-amber);
+  }
+</style>

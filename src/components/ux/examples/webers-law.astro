@@ -1,0 +1,96 @@
+---
+import MkIcon from '../MkIcon.astro';
+interface Props {
+  variant: 'good' | 'bad';
+}
+const { variant } = Astro.props;
+---
+
+<div class="mk mk-wide">
+  <div class="mk-window">
+    <div class="mk-bar"><i></i><i></i><i></i></div>
+    <div class="mk-body mk-col mk-gap-12">
+      <div class="mk-spread">
+        <span class="mk-b">My account</span>
+        <span class="mk-avatar is-sm is-2">JL</span>
+      </div>
+      {variant === 'good' ? (
+        <div class="wb-note is-calm">
+          <span class="wb-i is-dark"><MkIcon name="info" size={12} /></span>
+          <div class="mk-grow mk-col mk-gap-4">
+            <p class="mk-b mk-t">New account area, with more tools</p>
+            <p class="mk-s">Search is faster and menus are simpler. Have a look and tell us how it works for you.</p>
+            <p class="mk-row mk-gap-6 mk-xs mk-mt-4">
+              <span class="mk-link">Leave feedback</span><span class="mk-muted">·</span><span class="wb-u">Back to old version</span>
+            </p>
+          </div>
+          <span class="mk-muted wb-x"><MkIcon name="x" size={12} /></span>
+        </div>
+      ) : (
+        <div class="wb-note is-alarm">
+          <span class="wb-i"><MkIcon name="info" size={12} /></span>
+          <div class="mk-grow mk-col mk-gap-4">
+            <p class="mk-b mk-t">We’ve completely changed our site</p>
+            <p class="wb-body">The old version of your account is no longer available. We apologise for any inconvenience this may cause.</p>
+          </div>
+          <span class="wb-x"><MkIcon name="x" size={12} /></span>
+        </div>
+      )}
+      <div class="mk-grid-3 mk-gap-6">
+        {['Orders', 'Returns', 'Saved'].map((t, i) => (
+          <div class="mk-sunk mk-col mk-gap-4 wb-tile">
+            <span class="mk-xs">{t}</span>
+            <span class="mk-b">{[4, 1, 18][i]}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+  .wb-note {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    padding: 10px;
+    border-radius: 10px;
+  }
+  .wb-note.is-calm {
+    background: #e9f1ec;
+  }
+  .wb-note.is-alarm {
+    background: var(--mk-red);
+    color: #fff;
+  }
+  .wb-i {
+    display: grid;
+    place-items: center;
+    flex: none;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    color: #fff;
+  }
+  .wb-i.is-dark {
+    background: var(--mk-pri);
+  }
+  .is-alarm .wb-i {
+    border: 1.5px solid #fff;
+  }
+  .wb-body {
+    font-size: 11px;
+    color: rgb(255 255 255 / 0.92);
+  }
+  .wb-u {
+    color: var(--mk-2);
+    font-weight: 600;
+  }
+  .wb-x {
+    display: inline-flex;
+    flex: none;
+  }
+  .wb-tile {
+    padding: 8px;
+  }
+</style>

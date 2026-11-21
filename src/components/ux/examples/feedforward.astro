@@ -1,0 +1,169 @@
+---
+import MkIcon from '../MkIcon.astro';
+interface Props {
+  variant: 'good' | 'bad';
+}
+const { variant } = Astro.props;
+const good = variant === 'good';
+---
+
+<div class="mk">
+  <div class="mk-card mk-col mk-gap-12">
+    <div class="photo">
+      <div class="scene">
+        <i class="sun"></i><i class="m1"></i><i class="m2"></i><i class="lake"></i><i class="glint"></i>
+      </div>
+      {good && (
+        <div class="scene is-after">
+          <i class="sun"></i><i class="m1"></i><i class="m2"></i><i class="lake"></i><i class="glint"></i>
+        </div>
+      )}
+      {good && <span class="seam"><span class="knob"><MkIcon name="chevron-left" size={8} stroke={3} /><MkIcon name="chevron-right" size={8} stroke={3} /></span></span>}
+      {good && <span class="side is-l">Before</span>}
+      {good && <span class="side is-r">After</span>}
+    </div>
+    <div class="mk-col mk-gap-8">
+      <div class="ctl"><span class="mk-xs">Hue</span><span class="track is-hue"><i style="left: 78%"></i></span></div>
+      <div class="ctl"><span class="mk-xs">Intensity</span><span class="track is-amt"><i style="left: 100%"></i></span></div>
+    </div>
+    {good ? (
+      <div class="mk-grid-2 mk-gap-6">
+        <span class="mk-btn mk-btn-sec">Reset</span>
+        <span class="mk-btn mk-btn-pri">Apply</span>
+      </div>
+    ) : (
+      <span class="mk-btn mk-btn-pri mk-btn-block">Apply</span>
+    )}
+  </div>
+</div>
+
+<style>
+  .photo {
+    position: relative;
+    aspect-ratio: 16 / 9;
+    border-radius: 9px;
+    overflow: hidden;
+  }
+  .scene {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(#fbd3a9, #f4a77c 62%);
+  }
+  .scene.is-after {
+    clip-path: inset(0 0 0 50%);
+    filter: hue-rotate(205deg) saturate(1.6);
+  }
+  .scene i {
+    position: absolute;
+    display: block;
+  }
+  .sun {
+    top: 16%;
+    left: 64%;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: #fff3d6;
+  }
+  .m1 {
+    left: -8%;
+    width: 70%;
+    bottom: 32%;
+    height: 52%;
+    background: #b0725f;
+    clip-path: polygon(0 100%, 42% 8%, 60% 46%, 76% 24%, 100% 100%);
+  }
+  .m2 {
+    left: 38%;
+    width: 74%;
+    bottom: 32%;
+    height: 42%;
+    background: #93594f;
+    clip-path: polygon(0 100%, 46% 0, 100% 100%);
+  }
+  .lake {
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 32%;
+    background: linear-gradient(#d8907a, #bf745f);
+  }
+  .glint {
+    left: 58%;
+    bottom: 14%;
+    width: 22%;
+    height: 2px;
+    border-radius: 2px;
+    background: rgb(255 243 214 / 0.7);
+    box-shadow: 6px 6px 0 -0.5px rgb(255 243 214 / 0.45);
+  }
+  .seam {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 50%;
+    width: 2px;
+    margin-left: -1px;
+    background: #fff;
+  }
+  .knob {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: #fff;
+    color: var(--mk-ink);
+    transform: translate(-50%, -50%);
+    box-shadow: 0 1px 4px rgb(0 0 0 / 0.25);
+  }
+  .side {
+    position: absolute;
+    top: 6px;
+    padding: 1px 6px;
+    border-radius: 99px;
+    background: rgb(20 22 28 / 0.45);
+    color: #fff;
+    font-size: 9px;
+    font-weight: 600;
+  }
+  .side.is-l {
+    left: 6px;
+  }
+  .side.is-r {
+    right: 6px;
+  }
+  .ctl {
+    display: grid;
+    grid-template-columns: 52px 1fr;
+    align-items: center;
+    gap: 8px;
+  }
+  .track {
+    position: relative;
+    height: 6px;
+    margin-right: 6px;
+    border-radius: 99px;
+  }
+  .track.is-hue {
+    background: linear-gradient(90deg, #ff5a5a, #ffb340, #f2e43d, #4ed37a, #3fc4f2, #5d6cf5, #b453ec, #ff5a5a);
+  }
+  .track.is-amt {
+    background: linear-gradient(90deg, rgb(47 107 255 / 0), var(--mk-blue)), repeating-conic-gradient(#d9dce1 0 25%, #fff 0 50%) 0 0 / 6px 6px;
+  }
+  .track i {
+    position: absolute;
+    top: 50%;
+    width: 13px;
+    height: 13px;
+    border: 2px solid #fff;
+    border-radius: 50%;
+    background: var(--mk-blue);
+    box-shadow: 0 1px 3px rgb(0 0 0 / 0.3);
+    transform: translate(-50%, -50%);
+  }
+</style>
