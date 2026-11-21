@@ -84,6 +84,12 @@ export const sections: UxSection[] = [
     short: 'Biases',
     blurb: 'Errors of judgement that distort how people, designers included, read an interface.',
   },
+  {
+    id: 'time',
+    name: 'Time and behaviour',
+    short: 'Time',
+    blurb: 'How people feel time pass, and how habits are built one small step at a time.',
+  },
 ];
 
 export const laws: UxLaw[] = [
