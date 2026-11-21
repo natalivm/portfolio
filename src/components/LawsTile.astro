@@ -1,0 +1,199 @@
+---
+/**
+ * The UX laws page as a tile on the home grid. Same anatomy as a project tile (white tile, 20px
+ * frame, title, meta line); its cover is a strip of real Do / Don't pairs from the page, drawn small.
+ * Full width at every breakpoint, so the grid above keeps its rows.
+ */
+import '../styles/ux-kit.css';
+import { laws, sections } from '../data/uxLaws';
+
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+const files = import.meta.glob<{ default: any }>('./ux/examples/*.astro', { eager: true });
+const pick = ['cognitive-load', 'von-restorff-effect', 'visual-hierarchy'];
+const pairs = pick
+  .map((slug) => ({ slug, Ex: files[`./ux/examples/${slug}.astro`]?.default }))
+  .filter((p) => p.Ex);
+---
+
+<a class="tile laws-tile" href={`${base}/ux-laws/`}>
+  <div class="frame">
+    <div class="strip" aria-hidden="true">
+      {pairs.map(({ Ex }) => (
+        <div class="pair">
+          {(['good', 'bad'] as const).map((v) => (
+            <div class={`mini is-${v}`}>
+              <span class="mark">
+                <svg width="7" height="7" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
+                  <path d={v === 'good' ? 'M5 12.5l4.5 4.5L19 7.5' : 'M6 6l12 12M18 6L6 18'} />
+                </svg>
+              </span>
+              <div class="mini-stage"><Ex variant={v} /></div>
+            </div>
+          ))}
+        </div>
+      ))}
+    </div>
+  </div>
+  <div class="text">
+    <h3 class="title">UX laws</h3>
+    <p class="meta">
+      <span>Design psychology · {sections.length} groups</span>
+      <span class="year">{laws.length} laws</span>
+    </p>
+  </div>
+  <span class="kind">Reference</span>
+</a>
+
+<style>
+  .tile {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    padding: 8px;
+    border-radius: var(--radius-lg);
+    background: var(--surface);
+    box-shadow: var(--shadow-tile);
+    text-decoration: none;
+    color: var(--ink);
+    transition:
+      transform var(--t-med) var(--ease-out),
+      box-shadow var(--t-med) var(--ease-out);
+  }
+  .frame {
+    overflow: hidden;
+    border-radius: var(--radius-md);
+    background: var(--surface-2);
+  }
+  .strip {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: clamp(10px, 1.4vw, 16px);
+    padding: clamp(12px, 1.8vw, 22px);
+    transition: transform 700ms var(--ease-out);
+  }
+  .pair {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 6px;
+    padding: 6px;
+    border-radius: 18px;
+    background: var(--surface);
+  }
+  .mini {
+    position: relative;
+    display: grid;
+    place-items: center;
+    height: clamp(170px, 15vw, 210px);
+    padding: 18px 6px 8px;
+    border-radius: 13px;
+    overflow: hidden;
+  }
+  .mini.is-good {
+    background: #e7f5ed;
+  }
+  .mini.is-bad {
+    background: #fcebee;
+  }
+  .mini-stage {
+    width: 100%;
+    zoom: 0.5;
+  }
+  .mark {
+    position: absolute;
+    top: 7px;
+    left: 7px;
+    display: grid;
+    place-items: center;
+    width: 13px;
+    height: 13px;
+    border-radius: 50%;
+    color: #fff;
+  }
+  .is-good .mark {
+    background: #17914b;
+  }
+  .is-bad .mark {
+    background: #dc3a45;
+  }
+  .text {
+    padding: 14px 12px 10px;
+  }
+  .title {
+    font-size: clamp(1.25rem, 1.6vw, 1.5rem);
+    letter-spacing: -0.02em;
+    line-height: 1.2;
+  }
+  .meta {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    margin-top: 4px;
+    color: var(--ink-2);
+    font-size: 0.875rem;
+  }
+  .year {
+    flex: none;
+  }
+  .kind {
+    position: absolute;
+    top: 18px;
+    left: 18px;
+    padding: 4px 10px;
+    border-radius: var(--pill);
+    background: rgb(255 255 255 / 0.92);
+    color: var(--ink);
+    font-size: 0.75rem;
+    font-weight: 600;
+    opacity: 0;
+    transform: translateY(-4px);
+    transition:
+      opacity var(--t-fast) var(--ease-out),
+      transform var(--t-fast) var(--ease-out);
+  }
+  @media (hover: hover) {
+    .tile:hover {
+      transform: translateY(-4px);
+      box-shadow: var(--shadow-lift);
+    }
+    .tile:hover .strip {
+      transform: scale(1.015);
+    }
+    .tile:hover .kind,
+    .tile:focus-visible .kind {
+      opacity: 1;
+      transform: none;
+    }
+  }
+  .tile:focus-visible {
+    outline-offset: 4px;
+    border-radius: var(--radius-lg);
+  }
+  .tile:active {
+    transform: scale(0.99);
+  }
+
+  @media (max-width: 960px) {
+    .strip {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+    .pair:nth-child(n + 3) {
+      display: none;
+    }
+  }
+  @media (max-width: 640px) {
+    .strip {
+      grid-template-columns: minmax(0, 1fr);
+      padding: 10px;
+    }
+    .pair:nth-child(n + 2) {
+      display: none;
+    }
+    .mini {
+      height: 180px;
+    }
+    .mini-stage {
+      zoom: 0.48;
+    }
+  }
+</style>
