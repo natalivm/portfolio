@@ -34,7 +34,55 @@ export const sections: UxSection[] = [
     id: 'cognition',
     name: 'Foundations of cognitive interaction',
     short: 'Cognition',
-    blurb: 'Simplify information, lighten the load on the brain, and make interaction feel obvious.',
+    blurb: 'Less to hold in mind, less to search for, less to get wrong.',
+  },
+  {
+    id: 'perception',
+    name: 'Visual perception and attention',
+    short: 'Attention',
+    blurb: 'Where the eye goes first, and how to lead it there.',
+  },
+  {
+    id: 'decisions',
+    name: 'The psychology of decisions',
+    short: 'Decisions',
+    blurb: 'What tips a choice one way or the other, and how to keep it fair.',
+  },
+  {
+    id: 'engagement',
+    name: 'Engagement and motivation',
+    short: 'Motivation',
+    blurb: 'Why people come back, keep going and finish what they start.',
+  },
+  {
+    id: 'emotion',
+    name: 'Emotional design',
+    short: 'Emotion',
+    blurb: 'How an interface feels, and why that is what people remember.',
+  },
+  {
+    id: 'efficiency',
+    name: 'Principles of efficiency',
+    short: 'Efficiency',
+    blurb: 'Fewer steps, clearer cues, and complexity carried by the system.',
+  },
+  {
+    id: 'economics',
+    name: 'Behavioural economics',
+    short: 'Economics',
+    blurb: 'How price, timing and framing shape what people choose.',
+  },
+  {
+    id: 'social',
+    name: 'Social influence',
+    short: 'Social',
+    blurb: 'How other people, real or imagined, change what we do.',
+  },
+  {
+    id: 'biases',
+    name: 'Cognitive biases and self-perception',
+    short: 'Biases',
+    blurb: 'Errors of judgement that distort how people, designers included, read an interface.',
   },
 ];
 
