@@ -55,14 +55,14 @@ const years = projects.map((p) => p.year);
           <Tile project={p} />
         </li>
       ))}
+      <li>
+        <LawsTile />
+      </li>
       <li class="all">
         <a class="bs-tile" href={`${base}/work/beat-saber/`} aria-label="Beat Saber: the case study" data-neon>
           <BeatSaberLogo class="bs-logo" />
           <span class="bs-go" aria-hidden="true"><Icon name="arrow-right" size={14} /></span>
         </a>
-      </li>
-      <li class="laws">
-        <LawsTile />
       </li>
     </ul>
   </section>
@@ -186,10 +186,6 @@ const years = projects.map((p) => p.year);
   }
   .feat-grid > li.all {
     grid-column: span 8;
-  }
-  /* UX laws: a full row at every width, so the project rows above stay whole */
-  .feat-grid > li.laws {
-    grid-column: 1 / -1;
   }
   /* The prototype tile: one column wide, two rows tall */
   .feat-grid > li.proto {

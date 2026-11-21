@@ -1,35 +1,28 @@
 ---
 /**
- * The UX laws page as a tile on the home grid. Same anatomy as a project tile (white tile, 20px
- * frame, title, meta line); its cover is a strip of real Do / Don't pairs from the page, drawn small.
- * Full width at every breakpoint, so the grid above keeps its rows.
+ * The UX laws page as a tile on the home grid. Same size and anatomy as a project tile (white tile,
+ * 20px frame with a 4:3 cover, title, meta line); its cover is one real Do / Don't pair from the
+ * page, drawn small.
  */
 import '../styles/ux-kit.css';
 import { laws, sections } from '../data/uxLaws';
 
 const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 const files = import.meta.glob<{ default: any }>('./ux/examples/*.astro', { eager: true });
-const pick = ['cognitive-load', 'von-restorff-effect', 'visual-hierarchy'];
-const pairs = pick
-  .map((slug) => ({ slug, Ex: files[`./ux/examples/${slug}.astro`]?.default }))
-  .filter((p) => p.Ex);
+const Ex = files['./ux/examples/cognitive-load.astro']?.default;
 ---
 
 <a class="tile laws-tile" href={`${base}/ux-laws/`}>
   <div class="frame">
-    <div class="strip" aria-hidden="true">
-      {pairs.map(({ Ex }) => (
-        <div class="pair">
-          {(['good', 'bad'] as const).map((v) => (
-            <div class={`mini is-${v}`}>
-              <span class="mark">
-                <svg width="7" height="7" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
-                  <path d={v === 'good' ? 'M5 12.5l4.5 4.5L19 7.5' : 'M6 6l12 12M18 6L6 18'} />
-                </svg>
-              </span>
-              <div class="mini-stage"><Ex variant={v} /></div>
-            </div>
-          ))}
+    <div class="pair" aria-hidden="true">
+      {Ex && (['good', 'bad'] as const).map((v) => (
+        <div class={`mini is-${v}`}>
+          <span class="mark">
+            <svg width="7" height="7" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
+              <path d={v === 'good' ? 'M5 12.5l4.5 4.5L19 7.5' : 'M6 6l12 12M18 6L6 18'} />
+            </svg>
+          </span>
+          <div class="mini-stage"><Ex variant={v} /></div>
         </div>
       ))}
     </div>
@@ -62,31 +55,24 @@ const pairs = pick
   }
   .frame {
     overflow: hidden;
+    aspect-ratio: 4 / 3;
     border-radius: var(--radius-md);
     background: var(--surface-2);
-  }
-  .strip {
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: clamp(10px, 1.4vw, 16px);
-    padding: clamp(12px, 1.8vw, 22px);
-    transition: transform 700ms var(--ease-out);
   }
   .pair {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 6px;
+    height: 100%;
     padding: 6px;
-    border-radius: 18px;
-    background: var(--surface);
+    transition: transform 700ms var(--ease-out);
   }
   .mini {
     position: relative;
     display: grid;
     place-items: center;
-    height: clamp(170px, 15vw, 210px);
-    padding: 18px 6px 8px;
-    border-radius: 13px;
+    padding: 16px 6px 8px;
+    border-radius: 15px;
     overflow: hidden;
   }
   .mini.is-good {
@@ -101,8 +87,8 @@ const pairs = pick
   }
   .mark {
     position: absolute;
-    top: 7px;
-    left: 7px;
+    top: 8px;
+    left: 8px;
     display: grid;
     place-items: center;
     width: 13px;
@@ -120,7 +106,7 @@ const pairs = pick
     padding: 14px 12px 10px;
   }
   .title {
-    font-size: clamp(1.25rem, 1.6vw, 1.5rem);
+    font-size: 1.125rem;
     letter-spacing: -0.02em;
     line-height: 1.2;
   }
@@ -156,8 +142,8 @@ const pairs = pick
       transform: translateY(-4px);
       box-shadow: var(--shadow-lift);
     }
-    .tile:hover .strip {
-      transform: scale(1.015);
+    .tile:hover .pair {
+      transform: scale(1.03);
     }
     .tile:hover .kind,
     .tile:focus-visible .kind {
@@ -172,28 +158,24 @@ const pairs = pick
   .tile:active {
     transform: scale(0.99);
   }
-
-  @media (max-width: 960px) {
-    .strip {
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-    }
-    .pair:nth-child(n + 3) {
-      display: none;
-    }
-  }
+  /* Narrow tiles: the mockups shrink with them */
   @media (max-width: 640px) {
-    .strip {
-      grid-template-columns: minmax(0, 1fr);
-      padding: 10px;
-    }
-    .pair:nth-child(n + 2) {
-      display: none;
+    .pair {
+      gap: 4px;
+      padding: 4px;
     }
     .mini {
-      height: 180px;
+      padding: 12px 3px 4px;
+      border-radius: 11px;
     }
     .mini-stage {
-      zoom: 0.48;
+      zoom: 0.26;
+    }
+    .mark {
+      top: 5px;
+      left: 5px;
+      width: 10px;
+      height: 10px;
     }
   }
 </style>
