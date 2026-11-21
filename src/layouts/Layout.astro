@@ -8,7 +8,7 @@ import QuickJump from '../components/QuickJump.astro';
 interface Props {
   title?: string;
   description?: string;
-  current?: 'home' | 'work' | 'case';
+  current?: 'home' | 'work' | 'case' | 'laws';
   /** A page theme from global.css, such as 'blue' */
   theme?: string;
 }
@@ -57,6 +57,7 @@ const pageTitle = title ? `${title} · ${site.name}` : `${site.name}, ${site.rol
                 Work <span class="count">{projects.length}</span>
               </a>
             </li>
+            <li class="hide-sm"><a href={`${base}/ux-laws/`} aria-current={current === 'laws' ? 'page' : undefined}>UX laws</a></li>
             <li class="hide-sm"><a href={`${base}/#about`}>About</a></li>
           </ul>
         </nav>
@@ -85,6 +86,7 @@ const pageTitle = title ? `${title} · ${site.name}` : `${site.name}, ${site.rol
           <p class="foot-meta">{site.role}</p>
         </div>
         <ul class="foot-links">
+          <li><a href={`${base}/ux-laws/`}>100 UX laws</a></li>
           <li><button class="foot-mail" type="button" data-mail="open">Email me</button></li>
           {site.socials.map((s) => (
             <li><a href={s.href} rel="me noopener">{s.label}</a></li>
