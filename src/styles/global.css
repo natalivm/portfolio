@@ -279,6 +279,39 @@ html[data-theme='space'] .jump {
   color: var(--ink);
 }
 
+/* ---------- Page theme: river ----------
+   For River Race: the turquoise of the race's river. White cannot reach 4.5:1 on it, so the ink is
+   a deep teal. Tiles, light pills and round buttons keep the site's own white and ink. */
+html[data-theme='river'] {
+  --bg: #3ab5c3;
+  --surface-2: rgb(255 255 255 / 0.3);
+  --ink: #04262e; /* 6.5:1 on the ground */
+  --ink-2: #063845; /* 5.2:1 */
+  --ink-3: #0a4a58; /* large text only, 4:1 */
+  --line: rgb(4 38 46 / 0.22);
+  --accent: #04262e;
+  --accent-ink: #ffffff;
+  --shadow-tile: 0 1px 2px rgb(4 38 46 / 0.18), 0 16px 34px -16px rgb(4 38 46 / 0.45);
+  --shadow-lift: 0 2px 4px rgb(4 38 46 / 0.2), 0 24px 46px -18px rgb(4 38 46 / 0.55);
+  scrollbar-color: #1f8f9d var(--bg);
+}
+html[data-theme='river'] body {
+  background: var(--bg);
+}
+html[data-theme='river'] .site-header {
+  background: rgb(58 181 195 / 0.85);
+}
+html[data-theme='river'] :is(.tile, .ptile, .pager-card, .pill-light, .round, .back, .find, .jump) {
+  --ink: #16171a;
+  --ink-2: #5d6169;
+  --ink-3: #767a82;
+  --line: #dcdfe4;
+  --surface-2: #e8eaee;
+  --accent: #3346d3;
+  --accent-ink: #ffffff;
+  color: var(--ink);
+}
+
 /* ---------- Page theme: blue ----------
    For a case study whose art lives on the game's own blue (Sort Journey's art board, #4c96ff).
    White text cannot reach 4.5:1 on this blue, so the ink is navy. Anything on a white surface

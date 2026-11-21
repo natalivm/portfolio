@@ -1,0 +1,1605 @@
+---
+/**
+ * River Race, a timed event in Sort Journey (Bluetile Games). Everything is the game's own art,
+ * exported from the feature's Figma file. The race board is rebuilt from its layers so it can be
+ * played: win a level to hop up a lily pad, fail one and you're in the water.
+ */
+import type { Project } from '../../data/projects';
+
+interface Props {
+  project: Project;
+}
+const { project: p } = Astro.props;
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+const art = (name: string) => `${base}/cases/river-race/${name}.webp`;
+
+const rules = [
+  { name: 'Line up', text: 'The event opens with a timer, and the racers wait together on the dock.' },
+  { name: 'Win to hop', text: 'Every level won on the first try moves you one lily pad up the river.' },
+  { name: 'Fail and you’re out', text: 'Lose a single level and you slip into the water. Your race is over.' },
+  { name: 'Reach the shore', text: 'The first three across take the trophies. Everyone else who makes it still gets a prize.' },
+];
+
+// The board, in % of its own box (9:16). Pads climb from the dock to the island; y is each pad's centre.
+const PADS = [
+  { x: 40, y: 83, w: 28, k: 7 },
+  { x: 22, y: 76.5, w: 26, k: 6 },
+  { x: 35, y: 70, w: 24, k: 5 },
+  { x: 56, y: 64.5, w: 22.5, k: 4 },
+  { x: 70, y: 59, w: 21, k: 3 },
+  { x: 55, y: 54, w: 19.5, k: 2 },
+  { x: 35, y: 49.5, w: 18, k: 4 },
+  { x: 24, y: 45, w: 16.5, k: 5 },
+  { x: 40, y: 41, w: 15.5, k: 3 },
+  { x: 58, y: 37, w: 14.5, k: 2 },
+];
+const RACERS = [
+  { id: 'you', img: 'corgi-crown', name: 'You', dock: { x: 70, y: 95 } },
+  { id: 'pink', img: 'pet-pink', name: 'Pink', dock: { x: 63, y: 90 } },
+  { id: 'purple', img: 'pet-purple', name: 'Purple', dock: { x: 75, y: 89 } },
+  { id: 'blue', img: 'pet-purple', name: 'Blue', tint: 'hue-rotate(-62deg) saturate(1.15)', dock: { x: 86, y: 90 } },
+  { id: 'orange', img: 'pet-pink', name: 'Orange', tint: 'hue-rotate(52deg) saturate(1.2)', dock: { x: 95, y: 94 } },
+];
+
+const layers = [
+  { n: 'The river', t: 'One painted surface, calm in the middle and darker at the banks, so pads and racers read on top.' },
+  { n: 'The shore', t: 'A jungle island at the top of the screen: the finish line, and the only place with depth.' },
+  { n: 'Ten lily pads', t: 'One per level, smaller as they climb, so the path is the progress bar.' },
+  { n: 'Dock and signs', t: 'Where the race starts, and two wooden signs for your level and how many have finished.' },
+  { n: 'The prizes', t: 'Gold, silver and bronze on a heap of coins, on show from the first second.' },
+  { n: 'The racers', t: 'You in a crown, the others in one bright colour each, so the pack reads at a glance.' },
+];
+
+const boardScreens = [
+  { img: 'race-info', h: 'The rules, three lines', t: 'Win on your first try to move up. Fail and you’re out. Reach the shore for the rewards.', alt: 'River Race rules: win levels on your first try to progress, fail and you are out, reach the shore for rewards' },
+  { img: 'race-1', h: 'Everyone on the dock', t: 'The race starts with the whole pack seen from behind, looking up the river at the prizes.', alt: 'River Race board at the start: pets on the dock, ten lily pads up to an island with three trophies' },
+  { img: 'race-3', h: 'One pad per win', t: 'Racers that share a pad crowd onto it, and your tag shows your place.', alt: 'River Race board mid-race: the player is 6th, sharing a pad with two other pets' },
+  { img: 'race-4', h: 'First to the shore', t: 'The winner takes the gold spot on the island, crown and all.', alt: 'River Race board: the crowned corgi has reached the island first and stands on the gold trophy' },
+];
+const fillScreens = [
+  { img: 'race-5', alt: 'River Race board: a pink pet has taken first place while the player is 3rd on a pad' },
+  { img: 'race-6', alt: 'River Race board: pink first and purple second on the island, the player still 3rd' },
+  { img: 'race-7', alt: 'River Race board: all three podium places taken, a pet that failed bobs in the water' },
+];
+
+const popups = [
+  { img: 'popup-started', name: 'Event started', alt: 'Popup: River Race event started, with the timer and the player on a lily pad' },
+  { img: 'popup-moves', name: 'No more moves', alt: 'Popup: no more moves, shuffle the board to keep playing' },
+  { img: 'popup-sure', name: 'Are you sure?', alt: 'Popup: are you sure, only 5 levels left to the reward, you will lose your achievements' },
+  { img: 'popup-abandoned', name: 'Out of the race', alt: 'Popup: event abandoned, you failed the race, better luck next time' },
+  { img: 'popup-ended', name: 'Event ended', alt: 'Popup: River Race event ended, better luck next time, over an empty river' },
+];
+
+const rewards = [
+  { img: 'reward-1', name: '1st', alt: 'Reward screen: congratulations, you are 1st, a gold trophy with a crown in leaves' },
+  { img: 'reward-2', name: '2nd', alt: 'Reward screen: you are 2nd, a silver trophy on a silver pedestal' },
+  { img: 'reward-3', name: '3rd', alt: 'Reward screen: you are 3rd, a bronze trophy on a bronze pedestal' },
+  { img: 'reward-4', name: 'Made it', alt: 'Reward screen: you finished 11th, a gift to cheer you up' },
+  { img: 'reward-5', name: 'Claim', alt: 'Reward screen: three gems to claim' },
+];
+const trophies = [
+  { img: 'trophy-gold', label: '1st', h: 100, alt: 'Gold trophy with a crown' },
+  { img: 'trophy-silver', label: '2nd', h: 84, alt: 'Silver trophy' },
+  { img: 'trophy-bronze', label: '3rd', h: 78, alt: 'Bronze trophy' },
+  { img: 'gift', label: 'Made it', h: 70, alt: 'A gift box with a blue bow' },
+];
+
+const homes = [
+  { img: 'home-1', h: 'Won', t: 'Gold in the corner of Home, counting down to the next race.', alt: 'Home screen with the gold River Race badge and a timer, top left' },
+  { img: 'home-2', h: 'Second', t: 'The badge carries the trophy you won.', alt: 'Home screen with the silver River Race badge' },
+  { img: 'home-3', h: 'Third', t: 'Bronze, in the same leaves.', alt: 'Home screen with the bronze River Race badge' },
+  { img: 'home-4', h: 'Made it', t: 'A gift with your place on it.', alt: 'Home screen with a gift badge marked 10' },
+];
+
+const backs = ['blue', 'purple', 'lilac', 'orange', 'apricot', 'brown', 'cocoa', 'green'];
+
+const principles = [
+  { h: 'The path is the progress bar', t: 'Ten pads for ten levels, the island as the finish. Players read how far they have come without a number.' },
+  { h: 'Find yourself in a crowd', t: 'You wear the crown and a pink tag with your place. Everyone else is one flat, bright colour.' },
+  { h: 'Show the prize from the start', t: 'The trophies stand on the island for the whole race, so there is always something to climb toward.' },
+  { h: 'Lose kindly', t: 'A racer who fails bobs in the water instead of vanishing, and finishers outside the top three still get a gift.' },
+  { h: 'Familiar frame, new world', t: 'Popups keep the game’s blue ribbon, close button and one yellow action. Only the scenery is new.' },
+];
+---
+
+<canvas class="rr-bg" aria-hidden="true" data-rr-bg></canvas>
+<div class="rr-drift" aria-hidden="true">
+  {[
+    { k: 3, l: '1.5vw', w: 92, d: 58, at: -6 },
+    { k: 5, l: '3vw', w: 70, d: 74, at: -40 },
+    { k: 2, r: '1.2vw', w: 86, d: 64, at: -22 },
+    { k: 6, r: '3.4vw', w: 64, d: 80, at: -58 },
+    { k: 4, l: '0.6vw', w: 58, d: 70, at: -66 },
+  ].map((d) => (
+    <img src={art(`pad-${d.k}`)} width="300" height="120" alt="" style={`${d.l ? `left:${d.l}` : `right:${d.r}`};width:${d.w}px;--d:${d.d}s;--at:${d.at}s`} />
+  ))}
+</div>
+
+<article class="wrap case">
+  <section class="sec">
+    <div class="sec-head" data-fig>
+      <h2 class="ribbon"><span>River Race</span></h2>
+      <div>
+        <p>
+          River Race is a timed event in Sort Journey, a puzzle game by Bluetile Games. Racers start
+          together on a dock and climb a river of lily pads, one pad for every level won on the first try.
+          One loss and you fall in. The first three to reach the island win trophies.
+        </p>
+        <p>The work covered the race board and its art, the racers, the rewards, the popups and how the event lives on Home.</p>
+        {p.link && (
+          <p class="out">
+            <a class="pill pill-light" href={p.link.href} target="_blank" rel="noopener">{p.link.label}</a>
+          </p>
+        )}
+      </div>
+    </div>
+    <ol class="structure" role="list">
+      {rules.map((s, i) => (
+        <li>
+          <span class="step" aria-hidden="true">{i + 1}</span>
+          <h3>{s.name}</h3>
+          <p>{s.text}</p>
+        </li>
+      ))}
+    </ol>
+  </section>
+
+  <section class="sec">
+    <div class="sec-head" data-fig>
+      <h2 class="ribbon"><span>Play the race</span></h2>
+      <div>
+        <p>The board, rebuilt from the game’s own layers. It races by itself; press a button to take over.</p>
+      </div>
+    </div>
+
+    <figure class="fig race" data-fig data-race data-pads={JSON.stringify(PADS)} data-racers={JSON.stringify(RACERS.map((r) => ({ id: r.id, dock: r.dock })))}>
+      <div class="board" data-board>
+        <img class="b-water" src={art('water')} width="1290" height="1723" alt="" loading="lazy" decoding="async" />
+        <img class="b-shore" src={art('shore')} width="1320" height="1191" alt="" loading="lazy" decoding="async" />
+        <img class="b-pod" src={art('pod')} width="1000" height="451" alt="" loading="lazy" decoding="async" />
+        <div class="b-sign l"><img src={art('sign')} width="406" height="420" alt="" loading="lazy" decoding="async" /><span>Level<b data-level>0/10</b></span></div>
+        <div class="b-sign r"><img src={art('sign')} width="406" height="420" alt="" loading="lazy" decoding="async" /><span>Players<b data-done>0/5</b></span></div>
+        {PADS.map((pd, i) => (
+          <img class="b-pad" data-pad={i} src={art(`pad-${pd.k}`)} width="300" height="120" alt="" loading="lazy" decoding="async" style={`--x:${pd.x}%;--y:${pd.y}%;--w:${pd.w}%;--i:${i}`} />
+        ))}
+        <img class="b-dock" src={art('dock')} width="720" height="526" alt="" loading="lazy" decoding="async" />
+        {RACERS.map((r) => (
+          <div class:list={['racer', r.id === 'you' && 'me']} data-racer={r.id} style={`--x:${r.dock.x}%;--y:${r.dock.y}%;--s:1`}>
+            <img src={art(r.img)} width="216" height="260" alt="" loading="lazy" decoding="async" style={r.tint ? `filter:${r.tint}` : undefined} />
+            {r.id === 'you' && <span class="you">You <b data-rank>1st</b></span>}
+          </div>
+        ))}
+        <div class="result" data-result hidden>
+          <div class="result-card">
+            <img data-result-img src={art('trophy-gold')} width="328" height="480" alt="" />
+            <p class="r-title" data-result-title>Congratulations!</p>
+            <p class="r-sub" data-result-sub>You’re 1st!</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="race-side">
+        <ol class="race-steps" role="list">
+          <li><span class="step" aria-hidden="true">1</span>Every first-try win: one pad up.</li>
+          <li><span class="step" aria-hidden="true">2</span>One loss: into the water.</li>
+          <li><span class="step" aria-hidden="true">3</span>Top three take the trophies.</li>
+        </ol>
+        <div class="race-ctl">
+          <button class="g-btn" type="button" data-win>Level <span data-next>1</span></button>
+          <button class="g-btn fail" type="button" data-fail>Fail this level</button>
+          <button class="g-btn again" type="button" data-again hidden>Race again</button>
+        </div>
+        <p class="race-status" aria-live="polite" data-status>Five racers on the dock. You wear the crown.</p>
+      </div>
+    </figure>
+  </section>
+
+  <section class="sec">
+    <div class="sec-head" data-fig>
+      <h2 class="ribbon"><span>Art kit</span></h2>
+      <div><p>The board is six layers. Taken apart, each one has a single job.</p></div>
+    </div>
+
+    <figure class="fig stack-fig" data-fig data-stack>
+      <div class="stack" aria-hidden="true">
+        <div class="stack-in">
+          <div class="layer" style="--i:0" data-layer="0"><img class="b-water" src={art('water')} width="1290" height="1723" alt="" loading="lazy" decoding="async" /></div>
+          <div class="layer" style="--i:1" data-layer="1"><img class="b-shore" src={art('shore')} width="1320" height="1191" alt="" loading="lazy" decoding="async" /></div>
+          <div class="layer" style="--i:2" data-layer="2">
+            {PADS.map((pd) => (
+              <img class="b-pad" src={art(`pad-${pd.k}`)} width="300" height="120" alt="" loading="lazy" decoding="async" style={`--x:${pd.x}%;--y:${pd.y}%;--w:${pd.w}%`} />
+            ))}
+          </div>
+          <div class="layer" style="--i:3" data-layer="3">
+            <img class="b-dock" src={art('dock')} width="720" height="526" alt="" loading="lazy" decoding="async" />
+            <div class="b-sign l"><img src={art('sign')} width="406" height="420" alt="" loading="lazy" decoding="async" /></div>
+            <div class="b-sign r"><img src={art('sign')} width="406" height="420" alt="" loading="lazy" decoding="async" /></div>
+          </div>
+          <div class="layer" style="--i:4" data-layer="4"><img class="b-pod" src={art('pod')} width="1000" height="451" alt="" loading="lazy" decoding="async" /></div>
+          <div class="layer" style="--i:5" data-layer="5">
+            {[
+              { img: 'corgi-crown', x: 56, y: 64.5, s: 0.82 },
+              { img: 'pet-pink', x: 35, y: 70, s: 0.86 },
+              { img: 'pet-purple', x: 40, y: 41, s: 0.56 },
+              { img: 'pet-pink', x: 70, y: 95, s: 1, tint: 'hue-rotate(52deg) saturate(1.2)' },
+              { img: 'pet-purple', x: 84, y: 90, s: 1, tint: 'hue-rotate(-62deg) saturate(1.15)' },
+            ].map((r) => (
+              <div class="racer still" style={`--x:${r.x}%;--y:${r.y}%;--s:${r.s}`}>
+                <img src={art(r.img)} width="216" height="260" alt="" loading="lazy" decoding="async" style={r.tint ? `filter:${r.tint}` : undefined} />
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+      <div class="stack-side">
+        <ol class="legend" role="list">
+          {layers.map((l, i) => (
+            <li data-legend={i}>
+              <button type="button" data-pick={i}>
+                <span class="step" aria-hidden="true">{i + 1}</span>
+                <span class="lg-text"><strong>{l.n}</strong><span>{l.t}</span></span>
+              </button>
+            </li>
+          ))}
+        </ol>
+        <button class="pill pill-light stack-toggle" type="button" data-toggle aria-pressed="true">Put it together</button>
+      </div>
+    </figure>
+
+    <div class="cast" data-fig>
+      <div class="cast-row">
+        <h3>The racers</h3>
+        <p>One model, one bright colour each. From behind on the dock, facing you on the pads.</p>
+        <ul class="backs" role="list">
+          {backs.map((b, i) => (
+            <li class="rise" style={`--k:${i}`}><img src={art(`back-${b}`)} width="192" height="240" alt={`A ${b} pet seen from behind`} loading="lazy" decoding="async" /></li>
+          ))}
+        </ul>
+        <ul class="fronts" role="list">
+          <li class="rise" style="--k:2"><img src={art('corgi-crown')} width="201" height="300" alt="The player: a corgi wearing a gold crown" loading="lazy" decoding="async" /><span>You</span></li>
+          <li class="rise" style="--k:3"><img src={art('pet-pink')} width="210" height="260" alt="A pink pet facing forward" loading="lazy" decoding="async" /><span>Rival</span></li>
+          <li class="rise" style="--k:4"><img src={art('pet-purple')} width="214" height="260" alt="A purple pet facing forward" loading="lazy" decoding="async" /><span>Rival</span></li>
+        </ul>
+      </div>
+      <div class="cast-row">
+        <h3>Prizes</h3>
+        <p>Each trophy pops up out of its leaves; the gift is for everyone who finishes.</p>
+        <ul class="trophies" role="list">
+          {trophies.map((t, i) => (
+            <li class="trophy" style={`--i:${i};--h:${t.h}%`} data-trophy>
+              <img class="leaf" src={art('leaves')} width="700" height="545" alt="" loading="lazy" decoding="async" />
+              <img class="cup" src={art(t.img)} width="328" height="480" alt={t.alt} loading="lazy" decoding="async" />
+              <span class="place">{t.label}</span>
+            </li>
+          ))}
+        </ul>
+      </div>
+      <img class="pins rise" src={art('pins')} width="1400" height="158" alt="Seven map pins in the racers’ colours" loading="lazy" decoding="async" />
+    </div>
+
+    <ul class="notes cols" role="list">
+      <li><h3>Painted with AI, finished by edit</h3><p>The racers, pads, signs and prizes were generated with AI image tools, then refined with follow-up edits: leaves and water taken out, backgrounds removed, edges cleaned for the river.</p></li>
+      <li><h3>Built to be assembled</h3><p>Every piece is a separate layer, so the game places pads, racers and trophies in code, and numbers sit on the trophies as live text.</p></li>
+    </ul>
+  </section>
+
+  <section class="sec">
+    <div class="sec-head" data-fig>
+      <h2>The board</h2>
+      <div><p>Four moments of one race, as they were drawn.</p></div>
+    </div>
+    <ol class="phones four" role="list" data-fig>
+      {boardScreens.map((sc, i) => (
+        <li class="rise" style={`--k:${i}`}>
+          <img src={art(sc.img)} width="640" height="1387" alt={sc.alt} loading="lazy" decoding="async" />
+          <h3>{sc.h}</h3>
+          <p>{sc.t}</p>
+        </li>
+      ))}
+    </ol>
+    <div class="fill" data-fig>
+      <div class="fill-text">
+        <h3>The podium fills up</h3>
+        <p>Whoever reaches the island first takes the gold spot; the next two take silver and bronze. A racer who failed bobs in the water near the start.</p>
+      </div>
+      <ol class="fill-phones" role="list">
+        {fillScreens.map((sc, i) => (
+          <li class="rise" style={`--k:${i}`}><img src={art(sc.img)} width="640" height="1387" alt={sc.alt} loading="lazy" decoding="async" /></li>
+        ))}
+      </ol>
+    </div>
+  </section>
+
+  <section class="sec">
+    <div class="sec-head" data-fig>
+      <h2>Popups</h2>
+      <div><p>The game’s own popup frame, with the river inside it. Leaving early always asks first.</p></div>
+    </div>
+    <ol class="popups" role="list" data-fig>
+      {popups.map((pp, i) => (
+        <li class="rise" style={`--k:${i}`}>
+          <img src={art(pp.img)} width="640" height="1387" alt={pp.alt} loading="lazy" decoding="async" />
+          <p>{pp.name}</p>
+        </li>
+      ))}
+    </ol>
+  </section>
+
+  <section class="sec">
+    <div class="sec-head" data-fig>
+      <h2 class="ribbon"><span>Rewards</span></h2>
+      <div>
+        <p>A trophy in its leaves for the top three, a gift for everyone else who finishes, then the prize to claim.</p>
+        <p class="aside">Drawn while the event was still called Jungle Race.</p>
+      </div>
+    </div>
+    <ol class="popups" role="list" data-fig>
+      {rewards.map((rw, i) => (
+        <li class="rise" style={`--k:${i}`}>
+          <img src={art(rw.img)} width="640" height="1387" alt={rw.alt} loading="lazy" decoding="async" />
+          <p>{rw.name}</p>
+        </li>
+      ))}
+    </ol>
+  </section>
+
+  <section class="sec">
+    <div class="sec-head" data-fig>
+      <h2>On Home</h2>
+      <div><p>Between races the result stays on Home as a badge in the corner: your trophy in leaves, with the time to the next race.</p></div>
+    </div>
+    <ol class="phones homes" role="list" data-fig>
+      {homes.map((h, i) => (
+        <li class="rise" style={`--k:${i}`}>
+          <div class="shot">
+            <img src={art(h.img)} width="640" height="1387" alt={h.alt} loading="lazy" decoding="async" />
+            <span class="lens" aria-hidden="true" style={`background-image:url(${art(h.img)})`}></span>
+          </div>
+          <h3>{h.h}</h3>
+          <p>{h.t}</p>
+        </li>
+      ))}
+    </ol>
+  </section>
+
+  <section class="sec">
+    <div class="sec-head" data-fig>
+      <h2 class="ribbon"><span>Art direction</span></h2>
+      <div><p>The rules the race was drawn to.</p></div>
+    </div>
+    <ol class="principles" role="list">
+      {principles.map((n, i) => (
+        <li>
+          <span class="step" aria-hidden="true">{i + 1}</span>
+          <h3>{n.h}</h3>
+          <p>{n.t}</p>
+        </li>
+      ))}
+    </ol>
+  </section>
+</article>
+
+<script>
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+
+  // Things rise in once, as they come into view; figures play only while on screen.
+  const io = new IntersectionObserver((es) => es.forEach((e) => {
+    e.target.toggleAttribute('data-live', e.isIntersecting);
+    if (e.isIntersecting) e.target.classList.add('seen');
+  }), { threshold: 0.2 });
+  document.querySelectorAll('[data-fig]').forEach((f) => {
+    if (reduce) f.classList.add('seen');
+    else f.setAttribute('data-armed', '');
+    io.observe(f);
+  });
+
+  // ---------- The race ----------
+  const race = document.querySelector<HTMLElement>('[data-race]');
+  if (race) {
+    type Pad = { x: number; y: number; w: number };
+    type Racer = { id: string; el: HTMLElement; dock: { x: number; y: number }; pos: number; out: boolean; place: number };
+    const pads: Pad[] = JSON.parse(race.dataset.pads!);
+    const LAST = pads.length; // pos === LAST: on the island
+    const racers: Racer[] = JSON.parse(race.dataset.racers!).map((r: { id: string; dock: { x: number; y: number } }) => ({
+      ...r, el: race.querySelector<HTMLElement>(`[data-racer="${r.id}"]`)!, pos: -1, out: false, place: 0,
+    }));
+    const me = racers[0];
+    const $ = (s: string) => race.querySelector<HTMLElement>(s)!;
+    const winBtn = $('[data-win]') as HTMLButtonElement;
+    const failBtn = $('[data-fail]') as HTMLButtonElement;
+    const againBtn = $('[data-again]') as HTMLButtonElement;
+    const status = $('[data-status]');
+    const result = $('[data-result]');
+    const art = (n: string) => (result.querySelector('img') as HTMLImageElement).src.replace(/[^/]+\.webp$/, `${n}.webp`);
+    const PODIUM = [{ x: 50, y: 26 }, { x: 68, y: 29 }, { x: 32, y: 29.5 }, { x: 13, y: 35 }, { x: 87, y: 35 }];
+    const ord = (n: number) => n + (n % 10 === 1 && n !== 11 ? 'st' : n % 10 === 2 && n !== 12 ? 'nd' : n % 10 === 3 && n !== 13 ? 'rd' : 'th');
+    let finished = 0;
+    let over = false;
+
+    const place = (r: Racer, hop = true) => {
+      let x: number, y: number, s: number;
+      if (r.place) ({ x, y } = PODIUM[r.place - 1]), (s = r.place === 1 ? 0.62 : 0.55);
+      else if (r.pos < 0) ({ x, y } = r.dock), (s = 1);
+      else {
+        const pd = pads[r.pos];
+        // racers sharing a pad stand side by side
+        const mates = racers.filter((o) => !o.place && o.pos === r.pos && !o.out);
+        const k = mates.indexOf(r);
+        const spread = (k - (mates.length - 1) / 2) * pd.w * 0.3;
+        x = pd.x + (r.out ? pd.w * 0.55 : spread);
+        y = pd.y + (r.out ? 4 : -0.6);
+        s = pd.w / 28;
+      }
+      r.el.style.setProperty('--x', `${x}%`);
+      r.el.style.setProperty('--y', `${y}%`);
+      r.el.style.setProperty('--s', String(s));
+      if (hop && !reduce) {
+        r.el.classList.remove('hop');
+        void r.el.offsetWidth;
+        r.el.classList.add('hop');
+      }
+    };
+    const ripple = (i: number) => {
+      const pad = race.querySelector<HTMLElement>(`[data-pad="${i}"]`);
+      if (!pad || reduce) return;
+      pad.classList.remove('land');
+      void pad.offsetWidth;
+      pad.classList.add('land');
+    };
+    const rank = () => {
+      const order = [...racers].sort((a, b) => (a.out !== b.out ? (a.out ? 1 : -1) : a.place && b.place ? a.place - b.place : a.place ? -1 : b.place ? 1 : b.pos - a.pos));
+      return order.indexOf(me) + 1;
+    };
+    const refresh = () => {
+      $('[data-level]').textContent = `${Math.max(0, Math.min(me.pos + 1, LAST))}/${LAST}`;
+      $('[data-done]').textContent = `${finished}/${racers.length}`;
+      $('[data-rank]').textContent = ord(me.place || rank());
+      $('[data-next]').textContent = String(Math.min(me.pos + 2, LAST));
+    };
+    const show = (kind: 'trophy' | 'gift' | 'out') => {
+      over = true;
+      const img = result.querySelector('img') as HTMLImageElement;
+      const t = $('[data-result-title]');
+      const sub = $('[data-result-sub]');
+      if (kind === 'out') {
+        img.src = art('pet-corgi');
+        t.textContent = 'Oh no, you slipped!';
+        sub.textContent = 'One lost level and you’re out.';
+        status.textContent = 'You failed a level and fell in the river. Race again?';
+      } else if (kind === 'trophy') {
+        img.src = art(['trophy-gold', 'trophy-silver', 'trophy-bronze'][me.place - 1]);
+        t.textContent = 'Congratulations!';
+        sub.textContent = `You’re ${ord(me.place)}!`;
+        status.textContent = `You reached the island ${ord(me.place)} and won a trophy.`;
+      } else {
+        img.src = art('gift');
+        t.textContent = `You finished ${ord(me.place)}!`;
+        sub.textContent = 'Not a trophy, but here’s a gift.';
+        status.textContent = `You reached the island ${ord(me.place)}: a gift instead of a trophy.`;
+      }
+      result.dataset.kind = kind;
+      result.hidden = false;
+      winBtn.hidden = failBtn.hidden = true;
+      againBtn.hidden = false;
+    };
+    const finish = (r: Racer) => {
+      finished++;
+      r.place = finished;
+    };
+    const turn = (won: boolean) => {
+      if (over) return;
+      if (!won) {
+        me.out = true;
+        me.el.classList.add('out');
+        place(me);
+        racers.forEach((r) => r !== me && place(r, false));
+        refresh();
+        setTimeout(() => show('out'), reduce ? 0 : 900);
+        return;
+      }
+      me.pos++;
+      if (me.pos >= LAST) finish(me);
+      else ripple(me.pos);
+      // the others play their own levels
+      for (const r of racers) {
+        if (r === me || r.out || r.place) continue;
+        const roll = Math.random();
+        if (r.pos >= 1 && roll < 0.09) {
+          r.out = true;
+          r.el.classList.add('out');
+        } else if (roll < 0.74) {
+          r.pos++;
+          if (r.pos >= LAST) finish(r);
+        }
+      }
+      racers.forEach((r) => place(r, r === me || Math.random() < 0.9));
+      refresh();
+      status.textContent = me.place ? '' : `Level won on the first try: you hop to pad ${me.pos + 1}, ${ord(rank())} in the race.`;
+      if (me.place) setTimeout(() => show(me.place <= 3 ? 'trophy' : 'gift'), reduce ? 0 : 650);
+    };
+    const reset = () => {
+      over = false;
+      finished = 0;
+      for (const r of racers) {
+        r.pos = -1;
+        r.out = false;
+        r.place = 0;
+        r.el.classList.remove('out', 'hop');
+        place(r, false);
+      }
+      result.hidden = true;
+      winBtn.hidden = failBtn.hidden = false;
+      againBtn.hidden = true;
+      refresh();
+      status.textContent = 'Five racers on the dock. You wear the crown.';
+    };
+
+    // It races by itself while on screen; a press takes over, and it starts again after a quiet spell.
+    let touched = 0;
+    let loop = 0;
+    const take = () => { touched = Date.now(); };
+    winBtn.addEventListener('click', () => { take(); turn(true); });
+    failBtn.addEventListener('click', () => { take(); turn(false); });
+    againBtn.addEventListener('click', () => { take(); reset(); });
+    reset();
+    if (!reduce) {
+      (async () => {
+        for (;;) {
+          await sleep(1250);
+          if (!race.hasAttribute('data-live') || document.hidden || Date.now() - touched < 12000) continue;
+          if (over) {
+            await sleep(2600);
+            if (Date.now() - touched < 12000) continue;
+            reset();
+            loop++;
+            continue;
+          }
+          // every third race shows the other ending
+          turn(!(loop % 3 === 2 && me.pos === 4));
+        }
+      })();
+    }
+  }
+
+  // ---------- The layers: apart and together ----------
+  const stack = document.querySelector<HTMLElement>('[data-stack]');
+  if (stack) {
+    const toggle = stack.querySelector<HTMLButtonElement>('[data-toggle]')!;
+    let apart = true;
+    let touched = 0;
+    const set = (v: boolean) => {
+      apart = v;
+      stack.classList.toggle('apart', v);
+      toggle.textContent = v ? 'Put it together' : 'Take it apart';
+      toggle.setAttribute('aria-pressed', String(v));
+    };
+    const pick = (i: number | null) => {
+      stack.querySelectorAll<HTMLElement>('[data-layer]').forEach((l) => l.classList.toggle('lift', l.dataset.layer === String(i)));
+      stack.querySelectorAll<HTMLElement>('[data-legend]').forEach((l) => l.classList.toggle('on', l.dataset.legend === String(i)));
+      stack.classList.toggle('picking', i !== null);
+    };
+    set(true);
+    toggle.addEventListener('click', () => { touched = Date.now(); set(!apart); });
+    stack.querySelectorAll<HTMLButtonElement>('[data-pick]').forEach((b) => {
+      const i = Number(b.dataset.pick);
+      b.addEventListener('pointerenter', () => { touched = Date.now(); if (!apart) set(true); pick(i); });
+      b.addEventListener('focus', () => { touched = Date.now(); if (!apart) set(true); pick(i); });
+      b.addEventListener('click', () => { touched = Date.now(); if (!apart) set(true); pick(i); });
+    });
+    stack.querySelector('.legend')!.addEventListener('pointerleave', () => pick(null));
+    if (!reduce) {
+      (async () => {
+        let k = 0;
+        for (;;) {
+          await sleep(1700);
+          if (!stack.hasAttribute('data-live') || document.hidden || Date.now() - touched < 9000) continue;
+          // walk through the layers one by one, then put the board back together
+          if (k < 6) { if (!apart) set(true); pick(k); }
+          else if (k === 6) { pick(null); set(false); }
+          k = (k + 1) % 8;
+        }
+      })();
+    }
+  }
+
+  // ---------- The river behind the page: light rippling on moving water ----------
+  const cv = document.querySelector<HTMLCanvasElement>('[data-rr-bg]');
+  const gl = cv?.getContext('webgl', { premultipliedAlpha: true, alpha: true, antialias: false });
+  if (cv && gl) {
+    const FRAG = `
+      precision mediump float;
+      uniform vec2 uRes;
+      uniform float uT;
+      uniform float uScroll;
+      float hash(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
+      float noise(vec2 p) {
+        vec2 i = floor(p), f = fract(p);
+        f = f * f * (3.0 - 2.0 * f);
+        return mix(mix(hash(i), hash(i + vec2(1.0, 0.0)), f.x), mix(hash(i + vec2(0.0, 1.0)), hash(i + vec2(1.0, 1.0)), f.x), f.y);
+      }
+      float fbm(vec2 p) {
+        float v = 0.0, a = 0.5;
+        for (int i = 0; i < 4; i++) { v += a * noise(p); p = p * 2.03 + vec2(3.1, 1.7); a *= 0.5; }
+        return v;
+      }
+      void main() {
+        vec2 p = gl_FragCoord.xy / uRes.y * 3.0;
+        p.y += uT * 0.06 - uScroll;            // the water flows down the page, and scrolls with it
+        vec2 w = vec2(fbm(p + uT * 0.05), fbm(p + vec2(5.2, 1.3) - uT * 0.04));
+        float a1 = 1.0 - smoothstep(0.0, 0.045, abs(fbm(p * 1.5 + w * 1.5) - 0.5));
+        float a2 = 1.0 - smoothstep(0.0, 0.035, abs(fbm(p * 2.3 - w * 1.2 + uT * 0.03) - 0.5));
+        float light = a1 * 0.17 + a2 * 0.09;
+        float shade = smoothstep(0.55, 0.85, w.x) * 0.07;
+        float a = light + shade * (1.0 - light);
+        gl_FragColor = vec4(vec3(0.9, 1.0, 1.0) * light, a);
+      }`;
+    const sh = (type: number, src: string) => {
+      const o = gl.createShader(type)!;
+      gl.shaderSource(o, src);
+      gl.compileShader(o);
+      return o;
+    };
+    const prog = gl.createProgram()!;
+    gl.attachShader(prog, sh(gl.VERTEX_SHADER, 'attribute vec2 a; void main() { gl_Position = vec4(a, 0.0, 1.0); }'));
+    gl.attachShader(prog, sh(gl.FRAGMENT_SHADER, FRAG));
+    gl.linkProgram(prog);
+    if (gl.getProgramParameter(prog, gl.LINK_STATUS)) {
+      gl.useProgram(prog);
+      gl.bindBuffer(gl.ARRAY_BUFFER, gl.createBuffer());
+      gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 1, -1, -1, 1, 1, 1]), gl.STATIC_DRAW);
+      const loc = gl.getAttribLocation(prog, 'a');
+      gl.enableVertexAttribArray(loc);
+      gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
+      const uRes = gl.getUniformLocation(prog, 'uRes');
+      const uT = gl.getUniformLocation(prog, 'uT');
+      const uScroll = gl.getUniformLocation(prog, 'uScroll');
+      const size = () => {
+        const k = 0.5; // soft light: half resolution is plenty
+        cv.width = Math.round(innerWidth * k);
+        cv.height = Math.round(innerHeight * k);
+        gl.viewport(0, 0, cv.width, cv.height);
+        gl.uniform2f(uRes, cv.width, cv.height);
+      };
+      const draw = (t: number) => {
+        gl.uniform1f(uT, t / 1000);
+        gl.uniform1f(uScroll, (scrollY / innerHeight) * 3.0 * -1);
+        gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+      };
+      size();
+      addEventListener('resize', () => { size(); draw(performance.now()); });
+      document.documentElement.setAttribute('data-river', '');
+      if (reduce) {
+        draw(0);
+        addEventListener('scroll', () => draw(0), { passive: true });
+      } else {
+        let last = 0;
+        const frame = (t: number) => {
+          if (t - last > 40 && !document.hidden) { last = t; draw(t); } // about 25 frames a second is plenty for water
+          requestAnimationFrame(frame);
+        };
+        requestAnimationFrame(frame);
+      }
+    }
+  }
+</script>
+
+<style>
+  .rr-bg {
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+  }
+  /* a few lily pads drifting down the river, out at the edges of wide screens */
+  .rr-drift {
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    overflow: hidden;
+    pointer-events: none;
+  }
+  .rr-drift img {
+    position: absolute;
+    top: 0;
+    height: auto;
+    filter: drop-shadow(0 6px 8px rgb(4 38 46 / 0.25));
+    animation: drift var(--d) linear var(--at) infinite;
+  }
+  @keyframes drift {
+    0% { transform: translateY(-20vh) rotate(-8deg); }
+    25% { transform: translateY(18vh) translateX(10px) rotate(4deg); }
+    50% { transform: translateY(55vh) rotate(-3deg); }
+    75% { transform: translateY(90vh) translateX(-8px) rotate(6deg); }
+    100% { transform: translateY(125vh) rotate(-8deg); }
+  }
+  @media (max-width: 1279px) {
+    .rr-drift {
+      display: none;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .rr-drift img {
+      animation: none;
+      transform: translateY(calc(var(--at) * -1.2vh));
+    }
+  }
+
+  .case {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: clamp(72px, 9vw, 128px);
+    margin-top: clamp(56px, 7vw, 96px);
+  }
+  .sec {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: clamp(24px, 3vw, 40px);
+  }
+  .sec-head {
+    display: grid;
+    grid-template-columns: minmax(10rem, 1fr) minmax(0, 2fr);
+    gap: 16px clamp(32px, 6vw, 96px);
+  }
+  .sec-head h2 {
+    font-size: clamp(1.5rem, 2.2vw, 2rem);
+  }
+  .sec-head p {
+    max-width: 64ch;
+    font-size: 1.125rem;
+  }
+  .sec-head p + p {
+    margin-top: 0.8em;
+  }
+  .sec-head .aside {
+    color: var(--ink-2);
+    font-size: 0.9375rem;
+  }
+  .out {
+    margin-top: 20px;
+  }
+
+  /* Section titles on the race's own banner: sky blue, a stitched edge, folded tails */
+  .sec-head .ribbon {
+    position: relative;
+    isolation: isolate;
+    justify-self: start;
+    align-self: start;
+    margin: 0 0.9em;
+    font-size: clamp(1.25rem, 1.8vw, 1.6rem);
+    line-height: 1.15;
+  }
+  .ribbon span {
+    position: relative;
+    z-index: 1;
+    display: block;
+    width: 9.4em;
+    padding: 0.4em 0.4em 0.46em;
+    text-align: center;
+    white-space: nowrap;
+    border-radius: 0.3em;
+    background: linear-gradient(#7ccbff, #3e9cf0);
+    box-shadow:
+      inset 0 0 0 0.14em #3e9cf0,
+      0 0.22em 0 #1f69b8,
+      0 0.6em 1em -0.4em rgb(4 38 70 / 0.45);
+    color: #fff;
+    text-shadow: 0 0.08em 0 rgb(18 72 140 / 0.75);
+    transition: transform 520ms cubic-bezier(0.3, 1.6, 0.5, 1), opacity 260ms var(--ease-out);
+  }
+  /* the dashed stitch just inside the band */
+  .ribbon span::after {
+    content: '';
+    position: absolute;
+    inset: 0.2em 0.26em;
+    border: 0.07em dashed rgb(255 255 255 / 0.85);
+    border-radius: 0.2em;
+    pointer-events: none;
+  }
+  .ribbon::before,
+  .ribbon::after {
+    content: '';
+    position: absolute;
+    z-index: 0;
+    top: 0.42em;
+    bottom: -0.32em;
+    width: 1.5em;
+    background: linear-gradient(#3e9cf0, #1f69b8);
+    transition: opacity 260ms var(--ease-out) 160ms;
+  }
+  .ribbon::before {
+    left: -0.95em;
+    clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%, 34% 50%);
+  }
+  .ribbon::after {
+    right: -0.95em;
+    clip-path: polygon(0 0, 100% 0, 66% 50%, 100% 100%, 0 100%);
+  }
+  .ribbon:hover span {
+    transform: scale(1.04);
+  }
+  [data-armed]:not(.seen) .ribbon span {
+    opacity: 0;
+    transform: scale(0.5);
+  }
+  [data-armed]:not(.seen) .ribbon::before,
+  [data-armed]:not(.seen) .ribbon::after {
+    opacity: 0;
+  }
+
+  /* gold coins for step numbers, from the prize heap */
+  .step {
+    display: inline-grid;
+    flex: none;
+    place-items: center;
+    width: 1.9rem;
+    height: 1.9rem;
+    border-radius: 50%;
+    background: radial-gradient(circle at 35% 30%, #ffe27a, #f6b62a 60%, #e0931a);
+    box-shadow: inset 0 0 0 2px #c9790f, inset 0 3px 0 rgb(255 255 255 / 0.45), 0 2px 0 #9a5a08;
+    color: #4a2a00;
+    font-size: 0.875rem;
+    font-weight: 600;
+    line-height: 1;
+  }
+
+  .structure,
+  .principles,
+  .notes {
+    display: grid;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .structure {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 24px clamp(16px, 2.4vw, 32px);
+  }
+  .structure li {
+    display: grid;
+    align-content: start;
+    gap: 8px;
+    padding-top: 16px;
+    border-top: 2px solid var(--ink);
+  }
+  .structure h3,
+  .principles h3,
+  .notes h3,
+  .cast h3,
+  .fill h3 {
+    font-size: clamp(1.125rem, 1.6vw, 1.375rem);
+    letter-spacing: -0.025em;
+    line-height: 1.15;
+  }
+  .structure p,
+  .principles p,
+  .notes p,
+  .cast p,
+  .fill p {
+    color: var(--ink-2);
+  }
+  .notes.cols {
+    grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+    gap: 0 clamp(24px, 4vw, 56px);
+  }
+  .notes li {
+    display: grid;
+    gap: 6px;
+    padding: 18px 0;
+    border-top: 1px solid var(--line);
+    border-bottom: 1px solid var(--line);
+  }
+  .principles {
+    border-bottom: 1px solid var(--line);
+  }
+  .principles li {
+    display: grid;
+    grid-template-columns: 2.5rem minmax(10rem, 1fr) minmax(0, 2fr);
+    align-items: baseline;
+    gap: 6px clamp(16px, 3vw, 40px);
+    padding: 20px 0;
+    border-top: 1px solid var(--line);
+  }
+  .principles p {
+    max-width: 60ch;
+    font-size: 1.0625rem;
+  }
+  .fig {
+    margin: 0;
+  }
+
+  .rise {
+    transition: opacity 600ms var(--ease-out), transform 700ms var(--ease-out);
+    transition-delay: calc(var(--k, 0) * 90ms);
+  }
+  [data-armed]:not(.seen) .rise,
+  [data-armed]:not(.seen).rise {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+
+  /* ---------- The board (shared by the race and the layers) ---------- */
+  .board,
+  .layer {
+    position: absolute;
+    inset: 0;
+  }
+  .board {
+    position: relative;
+    inset: auto;
+    aspect-ratio: 9 / 16;
+    overflow: hidden;
+    border-radius: clamp(20px, 2.4vw, 32px);
+    box-shadow: 0 30px 60px -28px rgb(4 38 46 / 0.6), 0 0 0 6px rgb(255 255 255 / 0.25);
+    container-type: inline-size;
+  }
+  .b-water {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .b-shore {
+    position: absolute;
+    left: 0;
+    top: -14%;
+    width: 100%;
+    height: auto;
+    -webkit-mask: linear-gradient(#000 88%, transparent);
+    mask: linear-gradient(#000 88%, transparent);
+  }
+  .b-pod {
+    position: absolute;
+    left: 13%;
+    top: 14.5%;
+    width: 74%;
+    height: auto;
+  }
+  .b-sign {
+    position: absolute;
+    top: 23%;
+    width: 22%;
+  }
+  .b-sign.l {
+    left: 0;
+  }
+  .b-sign.r {
+    right: 0;
+  }
+  .b-sign img {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+  .b-sign span {
+    position: absolute;
+    left: 6%;
+    right: 6%;
+    top: 14%;
+    display: grid;
+    justify-items: center;
+    color: #fff;
+    font-family: var(--font-display);
+    font-size: 3.1cqw;
+    font-weight: 700;
+    line-height: 1.1;
+    text-shadow: 0 0.12em 0 rgb(90 40 10 / 0.6);
+  }
+  .b-sign b {
+    font-size: 1.2em;
+  }
+  .b-pad {
+    position: absolute;
+    left: var(--x);
+    top: var(--y);
+    width: var(--w);
+    height: auto;
+    translate: -50% -50%;
+    filter: drop-shadow(0 0.6cqw 0.6cqw rgb(4 38 46 / 0.3));
+    animation: bob 4.2s ease-in-out calc(var(--i, 0) * -0.7s) infinite;
+  }
+  @keyframes bob {
+    50% { transform: translateY(0.5cqw) rotate(0.6deg); }
+  }
+  /* a ring on the water where a racer lands */
+  .b-pad.land {
+    animation: bob 4.2s ease-in-out infinite, land 520ms var(--ease-out);
+  }
+  @keyframes land {
+    40% { scale: 1.08 0.9; }
+  }
+  .b-dock {
+    position: absolute;
+    left: 50%;
+    top: 81%;
+    width: 64%;
+    height: auto;
+  }
+
+  .racer {
+    position: absolute;
+    left: var(--x);
+    top: var(--y);
+    width: calc(15% * var(--s));
+    translate: -50% -88%;
+    transition: left 560ms cubic-bezier(0.4, 0, 0.3, 1), top 560ms cubic-bezier(0.4, 0, 0.3, 1), width 560ms var(--ease-out);
+    z-index: 2;
+  }
+  .racer img {
+    display: block;
+    width: 100%;
+    height: auto;
+    filter: drop-shadow(0 0.8cqw 0.8cqw rgb(4 38 46 / 0.35));
+  }
+  .racer.me {
+    z-index: 3;
+  }
+  .racer.hop img {
+    animation: hop 560ms cubic-bezier(0.3, 0, 0.4, 1);
+  }
+  @keyframes hop {
+    0% { transform: scale(1.06, 0.92); }
+    20% { transform: translateY(-18%) scale(0.95, 1.06); }
+    55% { transform: translateY(-34%) scale(0.98, 1.02); }
+    86% { transform: translateY(0) scale(1.1, 0.88); }
+    100% { transform: none; }
+  }
+  /* fallen in: only the head shows, bobbing */
+  .racer.out img {
+    clip-path: inset(0 0 46% 0);
+    transform: translateY(30%);
+    animation: swim 2.6s ease-in-out infinite;
+  }
+  .racer.out::after {
+    content: '';
+    position: absolute;
+    left: 50%;
+    bottom: 4%;
+    width: 110%;
+    aspect-ratio: 3 / 1;
+    translate: -50% 0;
+    border: 0.35cqw solid rgb(255 255 255 / 0.75);
+    border-radius: 50%;
+    animation: splash 1.6s var(--ease-out) infinite;
+  }
+  @keyframes swim {
+    50% { transform: translateY(34%) rotate(-5deg); }
+  }
+  @keyframes splash {
+    from { scale: 0.4; opacity: 1; }
+    to { scale: 1.3; opacity: 0; }
+  }
+  .you {
+    position: absolute;
+    left: 50%;
+    bottom: -4%;
+    translate: -50% 0;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4em;
+    padding: 0.2em 0.3em 0.2em 0.6em;
+    border-radius: 0.5em;
+    background: #f43f8a;
+    box-shadow: 0 0.15em 0 #b51e62;
+    color: #fff;
+    font-family: var(--font-display);
+    font-size: 3cqw;
+    font-weight: 700;
+    white-space: nowrap;
+  }
+  .you b {
+    display: inline-grid;
+    place-items: center;
+    min-width: 1.7em;
+    height: 1.7em;
+    padding: 0 0.2em;
+    border-radius: 50%;
+    background: #1c1c22;
+    font-size: 0.85em;
+  }
+  .racer.out .you {
+    display: none;
+  }
+
+  .result {
+    position: absolute;
+    inset: 0;
+    z-index: 5;
+    display: grid;
+    place-items: center;
+    background: radial-gradient(circle at 50% 45%, rgb(4 38 46 / 0.4), rgb(4 38 46 / 0.78));
+    animation: fade 300ms var(--ease-out);
+  }
+  .result[hidden] {
+    display: none;
+  }
+  .result-card {
+    display: grid;
+    justify-items: center;
+    gap: 0.4em;
+    color: #fff;
+    text-align: center;
+    font-family: var(--font-display);
+  }
+  .result-card img {
+    width: 42cqw;
+    height: auto;
+    filter: drop-shadow(0 0 4cqw rgb(255 220 120 / 0.55));
+    animation: prize 900ms cubic-bezier(0.3, 1.5, 0.5, 1) both;
+  }
+  .result[data-kind='out'] .result-card img {
+    width: 30cqw;
+    filter: drop-shadow(0 2cqw 2cqw rgb(0 0 0 / 0.3)) grayscale(0.2);
+    animation: sad 900ms var(--ease-out) both;
+  }
+  .r-title {
+    color: #ffd75a;
+    font-size: 7cqw;
+    font-weight: 700;
+    line-height: 1.1;
+    text-shadow: 0 0.08em 0 rgb(120 60 0 / 0.7);
+  }
+  .r-sub {
+    font-size: 5.4cqw;
+    font-weight: 600;
+  }
+  @keyframes fade {
+    from { opacity: 0; }
+  }
+  @keyframes prize {
+    0% { transform: scale(0.2) rotate(-12deg); opacity: 0; }
+    60% { transform: scale(1.08) rotate(3deg); opacity: 1; }
+    100% { transform: none; }
+  }
+  @keyframes sad {
+    from { transform: translateY(20%); opacity: 0; }
+  }
+
+  .race {
+    display: grid;
+    grid-template-columns: minmax(0, 420px) minmax(0, 1fr);
+    align-items: center;
+    gap: clamp(28px, 5vw, 80px);
+  }
+  .race-side {
+    display: grid;
+    gap: 28px;
+    max-width: 30rem;
+  }
+  .race-steps {
+    display: grid;
+    gap: 14px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    font-size: 1.125rem;
+  }
+  .race-steps li {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+  .race-ctl {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 12px 16px;
+  }
+  /* the game's yellow button */
+  .g-btn {
+    min-height: 52px;
+    padding: 0 28px;
+    border: 3px solid #1f69b8;
+    border-radius: 16px;
+    background: linear-gradient(#ffe15a, #ffb81c);
+    box-shadow: inset 0 3px 0 rgb(255 255 255 / 0.55), 0 4px 0 #1f69b8;
+    color: #fff;
+    font-family: var(--font-display);
+    font-size: 1.25rem;
+    font-weight: 700;
+    text-shadow: 0 2px 0 rgb(170 90 0 / 0.75);
+    cursor: pointer;
+    transition: transform var(--t-fast) var(--ease-out);
+  }
+  .g-btn:active {
+    transform: translateY(3px);
+  }
+  .g-btn.fail {
+    min-height: 44px;
+    padding: 0 18px;
+    border-color: #a3182b;
+    background: linear-gradient(#ff6b6b, #e0344a);
+    box-shadow: inset 0 3px 0 rgb(255 255 255 / 0.4), 0 4px 0 #a3182b;
+    font-size: 1rem;
+    text-shadow: 0 2px 0 rgb(120 10 20 / 0.6);
+  }
+  .g-btn:focus-visible {
+    outline: 3px solid var(--ink);
+    outline-offset: 4px;
+  }
+  .g-btn[hidden] {
+    display: none;
+  }
+  .race-status {
+    min-height: 3em;
+    color: var(--ink-2);
+  }
+
+  /* ---------- Layers, taken apart ---------- */
+  .stack-fig {
+    display: grid;
+    grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+    align-items: center;
+    gap: clamp(28px, 5vw, 72px);
+  }
+  .stack {
+    perspective: 1800px;
+    padding: clamp(20px, 3vw, 40px) 0;
+  }
+  .stack-in {
+    position: relative;
+    width: min(100%, 360px);
+    margin: 0 auto;
+    aspect-ratio: 9 / 16;
+    container-type: inline-size;
+    transform-style: preserve-3d;
+    transition: transform 1100ms cubic-bezier(0.5, 0, 0.2, 1);
+  }
+  .apart .stack-in {
+    transform: translateY(8%) rotateX(52deg) rotateZ(-30deg) scale(0.74);
+  }
+  .layer {
+    overflow: hidden;
+    border-radius: 18px;
+    transform-style: preserve-3d;
+    transition: transform 1100ms cubic-bezier(0.5, 0, 0.2, 1), opacity 400ms var(--ease-out), box-shadow 600ms var(--ease-out);
+  }
+  .apart .layer {
+    transform: translateZ(calc(var(--i) * 46px));
+    box-shadow: inset 0 0 0 2px rgb(255 255 255 / 0.7);
+  }
+  .apart .layer.lift {
+    transform: translateZ(calc(var(--i) * 46px + 56px));
+    box-shadow: inset 0 0 0 3px #fff, 0 0 34px rgb(255 255 255 / 0.6);
+  }
+  .picking .layer:not(.lift) {
+    opacity: 0.55;
+  }
+  .stack .racer {
+    transition: none;
+  }
+  .stack-side {
+    display: grid;
+    gap: 22px;
+  }
+  .legend {
+    display: grid;
+    gap: 4px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .legend button {
+    display: flex;
+    gap: 14px;
+    width: 100%;
+    padding: 10px 12px;
+    border: 0;
+    border-radius: 14px;
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+    transition: background-color var(--t-fast) var(--ease-out);
+  }
+  .legend .on button,
+  .legend button:hover {
+    background: rgb(255 255 255 / 0.3);
+  }
+  .lg-text {
+    display: grid;
+    gap: 2px;
+  }
+  .lg-text span {
+    color: var(--ink-2);
+    font-size: 0.9375rem;
+  }
+  .stack-toggle {
+    justify-self: start;
+  }
+
+  /* ---------- Racers and prizes ---------- */
+  .cast {
+    display: grid;
+    gap: clamp(36px, 5vw, 64px);
+  }
+  .cast-row {
+    display: grid;
+    grid-template-columns: minmax(10rem, 1fr) minmax(0, 2fr);
+    gap: 8px clamp(32px, 6vw, 96px);
+  }
+  .cast-row > h3,
+  .cast-row > p {
+    grid-column: 1;
+  }
+  .cast-row > p {
+    grid-row: 2;
+    align-self: start;
+  }
+  .cast-row > ul {
+    grid-column: 2;
+    grid-row: 1 / span 2;
+  }
+  .backs,
+  .fronts,
+  .trophies {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: end;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .backs {
+    gap: 0 clamp(4px, 1vw, 14px);
+  }
+  .backs li {
+    width: calc((100% - 7 * clamp(4px, 1vw, 14px)) / 8);
+  }
+  .backs img,
+  .fronts img {
+    display: block;
+    width: 100%;
+    height: auto;
+    filter: drop-shadow(0 10px 10px rgb(4 38 46 / 0.3));
+    transition: transform 360ms cubic-bezier(0.3, 1.6, 0.5, 1);
+  }
+  .backs li:hover img,
+  .fronts li:hover img {
+    transform: translateY(-10%) scale(1.04);
+  }
+  .fronts {
+    grid-row: 3 !important;
+    gap: clamp(16px, 3vw, 40px);
+    margin-top: 18px;
+  }
+  .fronts li {
+    display: grid;
+    justify-items: center;
+    gap: 6px;
+    width: clamp(70px, 11vw, 130px);
+  }
+  .fronts span {
+    font-weight: 600;
+  }
+  .trophies {
+    gap: clamp(10px, 2vw, 28px);
+  }
+  .trophy {
+    position: relative;
+    display: grid;
+    justify-items: center;
+    width: calc((100% - 3 * clamp(10px, 2vw, 28px)) / 4);
+    aspect-ratio: 1 / 1.05;
+  }
+  .trophy .leaf {
+    position: absolute;
+    left: -6%;
+    bottom: 8%;
+    width: 112%;
+    height: auto;
+  }
+  .trophy .cup {
+    position: absolute;
+    bottom: 12%;
+    height: var(--h);
+    width: auto;
+    max-width: 92%;
+    object-fit: contain;
+    object-position: bottom;
+    filter: drop-shadow(0 8px 10px rgb(4 38 46 / 0.3));
+    transform-origin: 50% 100%;
+  }
+  .trophy .place {
+    position: absolute;
+    bottom: 0;
+    padding: 0.15em 0.7em;
+    border-radius: 0.6em;
+    background: #fff;
+    box-shadow: 0 0.15em 0 rgb(4 38 46 / 0.25);
+    color: #0b4f8a;
+    font-family: var(--font-display);
+    font-weight: 700;
+    white-space: nowrap;
+  }
+  [data-armed]:not(.seen) .trophy .cup {
+    opacity: 0;
+    transform: translateY(30%) scale(0.3);
+  }
+  [data-armed].seen .trophy .cup {
+    animation: cup 900ms calc(300ms + var(--i) * 200ms) both;
+  }
+  .trophy:hover .cup {
+    animation: cup-hop 600ms both;
+  }
+  @keyframes cup {
+    0% { opacity: 0; transform: translateY(30%) scale(0.3); animation-timing-function: cubic-bezier(0.2, 0.7, 0.4, 1); }
+    45% { opacity: 1; transform: translateY(-14%) scale(1.06, 1.1); animation-timing-function: cubic-bezier(0.5, 0, 0.9, 0.5); }
+    72% { transform: translateY(0) scale(1.1, 0.86); animation-timing-function: ease-out; }
+    86% { transform: translateY(-3%) scale(0.97, 1.03); }
+    100% { opacity: 1; transform: none; }
+  }
+  @keyframes cup-hop {
+    40% { transform: translateY(-12%) scale(0.96, 1.06); }
+    70% { transform: scale(1.06, 0.92); }
+  }
+  .pins {
+    width: min(100%, 820px);
+    height: auto;
+    justify-self: end;
+    filter: drop-shadow(0 10px 10px rgb(4 38 46 / 0.25));
+  }
+
+  /* ---------- Screens ---------- */
+  .phones,
+  .popups,
+  .fill-phones {
+    display: grid;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .phones img,
+  .popups img,
+  .fill-phones img {
+    display: block;
+    width: 100%;
+    height: auto;
+    border-radius: clamp(14px, 1.8vw, 26px);
+    filter: drop-shadow(0 22px 28px rgb(4 38 46 / 0.3));
+  }
+  .phones {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 32px clamp(16px, 3vw, 40px);
+  }
+  .phones li {
+    display: grid;
+    align-content: start;
+    gap: 8px;
+  }
+  .phones img {
+    margin-bottom: 14px;
+  }
+  .phones h3 {
+    font-size: clamp(1.0625rem, 1.5vw, 1.25rem);
+    letter-spacing: -0.02em;
+    line-height: 1.2;
+  }
+  .phones p {
+    color: var(--ink-2);
+  }
+  .fill {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.6fr);
+    align-items: center;
+    gap: clamp(24px, 5vw, 72px);
+    margin-top: clamp(16px, 3vw, 40px);
+  }
+  .fill-text {
+    display: grid;
+    gap: 8px;
+  }
+  .fill-phones {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: clamp(12px, 2vw, 24px);
+  }
+  .popups {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: clamp(12px, 1.6vw, 20px);
+  }
+  .popups li {
+    display: grid;
+    gap: 12px;
+    justify-items: center;
+  }
+  .popups p {
+    font-size: 0.9375rem;
+    font-weight: 600;
+  }
+
+  /* Home: a magnifier over the badge in the corner */
+  .shot {
+    position: relative;
+    margin-bottom: 14px;
+  }
+  .shot img {
+    margin-bottom: 0;
+  }
+  /* centred on the badge (13% across, 21% down the screen), shown at 1.75x */
+  .lens {
+    position: absolute;
+    left: 15%;
+    top: 21%;
+    width: 46%;
+    aspect-ratio: 1;
+    translate: -50% -50%;
+    border-radius: 50%;
+    border: 4px solid #fff;
+    background-size: 380% auto;
+    background-position: -0.4% 17.4%;
+    background-repeat: no-repeat;
+    box-shadow: 0 14px 28px -8px rgb(4 38 46 / 0.5);
+    transition: transform 520ms cubic-bezier(0.3, 1.6, 0.5, 1) calc(500ms + var(--k, 0) * 120ms), opacity 300ms var(--ease-out) calc(500ms + var(--k, 0) * 120ms);
+  }
+  .homes li {
+    --k: inherit;
+  }
+  [data-armed]:not(.seen) .lens {
+    opacity: 0;
+    transform: scale(0.3);
+  }
+
+  @media (max-width: 1100px) {
+    .popups {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+  }
+  @media (max-width: 860px) {
+    .sec-head,
+    .structure,
+    .race,
+    .stack-fig,
+    .cast-row,
+    .fill {
+      grid-template-columns: minmax(0, 1fr);
+    }
+    .structure {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+    .race .board {
+      width: min(100%, 400px);
+      margin: 0 auto;
+    }
+    .cast-row > h3,
+    .cast-row > p,
+    .cast-row > ul {
+      grid-column: 1;
+      grid-row: auto !important;
+    }
+    .phones {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+    .principles li {
+      grid-template-columns: 2.5rem minmax(0, 1fr);
+    }
+    .principles li p {
+      grid-column: 2;
+    }
+  }
+  @media (max-width: 560px) {
+    .structure,
+    .popups {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+    .backs li {
+      width: calc((100% - 3 * clamp(4px, 1vw, 14px)) / 4);
+    }
+    .trophy {
+      width: calc((100% - clamp(10px, 2vw, 28px)) / 2);
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .b-pad,
+    .racer.out img,
+    .racer.out::after {
+      animation: none;
+    }
+    .racer {
+      transition: none;
+    }
+  }
+</style>
