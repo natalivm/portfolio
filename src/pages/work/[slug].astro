@@ -5,6 +5,7 @@ import Tile from '../../components/Tile.astro';
 import Icon from '../../components/Icon.astro';
 import NextGames from '../../components/cases/NextGames.astro';
 import SortJourney from '../../components/cases/SortJourney.astro';
+import RiverRace from '../../components/cases/RiverRace.astro';
 import BeatSaberLogo from '../../components/BeatSaberLogo.astro';
 import SpaceField from '../../components/SpaceField.astro';
 import { caseStudies, related, slugify, type Project } from '../../data/projects';
@@ -105,6 +106,8 @@ const space = p.theme === 'space';
     <NextGames />
   ) : p.slug === 'sort-journey' ? (
     <SortJourney project={p} />
+  ) : p.slug === 'river-race' ? (
+    <RiverRace project={p} />
   ) : (
   <article class="wrap story">
     <p class="sample">Sample case study. Replace this text with your own write-up.</p>
