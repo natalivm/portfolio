@@ -1,0 +1,118 @@
+---
+import MkIcon from '../MkIcon.astro';
+interface Props {
+  variant: 'good' | 'bad';
+}
+const { variant } = Astro.props;
+---
+
+<div class="mk">
+  <div class="so-scrim">
+    <div class="so-map">
+      <i class="so-road is-a"></i><i class="so-road is-b"></i>
+      <span class="so-car"><MkIcon name="car" size={12} /></span>
+    </div>
+    <div class="mk-sheet mk-col mk-gap-8 so-sheet">
+      <span class="so-grab"></span>
+      <p class="mk-h">Cancel ride?</p>
+      <hr class="mk-divider" />
+      {variant === 'good' ? (
+        <>
+          <p class="mk-b mk-t">Cancel your ride with Marco?</p>
+          <p class="mk-s">Marco is 3 min away. Free to cancel for 2 more minutes, then a $3 fee applies.</p>
+          <div class="mk-spread">
+            <span class="mk-row mk-gap-4 mk-s"><MkIcon name="pin" size={12} />Wrong pick-up spot?</span>
+            <span class="mk-btn mk-btn-soft mk-btn-xs mk-btn-pill">Edit pick-up</span>
+          </div>
+          <div class="mk-col mk-gap-6 mk-mt-4">
+            <span class="mk-btn mk-btn-danger mk-btn-block mk-btn-lg">Cancel ride</span>
+            <span class="mk-btn mk-btn-sec mk-btn-block mk-btn-lg">Keep my ride</span>
+          </div>
+        </>
+      ) : (
+        <>
+          <p class="mk-b mk-t">Cancel your ride with Marco?</p>
+          <p class="mk-s">Your driver is already on the way.</p>
+          <div class="mk-spread">
+            <span class="mk-row mk-gap-4 mk-s"><MkIcon name="pin" size={12} />Wrong pick-up spot?</span>
+            <span class="mk-btn mk-btn-soft mk-btn-xs mk-btn-pill">Edit pick-up</span>
+          </div>
+          <div class="mk-col mk-gap-6 mk-mt-4">
+            <span class="mk-btn mk-btn-soft mk-btn-block so-yes">YES, CANCEL</span>
+            <span class="mk-btn mk-btn-pri mk-btn-block mk-btn-lg">NO</span>
+          </div>
+        </>
+      )}
+    </div>
+  </div>
+</div>
+
+<style>
+  .so-scrim {
+    display: flex;
+    flex-direction: column;
+    border-radius: 16px;
+    background: #dfe3e8;
+    box-shadow: var(--mk-shadow);
+    overflow: hidden;
+  }
+  .so-map {
+    position: relative;
+    height: 56px;
+    background: #e9ecef;
+  }
+  /* The map behind the sheet, dimmed */
+  .so-map::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: rgb(27 29 34 / 0.38);
+  }
+  .so-road {
+    position: absolute;
+    background: #fff;
+  }
+  .so-road.is-a {
+    top: 24px;
+    left: 0;
+    right: 0;
+    height: 8px;
+  }
+  .so-road.is-b {
+    top: 0;
+    bottom: 0;
+    left: 62%;
+    width: 8px;
+  }
+  .so-car {
+    position: absolute;
+    top: 21px;
+    left: 30%;
+    display: grid;
+    place-items: center;
+    width: 20px;
+    height: 14px;
+    border-radius: 4px;
+    background: var(--mk-pri);
+    color: #fff;
+  }
+  .so-sheet {
+    margin-top: -12px;
+    position: relative;
+    z-index: 1;
+    border-radius: 16px 16px 0 0;
+  }
+  .so-grab {
+    align-self: center;
+    width: 32px;
+    height: 4px;
+    margin: -4px 0 2px;
+    border-radius: 99px;
+    background: var(--mk-line);
+  }
+  .so-yes {
+    color: var(--mk-red);
+    font-size: 11px;
+    letter-spacing: 0.3px;
+  }
+</style>

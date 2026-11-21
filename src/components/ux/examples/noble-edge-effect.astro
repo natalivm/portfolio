@@ -1,0 +1,74 @@
+---
+import MkIcon from '../MkIcon.astro';
+interface Props {
+  variant: 'good' | 'bad';
+}
+const { variant } = Astro.props;
+---
+
+<div class="mk">
+  <div class="mk-card mk-col mk-gap-10">
+    <div class="mk-spread">
+      <span class="mk-row mk-gap-6 mk-h"><MkIcon name="cart" size={15} />Cart</span>
+      <span class="mk-muted"><MkIcon name="x" size={13} /></span>
+    </div>
+    <hr class="mk-divider" />
+    <div class="mk-row mk-gap-10">
+      <div class="mk-img is-6 is-sq thumb"><MkIcon name="tag" size={16} /></div>
+      <div class="mk-grow mk-col mk-gap-2">
+        <span class="mk-b">Basic T-shirt</span>
+        <span class="mk-xs">Size M · Navy</span>
+        <span class="mk-b">$24.00</span>
+      </div>
+      <div class="qty">
+        <MkIcon name="minus" size={10} />
+        <span class="mk-b">1</span>
+        <MkIcon name="plus" size={10} />
+      </div>
+    </div>
+    <hr class="mk-divider" />
+    {variant === 'good' ? (
+      <div class="mk-col mk-gap-6">
+        <span class="mk-row mk-gap-6 impact"><MkIcon name="leaf" size={14} />$2 from this order plants one tree</span>
+        <div class="mk-progress" style="--v: 84%; --c: var(--mk-green)"></div>
+        <span class="mk-xs">Together we’ve planted 1,680 of 2,000 trees</span>
+      </div>
+    ) : (
+      <span class="mk-row mk-gap-6 vague"><MkIcon name="info" size={11} />Part of the proceeds goes to charity</span>
+    )}
+    <span class="mk-btn mk-btn-pri mk-btn-block mk-btn-lg">Checkout · $24.00</span>
+  </div>
+</div>
+
+<style>
+  .mk-gap-10 {
+    gap: 10px;
+  }
+  .thumb {
+    width: 48px;
+    flex: none;
+  }
+  .qty {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    height: 24px;
+    padding: 0 8px;
+    border: 1px solid var(--mk-line);
+    border-radius: 7px;
+    font-size: 11px;
+    color: var(--mk-2);
+  }
+  .qty .mk-b {
+    color: var(--mk-ink);
+  }
+  .impact {
+    font-size: 11.5px;
+    font-weight: 600;
+    color: var(--mk-green);
+  }
+  .vague {
+    font-size: 9.5px;
+    color: var(--mk-3);
+  }
+</style>

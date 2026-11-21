@@ -1,0 +1,82 @@
+---
+import MkIcon from '../MkIcon.astro';
+interface Props {
+  variant: 'good' | 'bad';
+}
+const { variant } = Astro.props;
+const msgs = [
+  { tone: 'green', glyph: 'check', title: 'Payment received', sub: 'Your receipt is on its way.' },
+  { tone: 'red', glyph: 'x', title: 'Upload failed', sub: 'The file is larger than 20 MB.' },
+  { tone: 'amber', glyph: '!', title: 'Verify your email', sub: 'Check your inbox to finish sign-up.' },
+  { tone: 'blue', glyph: 'i', title: 'New version available', sub: 'We updated the app overnight.' },
+] as const;
+const glyphs = {
+  check: 'M5 12.5l4.5 4.5L19 7.5',
+  x: 'M7 7l10 10M17 7L7 17',
+  '!': 'M12 5v9M12 19h.01',
+  i: 'M12 5h.01M12 10v9',
+};
+---
+
+{variant === 'good' ? (
+  <div class="mk">
+    <div class="mk-col mk-gap-6">
+      {msgs.map((m) => (
+        <div class="toast">
+          <span class={`dot is-${m.tone}`}>
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d={glyphs[m.glyph]} /></svg>
+          </span>
+          <div class="mk-grow">
+            <p class="mk-t mk-b">{m.title}</p>
+            <p class="mk-xs">{m.sub}</p>
+          </div>
+          <span class="x"><MkIcon name="x" size={11} /></span>
+        </div>
+      ))}
+    </div>
+  </div>
+) : (
+  <div class="mk">
+    <div class="mk-col mk-gap-6">
+      {msgs.map((m) => (
+        <div class="toast">
+          <div class="mk-grow">
+            <p class="mk-t mk-b">{m.title}</p>
+            <p class="mk-xs">{m.sub}</p>
+          </div>
+          <span class="x"><MkIcon name="x" size={11} /></span>
+        </div>
+      ))}
+    </div>
+  </div>
+)}
+
+<style>
+  .toast {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-height: 46px;
+    padding: 8px 10px 8px 12px;
+    border-radius: 10px;
+    background: var(--mk-card);
+    box-shadow: var(--mk-shadow);
+  }
+  .dot {
+    flex: none;
+    display: grid;
+    place-items: center;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    color: #fff;
+  }
+  .dot.is-green { background: var(--mk-green); }
+  .dot.is-red { background: var(--mk-red); }
+  .dot.is-amber { background: var(--mk-amber); }
+  .dot.is-blue { background: var(--mk-blue); }
+  .x {
+    display: inline-flex;
+    color: var(--mk-3);
+  }
+</style>

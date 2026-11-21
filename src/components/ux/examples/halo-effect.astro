@@ -1,0 +1,259 @@
+---
+import MkIcon from '../MkIcon.astro';
+interface Props {
+  variant: 'good' | 'bad';
+}
+const { variant } = Astro.props;
+---
+
+{variant === 'good' ? (
+  <div class="mk mk-wide">
+    <div class="mk-window">
+      <div class="mk-bar"><i></i><i></i><i></i></div>
+      <div class="mk-body mk-col mk-gap-10">
+        <div class="mk-spread">
+          <span class="brand">oriel</span>
+          <span class="mk-row mk-gap-12 nav"><span>Listen</span><span>Home</span><span>Support</span><MkIcon name="bag" size={13} /></span>
+        </div>
+        <div class="hero">
+          <span class="case"></span>
+          <span class="bud is-l"></span>
+          <span class="bud is-r"></span>
+        </div>
+        <div class="mk-spread info">
+          <div>
+            <p class="mk-h-lg">Oriel Buds 2</p>
+            <p class="mk-xs">Quiet when you want it. All day when you need it.</p>
+          </div>
+          <p class="mk-h">$149</p>
+        </div>
+        <div class="mk-grid-2 mk-gap-6">
+          <span class="mk-btn mk-btn-pri">Add to bag</span>
+          <span class="mk-btn mk-btn-sec">Compare</span>
+        </div>
+      </div>
+    </div>
+  </div>
+) : (
+  <div class="mk mk-wide">
+    <div class="mk-window">
+      <div class="mk-bar"><i></i><i></i><i></i></div>
+      <div class="old">
+        <div class="old-top">
+          <span class="old-logo">ORIEL</span>
+          <span class="old-links">Home | Shop | Cart (0) | Help</span>
+        </div>
+        <p class="old-marq">*** WELCOME TO OUR ONLINE STORE *** FREE SHIPPING ON ORDERS OVER $50 ***</p>
+        <div class="old-grid">
+          <div class="old-main">
+            <div class="old-item">
+              <span class="old-img"></span>
+              <div>
+                <p class="old-name">Oriel Buds 2</p>
+                <p class="old-tiny">Wireless earbuds with charging case. NEW!!</p>
+                <p class="old-price">Our price: $149.00</p>
+                <span class="old-btn">Add to basket</span>
+              </div>
+            </div>
+            <div class="old-item">
+              <span class="old-img is-2"></span>
+              <div>
+                <p class="old-name">Oriel Dock</p>
+                <p class="old-tiny">Charge 2 devices at once!</p>
+                <p class="old-price">Our price: $59.00</p>
+                <span class="old-btn">Add to basket</span>
+              </div>
+            </div>
+            <span class="old-select">Select a product... ▾</span>
+          </div>
+          <div class="old-side">
+            <span class="burst">SAVE<br />20%</span>
+            <p class="old-tiny"><b>Join our mailing list!</b></p>
+            <span class="old-input"></span>
+            <p class="old-tiny">Best viewed at 800×600</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+)}
+
+<style>
+  /* Polished */
+  .brand {
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+  }
+  .nav {
+    font-size: 10.5px;
+    color: var(--mk-2);
+  }
+  .hero {
+    position: relative;
+    display: grid;
+    place-items: center;
+    height: 104px;
+    border-radius: 12px;
+    background: radial-gradient(circle at 50% 40%, #ffffff, #e7ebf2 70%);
+  }
+  .case {
+    width: 66px;
+    height: 50px;
+    border-radius: 18px;
+    background: linear-gradient(180deg, #ffffff 0 42%, #f1f3f6 42% 100%);
+    box-shadow: 0 0 0 1px #dfe3e9, 0 12px 22px -10px rgb(20 22 28 / 0.35);
+  }
+  .bud {
+    position: absolute;
+    bottom: 16px;
+    width: 18px;
+    height: 24px;
+    border-radius: 9px 9px 7px 7px;
+    background: #fff;
+    box-shadow: 0 0 0 1px #dfe3e9, 0 6px 12px -6px rgb(20 22 28 / 0.35);
+  }
+  .bud.is-l {
+    left: calc(50% - 64px);
+    transform: rotate(-14deg);
+  }
+  .bud.is-r {
+    right: calc(50% - 64px);
+    transform: rotate(14deg);
+  }
+  .info {
+    align-items: flex-end;
+  }
+
+  /* Dated and cluttered */
+  .old {
+    padding: 6px;
+    background: #fff;
+    font-family: Verdana, Geneva, sans-serif;
+  }
+  .old-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 6px;
+    padding: 4px 6px;
+    background: linear-gradient(180deg, #3d7aa8, #173d61);
+    border: 1px solid #0d2a45;
+  }
+  .old-logo {
+    font-family: 'Times New Roman', Times, serif;
+    font-size: 15px;
+    font-weight: 700;
+    font-style: italic;
+    color: #ffd84a;
+    text-shadow: 1px 1px 0 #000;
+  }
+  .old-links {
+    font-size: 9px;
+    color: #fff;
+    text-decoration: underline;
+    white-space: nowrap;
+  }
+  .old-marq {
+    margin: 3px 0 !important;
+    padding: 2px 4px;
+    background: #ffff99;
+    border: 1px dashed #c00;
+    color: #c00;
+    font-size: 9px;
+    font-weight: 700;
+    line-height: 12px;
+    height: 18px;
+    overflow: hidden;
+    word-break: break-all;
+  }
+  .old-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 76px;
+    gap: 4px;
+  }
+  .old-main {
+    display: grid;
+    gap: 3px;
+    align-content: start;
+  }
+  .old-item {
+    display: flex;
+    gap: 5px;
+    padding: 4px;
+    border: 1px solid #999;
+    background: #f6f6f6;
+  }
+  .old-img {
+    flex: none;
+    width: 30px;
+    height: 30px;
+    background: linear-gradient(140deg, #9fb8cf, #5f7d99);
+    border: 1px solid #666;
+  }
+  .old-img.is-2 {
+    background: linear-gradient(140deg, #c9b18a, #8a6f45);
+  }
+  .old-name {
+    font-family: 'Times New Roman', Times, serif !important;
+    font-size: 12px;
+    font-weight: 700;
+    color: #00e;
+    text-decoration: underline;
+  }
+  .old-tiny {
+    font-size: 9px;
+    line-height: 1.2;
+    color: #333;
+  }
+  .old-price {
+    font-size: 9px;
+    font-weight: 700;
+    color: #c00;
+  }
+  .old-btn {
+    display: inline-block;
+    margin-top: 2px;
+    padding: 0 4px;
+    font-size: 9px;
+    color: #000;
+    background: linear-gradient(180deg, #fdfdfd, #c9c9c9);
+    border: 1px solid #777;
+    border-radius: 2px;
+  }
+  .old-select {
+    display: block;
+    padding: 1px 4px;
+    font-size: 9px;
+    border: 1px inset #999;
+    background: #fff;
+  }
+  .old-side {
+    display: grid;
+    gap: 4px;
+    align-content: start;
+    justify-items: center;
+    padding: 4px;
+    border: 1px solid #999;
+    background: #eef3f8;
+    text-align: center;
+  }
+  .burst {
+    display: grid;
+    place-items: center;
+    width: 48px;
+    height: 48px;
+    background: #e5262e;
+    clip-path: polygon(50% 0, 61% 18%, 82% 10%, 80% 32%, 100% 40%, 85% 55%, 96% 75%, 74% 78%, 68% 100%, 50% 87%, 32% 100%, 26% 78%, 4% 75%, 15% 55%, 0 40%, 20% 32%, 18% 10%, 39% 18%);
+    color: #ff0;
+    font-size: 9px;
+    font-weight: 700;
+    line-height: 1.05;
+  }
+  .old-input {
+    width: 100%;
+    height: 12px;
+    border: 1px inset #999;
+    background: #fff;
+  }
+</style>

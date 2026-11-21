@@ -1,0 +1,66 @@
+---
+import MkIcon from '../MkIcon.astro';
+interface Props {
+  variant: 'good' | 'bad';
+}
+const { variant } = Astro.props;
+---
+
+{variant === 'good' ? (
+  <div class="mk">
+    <div class="mk-card mk-col mk-gap-12">
+      <p class="mk-h">Log in</p>
+      <div class="mk-field">
+        <span class="mk-label">Email</span>
+        <div class="mk-input"><MkIcon name="mail" size={13} class="mk-muted" />jane@example.com</div>
+      </div>
+      <div class="mk-field">
+        <span class="mk-label">Password</span>
+        <div class="mk-input is-error dots">••••••••••</div>
+        <p class="mk-error msg"><MkIcon name="warning" size={11} />That password didn’t work. Is Caps Lock on?</p>
+      </div>
+      <span class="mk-btn mk-btn-pri mk-btn-block mk-btn-lg">Log in</span>
+    </div>
+  </div>
+) : (
+  <div class="mk">
+    <div class="mk-card mk-col mk-gap-12">
+      <p class="mk-h">Log in</p>
+      <div class="mk-field">
+        <span class="mk-label">Email</span>
+        <div class="mk-input is-error"><MkIcon name="mail" size={13} class="mk-muted" />jane@example.com</div>
+      </div>
+      <div class="mk-field">
+        <span class="mk-label">Password</span>
+        <div class="mk-input is-error dots">••••••••••</div>
+      </div>
+      <span class="mk-btn mk-btn-pri mk-btn-block mk-btn-lg">Log in</span>
+      <p class="far">Incorrect password.</p>
+    </div>
+  </div>
+)}
+
+<style>
+  .dots {
+    letter-spacing: 0.1em;
+  }
+  .msg {
+    display: flex;
+    align-items: flex-start;
+    gap: 4px;
+    margin-top: 5px;
+    font-size: 10.5px;
+    line-height: 1.3;
+  }
+  .msg :global(svg) {
+    margin-top: 1px;
+  }
+  .far {
+    padding: 4px 8px;
+    border-radius: 6px;
+    background: var(--mk-red-soft);
+    color: var(--mk-red);
+    font-size: 9.5px;
+    text-align: center;
+  }
+</style>

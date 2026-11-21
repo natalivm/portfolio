@@ -1,0 +1,75 @@
+---
+import MkIcon from '../MkIcon.astro';
+interface Props {
+  variant: 'good' | 'bad';
+}
+const { variant } = Astro.props;
+---
+
+{variant === 'good' ? (
+  <div class="mk">
+    <div class="mk-card mk-col mk-gap-12">
+      <p class="mk-h">Upload files</p>
+      <div class="drop">
+        <MkIcon name="upload" size={16} />
+        <span>Drop files here or <b class="mk-link">browse</b></span>
+      </div>
+      <div class="mk-flat">
+        <div class="mk-row">
+          <span class="mk-ico is-blue"><MkIcon name="file" size={14} /></span>
+          <div class="mk-grow">
+            <p class="mk-t mk-b">site-photos.zip</p>
+            <p class="mk-xs">12 of 24 MB</p>
+          </div>
+          <span class="mk-t mk-b">50%</span>
+        </div>
+        <div class="mk-progress is-thin mk-mt-8" style="--v: 50%; --c: var(--mk-green)"></div>
+        <div class="mk-spread mk-mt-4">
+          <span class="mk-xs">About 5 minutes left</span>
+          <span class="mk-xs">Cancel</span>
+        </div>
+      </div>
+    </div>
+  </div>
+) : (
+  <div class="mk">
+    <div class="mk-card mk-col mk-gap-12">
+      <p class="mk-h">Upload files</p>
+      <div class="drop">
+        <MkIcon name="upload" size={16} />
+        <span>Drop files here or <b class="mk-link">browse</b></span>
+      </div>
+      <div class="mk-flat">
+        <div class="mk-row">
+          <span class="mk-ico"><MkIcon name="file" size={14} /></span>
+          <p class="mk-grow mk-t mk-b">site-photos.zip</p>
+          <span class="spin"></span>
+        </div>
+      </div>
+    </div>
+  </div>
+)}
+
+<style>
+  .drop {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    height: 54px;
+    border: 1.5px dashed #c9ccd3;
+    border-radius: var(--mk-r);
+    background: var(--mk-bg);
+    color: var(--mk-2);
+    font-size: 11px;
+  }
+  .spin {
+    flex: none;
+    width: 16px;
+    height: 16px;
+    border: 2px solid var(--mk-line);
+    border-top-color: var(--mk-ink);
+    border-radius: 50%;
+    transform: rotate(30deg);
+  }
+</style>

@@ -3,6 +3,7 @@ import Layout from '../layouts/Layout.astro';
 import Tile from '../components/Tile.astro';
 import ProtoTile from '../components/ProtoTile.astro';
 import BeatSaberLogo from '../components/BeatSaberLogo.astro';
+import LawsTile from '../components/LawsTile.astro';
 import Icon from '../components/Icon.astro';
 import { site } from '../data/site';
 import { projects, featured as allFeatured } from '../data/projects';
@@ -54,6 +55,9 @@ const years = projects.map((p) => p.year);
           <Tile project={p} />
         </li>
       ))}
+      <li>
+        <LawsTile />
+      </li>
       <li class="all">
         <a class="bs-tile" href={`${base}/work/beat-saber/`} aria-label="Beat Saber: the case study" data-neon>
           <BeatSaberLogo class="bs-logo" />

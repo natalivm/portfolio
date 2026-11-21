@@ -1,0 +1,80 @@
+---
+import MkIcon from '../MkIcon.astro';
+interface Props { variant: 'good' | 'bad' }
+const { variant } = Astro.props;
+const basic = [
+  ['Brightness', '+12', '58%'],
+  ['Contrast', '+5', '53%'],
+  ['Warmth', '0', '50%'],
+];
+const pro = [
+  ['Exposure', '40%'], ['Gamma', '55%'], ['Highlights', '30%'],
+  ['Shadows', '65%'], ['Whites', '48%'], ['Blacks', '36%'],
+  ['Clarity', '60%'], ['Dehaze', '25%'], ['Texture', '52%'],
+  ['Vibrance', '70%'], ['Hue shift', '45%'], ['Luminance', '58%'],
+  ['Tone curve', '34%'], ['Split tone', '62%'], ['NR luma', '20%'],
+];
+---
+
+{variant === 'good' ? (
+  <div class="mk">
+    <div class="mk-card mk-col mk-gap-12">
+      <div class="mk-spread">
+        <p class="mk-h">Adjust</p>
+        <span class="mk-row mk-gap-6 mk-s">Pro tools <span class="mk-toggle"></span></span>
+      </div>
+      <div class="mk-img is-1 pic"><MkIcon name="image" size={20} /></div>
+      <span class="mk-btn mk-btn-soft mk-btn-sm"><MkIcon name="sparkle" size={12} />Auto-enhance</span>
+      {basic.map(([label, val, v]) => (
+        <div class="mk-col mk-gap-6">
+          <div class="mk-spread"><span class="mk-s ink">{label}</span><span class="mk-xs">{val}</span></div>
+          <div class="mk-slider" style={`--v: ${v}`}></div>
+        </div>
+      ))}
+    </div>
+  </div>
+) : (
+  <div class="mk">
+    <div class="mk-card mk-col mk-gap-12">
+      <div class="mk-spread">
+        <p class="mk-h">Adjust</p>
+        <span class="mk-xs">15 controls</span>
+      </div>
+      <div class="mk-img is-1 pic"><MkIcon name="image" size={20} /></div>
+      <div class="mk-grid-3 dense">
+        {pro.map(([label, v]) => (
+          <div class="mk-col mk-gap-4">
+            <span class="tiny">{label}</span>
+            <div class="mk-slider mini" style={`--v: ${v}`}></div>
+          </div>
+        ))}
+      </div>
+    </div>
+  </div>
+)}
+
+<style>
+  .pic {
+    aspect-ratio: auto;
+    height: 60px;
+  }
+  .ink {
+    color: var(--mk-ink);
+  }
+  .dense {
+    gap: 9px 10px;
+  }
+  .tiny {
+    font-size: 9px;
+    color: var(--mk-2);
+    white-space: nowrap;
+  }
+  .mini {
+    height: 3px;
+  }
+  .mini::after {
+    width: 8px;
+    height: 8px;
+    border-width: 1.5px;
+  }
+</style>

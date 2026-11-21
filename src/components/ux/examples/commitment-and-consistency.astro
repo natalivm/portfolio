@@ -1,0 +1,81 @@
+---
+import MkIcon from '../MkIcon.astro';
+interface Props {
+  variant: 'good' | 'bad';
+}
+const { variant } = Astro.props;
+const kinds = [
+  { icon: 'image', label: 'Photos', size: '8.4 GB', cls: 'is-violet' },
+  { icon: 'file', label: 'Docs', size: '2.1 GB', cls: 'is-blue' },
+  { icon: 'play', label: 'Videos', size: '1.5 GB', cls: 'is-amber' },
+] as const;
+---
+
+{variant === 'good' ? (
+  <div class="mk">
+    <div class="mk-card mk-col mk-gap-12">
+      <div class="mk-spread">
+        <span class="mk-h">Storage</span>
+        <span class="mk-b">80%</span>
+      </div>
+      <div class="mk-col mk-gap-6">
+        <div class="mk-progress bar" style="--v: 80%; --c: var(--mk-violet)"></div>
+        <p class="mk-xs">12 GB of 15 GB used</p>
+      </div>
+      <div class="mk-grid-3 mk-gap-6">
+        {kinds.map((k) => (
+          <div class="mk-sunk kind">
+            <span class:list={['mk-ico', k.cls]}><MkIcon name={k.icon} size={12} /></span>
+            <span class="mk-xs">{k.label}</span>
+            <span class="mk-b mk-t">{k.size}</span>
+          </div>
+        ))}
+      </div>
+      <span class="mk-btn mk-btn-pri mk-btn-block mk-btn-lg">Expand storage</span>
+    </div>
+  </div>
+) : (
+  <div class="mk">
+    <div class="mk-card mk-col mk-gap-12">
+      <div class="mk-spread">
+        <span class="mk-h">Storage</span>
+        <span class="mk-b mk-muted">0%</span>
+      </div>
+      <div class="drop">
+        <span class="mk-ico is-lg"><MkIcon name="lock" size={16} /></span>
+        <p class="mk-b mk-center msg">You need to buy a subscription to upload files.</p>
+      </div>
+      <span class="mk-btn mk-btn-pri mk-btn-block mk-btn-lg">Buy subscription</span>
+    </div>
+  </div>
+)}
+
+<style>
+  .bar {
+    height: 8px;
+  }
+  .kind {
+    display: grid;
+    justify-items: start;
+    gap: 3px;
+    padding: 8px;
+  }
+  .kind .mk-ico {
+    width: 22px;
+    height: 22px;
+    border-radius: 6px;
+    margin-bottom: 2px;
+  }
+  .drop {
+    display: grid;
+    justify-items: center;
+    gap: 8px;
+    padding: 18px 16px;
+    border: 1.5px dashed var(--mk-line);
+    border-radius: 10px;
+  }
+  .msg {
+    font-size: 13px;
+    line-height: 1.35;
+  }
+</style>

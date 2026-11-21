@@ -1,0 +1,65 @@
+---
+import MkIcon from '../MkIcon.astro';
+interface Props {
+  variant: 'good' | 'bad';
+}
+const { variant } = Astro.props;
+---
+
+{variant === 'good' ? (
+  <div class="mk">
+    <div class="mk-card mk-col">
+      <p class="mk-h">Cancel subscription</p>
+      <p class="mk-s">Sorry to see you go. If you have a second, tell us why.</p>
+      <div class="mk-row mk-wrap mk-gap-4">
+        <span class="mk-chip is-on">Too expensive</span>
+        <span class="mk-chip">Rarely use it</span>
+        <span class="mk-chip">Missing a feature</span>
+      </div>
+      <div class="offer">
+        <span class="mk-ico is-red"><MkIcon name="gift" size={14} /></span>
+        <div>
+          <p class="mk-t mk-b">50% off for the next 3 months</p>
+          <p class="mk-xs">Your saved projects stay as they are</p>
+        </div>
+      </div>
+      <div class="mk-grid-2 mk-gap-6 mk-mt-4">
+        <span class="mk-btn mk-btn-soft">Cancel anyway</span>
+        <span class="mk-btn mk-btn-pri">Take the offer</span>
+      </div>
+    </div>
+  </div>
+) : (
+  <div class="mk">
+    <div class="mk-card mk-col">
+      <p class="mk-h">Cancel subscription</p>
+      <p class="mk-s">To cancel, fill in the form below. We will review your request within 3–5 business days.</p>
+      <div class="mk-field">
+        <span class="mk-label">Reason for cancelling <span class="req">*</span></span>
+        <div class="mk-input is-area big"><span class="ph">Minimum 100 characters</span></div>
+        <div class="mk-spread">
+          <span class="mk-help">Requests under 100 characters are rejected</span>
+          <span class="mk-help">0/200</span>
+        </div>
+      </div>
+      <span class="mk-btn mk-btn-danger mk-btn-block mk-mt-4">Submit request</span>
+    </div>
+  </div>
+)}
+
+<style>
+  .offer {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    padding: 8px 10px;
+    border-radius: 10px;
+    background: var(--mk-red-soft);
+  }
+  .offer .mk-b {
+    color: var(--mk-red);
+  }
+  .big {
+    height: 70px;
+  }
+</style>

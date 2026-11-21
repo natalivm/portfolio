@@ -1,0 +1,64 @@
+---
+import MkIcon from '../MkIcon.astro';
+interface Props {
+  variant: 'good' | 'bad';
+}
+const { variant } = Astro.props;
+---
+
+{variant === 'good' ? (
+  <div class="mk">
+    <div class="mk-card mk-col mk-center box">
+      <p class="mk-h-lg">Congratulations</p>
+      <p class="mk-s">You finished the lesson and earned <b class="ink">+27 points</b>.</p>
+      <svg class="gift" width="68" height="68" viewBox="0 0 64 64" aria-hidden="true">
+        <path d="M32 21C27 10 15 9 17 16c1.5 4.5 9 5 15 5z" fill="#f2a91c" />
+        <path d="M32 21c5-11 17-12 15-5-1.5 4.5-9 5-15 5z" fill="#f2a91c" />
+        <rect x="14" y="33" width="36" height="24" rx="3" fill="#f06d98" />
+        <rect x="10" y="21" width="44" height="13" rx="3" fill="#e0457a" />
+        <rect x="28" y="21" width="8" height="36" fill="#f7c04a" />
+        <text x="32" y="51" text-anchor="middle" font-size="12" font-weight="700" fill="#fff" font-family="inherit">?</text>
+      </svg>
+      <p class="mk-b mk-t">And for keeping at it, a surprise gift is waiting.</p>
+      <span class="mk-btn mk-btn-pri mk-btn-block">Open gift</span>
+    </div>
+  </div>
+) : (
+  <div class="mk">
+    <div class="mk-card mk-col mk-center box">
+      <p class="mk-h-lg">Lesson complete!</p>
+      <div class="sparks">
+        <MkIcon name="sparkle" size={22} />
+        <MkIcon name="sparkle" size={34} />
+        <MkIcon name="sparkle" size={22} />
+      </div>
+      <p class="mk-h-xl">+27 points</p>
+      <p class="mk-xs">Next lesson: +27 points</p>
+      <span class="mk-btn mk-btn-pri mk-btn-block">Next lesson</span>
+    </div>
+  </div>
+)}
+
+<style>
+  .box {
+    align-items: center;
+    gap: 10px;
+    padding: 18px 16px 16px;
+  }
+  .ink {
+    color: var(--mk-ink);
+  }
+  .gift {
+    display: block;
+  }
+  .sparks {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    height: 60px;
+    color: var(--mk-amber);
+  }
+  .sparks :global(svg) {
+    fill: #f7c04a;
+  }
+</style>

@@ -1,0 +1,71 @@
+---
+interface Props {
+  variant: 'good' | 'bad';
+}
+const { variant } = Astro.props;
+---
+
+{variant === 'good' ? (
+  <div class="mk">
+    <div class="mk-card mk-col mk-gap-8 mk-center screen">
+      <svg class="popper" width="74" height="60" viewBox="0 0 64 52" fill="none" aria-hidden="true">
+        <path d="M14 48L22 20l20 20z" fill="#f26b5b" />
+        <path d="M18.4 32.6l11 11M16.2 40.4l5.8 5.8M20.6 24.8l16.2 16.2" stroke="#ffd166" stroke-width="2.4" />
+        <path d="M33 22c2-7 8-8 10-14" stroke="#7a4cf0" stroke-width="2" stroke-linecap="round" />
+        <path d="M38 30c5-3 10 0 16-4" stroke="#2f6bff" stroke-width="2" stroke-linecap="round" />
+        <circle cx="30" cy="9" r="2.4" fill="#17914b" />
+        <circle cx="50" cy="14" r="2.4" fill="#f2a91c" />
+        <circle cx="56" cy="36" r="2" fill="#dc3a45" />
+        <circle cx="44" cy="3" r="1.8" fill="#2f6bff" />
+        <rect x="52" y="4" width="5" height="3" rx="1" transform="rotate(30 52 4)" fill="#f26b5b" />
+        <rect x="22" y="3" width="5" height="3" rx="1" transform="rotate(-25 22 3)" fill="#7a4cf0" />
+        <rect x="58" y="22" width="5" height="3" rx="1" transform="rotate(60 58 22)" fill="#17914b" />
+      </svg>
+      <p class="mk-h-lg">Thank you for your order</p>
+      <p class="mk-s">It ships today and arrives <b class="ink">tomorrow, 7&nbsp;December</b>.</p>
+      <p class="mk-s">The courier will call ahead and deliver <b class="ink">between 10:00 and 15:00</b>.</p>
+      <div class="mk-grid-2 mk-gap-6 mk-mt-4">
+        <span class="mk-btn mk-btn-sec">Change time</span>
+        <span class="mk-btn mk-btn-pri">Track order</span>
+      </div>
+    </div>
+  </div>
+) : (
+  <div class="mk">
+    <div class="mk-card mk-col mk-gap-8 mk-center screen">
+      <span class="done">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5" /></svg>
+      </span>
+      <p class="mk-h-lg">Order placed</p>
+      <p class="mk-s">Please wait.</p>
+    </div>
+  </div>
+)}
+
+<style>
+  .screen {
+    justify-content: center;
+    align-items: center;
+    min-height: 236px;
+  }
+  .screen .mk-grid-2 {
+    width: 100%;
+  }
+  .popper {
+    margin-bottom: 2px;
+  }
+  .ink {
+    color: var(--mk-ink);
+    font-weight: 600;
+  }
+  .done {
+    display: grid;
+    place-items: center;
+    width: 52px;
+    height: 52px;
+    margin-bottom: 2px;
+    border-radius: 50%;
+    background: var(--mk-green);
+    color: #fff;
+  }
+</style>

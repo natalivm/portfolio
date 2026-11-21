@@ -1,0 +1,79 @@
+---
+import MkIcon from '../MkIcon.astro';
+interface Props { variant: 'good' | 'bad' }
+const { variant } = Astro.props;
+---
+
+{variant === 'good' ? (
+  <div class="mk">
+    <div class="mk-card mk-col mk-gap-12">
+      <div>
+        <p class="mk-h">Upload your ID</p>
+        <p class="mk-xs">A scan or photo of your passport</p>
+      </div>
+      <div class="mk-flat mk-row file">
+        <span class="mk-ico"><MkIcon name="file" size={14} /></span>
+        <div class="mk-grow"><p class="mk-b">passport-scan.heic</p><p class="mk-xs">8.2 MB</p></div>
+        <span class="mk-muted"><MkIcon name="x" size={12} /></span>
+      </div>
+      <div class="mk-alert is-red">
+        <MkIcon name="x-circle" size={14} />
+        <div class="mk-grow mk-col mk-gap-4">
+          <p class="mk-b">This file can’t be uploaded</p>
+          <ul class="reqs">
+            <li><b>Format:</b> JPG, PNG or PDF. Yours is HEIC.</li>
+            <li><b>Size:</b> up to 5 MB. Yours is 8.2 MB.</li>
+          </ul>
+        </div>
+      </div>
+      <span class="mk-btn mk-btn-sec mk-btn-block">Choose another file</span>
+    </div>
+  </div>
+) : (
+  <div class="mk">
+    <div class="mk-card mk-col mk-gap-12">
+      <div>
+        <p class="mk-h">Upload your ID</p>
+        <p class="mk-xs">A scan or photo of your passport</p>
+      </div>
+      <div class="mk-flat mk-row file">
+        <span class="mk-ico"><MkIcon name="file" size={14} /></span>
+        <div class="mk-grow"><p class="mk-b">passport-scan.heic</p><p class="mk-xs">8.2 MB</p></div>
+        <span class="mk-muted"><MkIcon name="x" size={12} /></span>
+      </div>
+      <div class="mk-alert is-red">
+        <MkIcon name="x-circle" size={14} />
+        <div class="mk-grow mk-col mk-gap-4">
+          <p class="mk-b">Upload error!</p>
+          <p>The file does not meet the requirements. Choose another file.</p>
+        </div>
+      </div>
+      <span class="mk-btn mk-btn-sec mk-btn-block">Choose another file</span>
+    </div>
+  </div>
+)}
+
+<style>
+  .file {
+    padding: 8px 10px;
+  }
+  .reqs {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .reqs li {
+    position: relative;
+    padding-left: 10px;
+  }
+  .reqs li::before {
+    content: '';
+    position: absolute;
+    top: 6px;
+    left: 1px;
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background: currentColor;
+  }
+</style>

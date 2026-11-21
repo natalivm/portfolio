@@ -1,0 +1,74 @@
+---
+import MkIcon from '../MkIcon.astro';
+interface Props {
+  variant: 'good' | 'bad';
+}
+const { variant } = Astro.props;
+const perks = ['Unlimited projects', 'Offline access', 'Priority support'];
+---
+
+{variant === 'good' ? (
+  <div class="mk">
+    <div class="mk-card mk-col mk-gap-12">
+      <div class="mk-spread">
+        <span class="mk-h">Pro plan</span>
+        <span class="mk-badge is-violet">−40%</span>
+      </div>
+      <div class="mk-col mk-gap-4">
+        <p class="price"><span class="num">$6.99</span><span class="per">/ month</span></p>
+        <p class="gain">You save $56 a year</p>
+      </div>
+      <ul class="mk-col mk-gap-4">
+        {perks.map((p) => <li class="mk-row mk-gap-6 mk-s"><MkIcon name="check" size={12} />{p}</li>)}
+      </ul>
+      <div class="mk-col mk-gap-6">
+        <span class="mk-btn mk-btn-pri mk-btn-block mk-btn-lg">Subscribe and save</span>
+        <p class="mk-xs mk-center">$83.88 billed yearly</p>
+      </div>
+    </div>
+  </div>
+) : (
+  <div class="mk">
+    <div class="mk-card mk-col mk-gap-12">
+      <div class="mk-spread">
+        <span class="mk-h">Pro plan</span>
+      </div>
+      <div class="mk-col mk-gap-4">
+        <p class="price"><span class="num">$83.88</span><span class="per">/ year</span></p>
+        <p class="gain">40% discount</p>
+      </div>
+      <ul class="mk-col mk-gap-4">
+        {perks.map((p) => <li class="mk-row mk-gap-6 mk-s"><MkIcon name="check" size={12} />{p}</li>)}
+      </ul>
+      <div class="mk-col mk-gap-6">
+        <span class="mk-btn mk-btn-pri mk-btn-block mk-btn-lg">Subscribe</span>
+        <p class="mk-xs mk-center">Billed yearly</p>
+      </div>
+    </div>
+  </div>
+)}
+
+<style>
+  .mk-spread {
+    min-height: 18px;
+  }
+  .price {
+    display: flex;
+    align-items: baseline;
+    gap: 5px;
+  }
+  .num {
+    font-size: 32px;
+    font-weight: 700;
+    line-height: 1;
+  }
+  .per {
+    font-size: 12px;
+    color: var(--mk-3);
+  }
+  .gain {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--mk-violet);
+  }
+</style>

@@ -1,0 +1,105 @@
+---
+import MkIcon from '../MkIcon.astro';
+interface Props {
+  variant: 'good' | 'bad';
+}
+const { variant } = Astro.props;
+---
+
+{variant === 'good' ? (
+  <div class="mk">
+    <div class="mk-card mk-col mk-gap-12 search">
+      <div>
+        <div class="mk-spread">
+          <p class="mk-h">Searching flights</p>
+          <span class="mk-xs">About 30 s</span>
+        </div>
+        <p class="mk-s mk-mt-4">Lisbon to Oslo · 12 March · 1 adult</p>
+      </div>
+      <ul class="mk-col mk-gap-12">
+        <li class="job">
+          <span class="mk-ico is-green"><MkIcon name="search" size={13} /></span>
+          <div class="mk-grow">
+            <div class="mk-spread">
+              <span class="lbl">Checking seat availability</span>
+              <span class="ok"><MkIcon name="check" size={12} stroke={2.6} /></span>
+            </div>
+            <div class="mk-progress is-thin" style="--v: 100%; --c: var(--mk-green)"></div>
+          </div>
+        </li>
+        <li class="job">
+          <span class="mk-ico is-blue"><MkIcon name="percent" size={13} /></span>
+          <div class="mk-grow">
+            <div class="mk-spread">
+              <span class="lbl">Comparing prices from 40 airlines</span>
+              <span class="mk-xs mk-b">70%</span>
+            </div>
+            <div class="mk-progress is-thin" style="--v: 70%; --c: var(--mk-blue)"></div>
+          </div>
+        </li>
+        <li class="job is-wait">
+          <span class="mk-ico"><MkIcon name="tag" size={13} /></span>
+          <div class="mk-grow">
+            <div class="mk-spread">
+              <span class="lbl">Picking the best offers for you</span>
+              <span class="mk-xs">Next</span>
+            </div>
+            <div class="mk-progress is-thin" style="--v: 0%"></div>
+          </div>
+        </li>
+      </ul>
+    </div>
+  </div>
+) : (
+  <div class="mk">
+    <div class="mk-card mk-col mk-gap-12 search">
+      <div>
+        <div class="mk-spread">
+          <p class="mk-h">Searching flights</p>
+          <span class="mk-xs">Please wait</span>
+        </div>
+        <p class="mk-s mk-mt-4">Lisbon to Oslo · 12 March · 1 adult</p>
+      </div>
+      <div class="mk-sunk mk-col mk-gap-8 bare">
+        <p class="mk-h-xl mk-center">80%</p>
+        <div class="mk-progress is-thin" style="--v: 80%; --c: var(--mk-blue)"></div>
+      </div>
+    </div>
+  </div>
+)}
+
+<style>
+  .search {
+    min-height: 200px;
+  }
+  .bare {
+    flex: 1;
+    justify-content: center;
+    padding: 14px 18px;
+  }
+  .job {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .job .mk-spread {
+    margin-bottom: 5px;
+  }
+  .lbl {
+    font-size: 11px;
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .ok {
+    color: var(--mk-green);
+  }
+  .job.is-wait .lbl,
+  .job.is-wait .mk-xs {
+    color: var(--mk-3);
+  }
+  .job.is-wait .mk-ico {
+    color: var(--mk-3);
+  }
+</style>

@@ -1,0 +1,97 @@
+---
+import MkIcon from '../MkIcon.astro';
+interface Props {
+  variant: 'good' | 'bad';
+}
+const { variant } = Astro.props;
+const specs = [
+  ['Colour', 'Black, White, Blue'],
+  ['Weight', '250 g'],
+  ['Codecs', 'AAC, SBC'],
+  ['Microphones', '6'],
+  ['Works with', 'iOS, Android, Windows'],
+  ['Warranty', '12 months'],
+  ['Delivery', 'Free'],
+];
+---
+
+{variant === 'good' ? (
+  <div class="mk">
+    <div class="mk-card mk-col mk-gap-8">
+      <div class="mk-row mk-gap-12">
+        <div class="mk-img is-6 is-sq thumb"><MkIcon name="music" size={18} /></div>
+        <div class="mk-col mk-gap-2">
+          <p class="mk-h">Wireless headphones</p>
+          <p class="mk-xs"><span class="star">★</span> <b class="ink">4.7</b> (530)</p>
+        </div>
+      </div>
+      <div class="mk-row mk-gap-4 mk-wrap">
+        <span class="mk-badge is-green"><MkIcon name="shield" size={10} />12-month warranty</span>
+        <span class="mk-badge is-green"><MkIcon name="truck" size={10} />Free delivery</span>
+      </div>
+      <div class="mk-row mk-gap-6">
+        <span class="mk-price-big mk-grow">$89</span>
+        <span class="mk-btn mk-btn-pri">Add to cart</span>
+        <span class="mk-btn mk-btn-sec">Buy now</span>
+      </div>
+      <div class="mk-list is-ruled acc">
+        <div class="mk-li"><MkIcon name="file" size={13} class="mk-muted" />Description<MkIcon name="chevron-down" size={13} class="mk-chev" /></div>
+        <div class="mk-li"><MkIcon name="list" size={13} class="mk-muted" />Specifications<MkIcon name="chevron-down" size={13} class="mk-chev" /></div>
+        <div class="mk-li"><MkIcon name="chat" size={13} class="mk-muted" />Reviews and questions<MkIcon name="chevron-down" size={13} class="mk-chev" /></div>
+      </div>
+    </div>
+  </div>
+) : (
+  <div class="mk">
+    <div class="mk-card mk-col mk-gap-8">
+      <div class="mk-row mk-gap-12">
+        <div class="mk-img is-6 is-sq thumb"><MkIcon name="music" size={18} /></div>
+        <div class="mk-col mk-gap-2">
+          <p class="mk-h">Wireless headphones</p>
+          <p class="mk-xs"><span class="star">★</span> <b class="ink">4.7</b> (530 reviews)</p>
+        </div>
+      </div>
+      <p class="mk-xs">Noise cancelling | 30 h battery | Bluetooth 5.3</p>
+      <div class="dump">
+        {specs.map(([k, v]) => <p><span class="k">{k}:</span> {v}</p>)}
+        <p class="mk-mt-4"><span class="k">Price:</span> $89</p>
+      </div>
+      <span class="mk-btn mk-btn-pri mk-btn-xs tiny">Add to cart</span>
+    </div>
+  </div>
+)}
+
+<style>
+  .thumb {
+    width: 44px;
+    flex: none;
+  }
+  .star {
+    color: #f2a91c;
+  }
+  .ink {
+    color: var(--mk-ink);
+  }
+  .acc {
+    margin-top: 2px;
+    border-top: 1px solid var(--mk-line);
+  }
+  .acc .mk-li {
+    min-height: 32px;
+    font-size: 11.5px;
+    font-weight: 500;
+  }
+  .dump {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    font-size: 10px;
+    color: var(--mk-2);
+  }
+  .k {
+    color: var(--mk-ink);
+  }
+  .tiny {
+    align-self: flex-start;
+  }
+</style>

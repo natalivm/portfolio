@@ -1,0 +1,72 @@
+---
+import MkIcon from '../MkIcon.astro';
+interface Props {
+  variant: 'good' | 'bad';
+}
+const { variant } = Astro.props;
+---
+
+{variant === 'good' ? (
+  <div class="mk">
+    <div class="mk-overlay">
+      <div class="mk-dialog mk-col mk-gap-8 dlg">
+        <span class="close"><MkIcon name="x" size={12} /></span>
+        <p class="mk-h mk-center">Cancel subscription</p>
+        <p class="mk-s mk-center">Sorry to see you go. Before you decide, here is a thank-you from us.</p>
+        <div class="gift">
+          <span class="mk-ico is-violet is-lg"><MkIcon name="gift" size={18} /></span>
+          <span class="mk-col mk-gap-2">
+            <span class="mk-b">1 month of Premium, free</span>
+            <span class="mk-xs">Stay a little longer, on us.</span>
+          </span>
+        </div>
+        <div class="mk-grid-2 mk-gap-6 mk-mt-4">
+          <span class="mk-btn mk-btn-sec mk-btn-sm">Cancel anyway</span>
+          <span class="mk-btn mk-btn-pri mk-btn-sm">Accept gift</span>
+        </div>
+      </div>
+    </div>
+  </div>
+) : (
+  <div class="mk">
+    <div class="mk-overlay">
+      <div class="mk-dialog mk-col mk-gap-8 dlg">
+        <span class="close"><MkIcon name="x" size={12} /></span>
+        <p class="mk-h mk-center">Cancel subscription</p>
+        <p class="mk-s mk-center">Your subscription will end on 25 December 2026.</p>
+        <div class="mk-grid-2 mk-gap-6 mk-mt-4">
+          <span class="mk-btn mk-btn-sec mk-btn-sm">Never mind</span>
+          <span class="mk-btn mk-btn-pri mk-btn-sm">Cancel</span>
+        </div>
+      </div>
+    </div>
+  </div>
+)}
+
+<style>
+  .mk-overlay {
+    min-height: 250px;
+    padding: 16px 14px;
+  }
+  .dlg {
+    position: relative;
+    max-width: 260px;
+    padding: 16px 14px 14px;
+  }
+  .close {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    color: var(--mk-3);
+  }
+  .gift {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px;
+    border: 1px solid #a9dcbd;
+    border-radius: 10px;
+    background: var(--mk-green-soft);
+    font-size: 11.5px;
+  }
+</style>

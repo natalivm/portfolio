@@ -1,0 +1,87 @@
+---
+import MkIcon from '../MkIcon.astro';
+interface Props {
+  variant: 'good' | 'bad';
+}
+const { variant } = Astro.props;
+---
+
+{variant === 'good' ? (
+  <div class="mk">
+    <div class="mk-card mk-col mk-gap-12">
+      <p class="mk-h mk-center">You’re very close to Gold status</p>
+      <div class="mk-row score">
+        <span class="mk-ico is-amber is-lg"><MkIcon name="trophy" size={20} /></span>
+        <span class="num">750</span>
+        <span class="mk-s">points</span>
+      </div>
+      <div class="track">
+        <span class="here" style="left: 75%">you are here</span>
+        <div class="mk-progress" style="--v: 75%; --c: var(--mk-green)"></div>
+        <span class="mark" style="left: 75%"></span>
+        <div class="mk-spread mk-xs ends">
+          <span>0</span>
+          <span class="mk-b ink">Gold · 1,000</span>
+        </div>
+      </div>
+      <div class="mk-alert is-amber"><MkIcon name="gift" size={13} /><span>Order today and earn <b>double points</b>.</span></div>
+    </div>
+  </div>
+) : (
+  <div class="mk">
+    <div class="mk-card mk-col mk-gap-12">
+      <p class="mk-h mk-center">Your points</p>
+      <div class="mk-row score">
+        <span class="num">750</span>
+      </div>
+      <div class="track">
+        <div class="mk-progress" style="--v: 75%; --c: var(--mk-green)"></div>
+      </div>
+      <p class="mk-s mk-center">You need 250 more points to reach the next level.</p>
+      <div class="mk-alert"><MkIcon name="info" size={13} /><span>Points are added after each order.</span></div>
+    </div>
+  </div>
+)}
+
+<style>
+  .score {
+    justify-content: center;
+    gap: 8px;
+  }
+  .num {
+    font-size: 30px;
+    font-weight: 700;
+    line-height: 1;
+  }
+  .ink {
+    color: var(--mk-ink);
+  }
+  .track {
+    position: relative;
+    padding-top: 16px;
+  }
+  .track .mk-progress {
+    height: 10px;
+  }
+  .here {
+    position: absolute;
+    top: 0;
+    transform: translateX(-50%);
+    font-size: 9.5px;
+    font-weight: 600;
+    color: var(--mk-ink);
+    white-space: nowrap;
+  }
+  .mark {
+    position: absolute;
+    top: 13px;
+    width: 2px;
+    height: 16px;
+    margin-left: -1px;
+    border-radius: 1px;
+    background: var(--mk-ink);
+  }
+  .ends {
+    margin-top: 5px;
+  }
+</style>

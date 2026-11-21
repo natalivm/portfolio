@@ -1,0 +1,46 @@
+---
+import MkIcon from '../MkIcon.astro';
+interface Props { variant: 'good' | 'bad' }
+const { variant } = Astro.props;
+---
+
+{variant === 'good' ? (
+  <div class="mk">
+    <div class="mk-card mk-col mk-center pay">
+      <span class="mk-ico is-lg is-round"><MkIcon name="card" size={18} /></span>
+      <p class="mk-h">Confirm payment</p>
+      <p class="mk-s">We’ll charge your card •••• 3737</p>
+      <p class="mk-price-big amt">$24.50</p>
+      <p class="mk-xs">to City Bikes, monthly pass</p>
+      <span class="mk-btn mk-btn-pri mk-btn-block mk-btn-lg mk-mt-8">Confirm and pay</span>
+    </div>
+  </div>
+) : (
+  <div class="mk">
+    <div class="mk-card mk-col mk-center pay">
+      <span class="mk-ico is-lg is-round"><MkIcon name="shield" size={18} /></span>
+      <p class="mk-h">Transaction verification</p>
+      <p class="mk-s">Initiate 3DS verification to process your P2P transaction.</p>
+      <p class="code">TXN 7F3A-99C2-E1B4</p>
+      <p class="mk-xs">Auth status: pending ACS challenge</p>
+      <span class="mk-btn mk-btn-pri mk-btn-block mk-btn-lg mk-mt-8">Verify</span>
+    </div>
+  </div>
+)}
+
+<style>
+  .pay {
+    align-items: center;
+    padding: 18px 16px 16px;
+  }
+  .amt {
+    margin: 4px 0 2px;
+    font-size: 24px;
+  }
+  .code {
+    margin: 6px 0 2px;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 13px;
+    font-weight: 600;
+  }
+</style>

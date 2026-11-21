@@ -1,0 +1,101 @@
+---
+import MkIcon from '../MkIcon.astro';
+interface Props {
+  variant: 'good' | 'bad';
+}
+const { variant } = Astro.props;
+const p15 = { name: 'Lumo 15 Pro', price: '899', img: 'is-6' };
+const p16 = { name: 'Lumo 16 Pro', price: '999', img: 'is-3', best: true };
+const p14 = { name: 'Lumo 14 Pro', price: '799', img: 'is-1' };
+const goodRow = [p15, p16, p14];
+const badRow = [p16, p15, p14];
+---
+
+{variant === 'good' ? (
+  <div class="mk mk-wide">
+    <div class="mk-spread">
+      <p class="mk-h">Smartphones</p>
+      <span class="mk-xs">3 models</span>
+    </div>
+    <div class="mk-grid-3 mk-gap-6 mk-mt-8">
+      {goodRow.map((p) => (
+        <div class:list={['prod', { 'is-best': p.best }]}>
+          <div class={`mk-img is-sq ${p.img}`}>
+            <MkIcon name="phone" size={26} stroke={1.6} />
+            {p.best && <span class="tag">Bestseller</span>}
+          </div>
+          <p class="name">{p.name}</p>
+          <p class="price"><span class="cur">$</span>{p.price}</p>
+          <span class="mk-btn mk-btn-pri mk-btn-xs mk-btn-block">Buy</span>
+        </div>
+      ))}
+    </div>
+  </div>
+) : (
+  <div class="mk mk-wide">
+    <div class="mk-spread">
+      <p class="mk-h">Smartphones</p>
+      <span class="mk-xs">3 models</span>
+    </div>
+    <div class="mk-grid-3 mk-gap-6 mk-mt-8">
+      {badRow.map((p) => (
+        <div class:list={['prod', { 'is-best': p.best }]}>
+          <div class={`mk-img is-sq ${p.img}`}>
+            <MkIcon name="phone" size={26} stroke={1.6} />
+            {p.best && <span class="tag">Bestseller</span>}
+          </div>
+          <p class="name">{p.name}</p>
+          <p class="price"><span class="cur">$</span>{p.price}</p>
+          <span class="mk-btn mk-btn-pri mk-btn-xs mk-btn-block">Buy</span>
+        </div>
+      ))}
+    </div>
+  </div>
+)}
+
+<style>
+  .prod {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    padding: 7px 7px 8px;
+    border-radius: 12px;
+    background: var(--mk-card);
+    box-shadow: var(--mk-shadow);
+  }
+  .prod.is-best {
+    background: var(--mk-violet-soft);
+  }
+  .tag {
+    position: absolute;
+    top: 5px;
+    left: 5px;
+    height: 16px;
+    padding: 0 6px;
+    border-radius: 99px;
+    background: var(--mk-card);
+    color: var(--mk-violet);
+    font-size: 9px;
+    font-weight: 600;
+    line-height: 16px;
+    white-space: nowrap;
+  }
+  .name {
+    margin-top: 2px;
+    font-size: 11px;
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .price {
+    font-size: 16px;
+    font-weight: 700;
+    line-height: 1;
+  }
+  .cur {
+    font-size: 11px;
+    color: var(--mk-3);
+    vertical-align: 3px;
+  }
+</style>

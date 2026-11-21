@@ -1,0 +1,55 @@
+---
+import MkIcon from '../MkIcon.astro';
+interface Props {
+  variant: 'good' | 'bad';
+}
+const { variant } = Astro.props;
+const good = variant === 'good';
+---
+
+<div class="mk">
+  <div class="mk-card mk-col mk-gap-8 card">
+    <div class="mk-img is-grey pic"><MkIcon name="music" size={30} stroke={1.6} /></div>
+    <div class="mk-col mk-gap-2">
+      <span class="mk-h">Arlo wireless headphones</span>
+      <span class="mk-xs">Noise-cancelling, 30-hour battery</span>
+    </div>
+    {good && (
+      <>
+        <div class="mk-row mk-gap-6 mk-s meta">
+          <span class="mk-row mk-gap-2 star"><MkIcon name="star" size={12} /><b>4.5</b></span>
+          <span class="mk-muted">·</span>
+          <span class="mk-row mk-gap-4"><MkIcon name="chat" size={12} />1,284 reviews</span>
+        </div>
+        <hr class="mk-divider" />
+        <div class="mk-col mk-gap-4 mk-xs">
+          <span class="mk-row mk-gap-6"><MkIcon name="cart" size={12} />Bought 2,567 times this month</span>
+          <span class="mk-row mk-gap-6"><MkIcon name="eye" size={12} />14 people are viewing this now</span>
+        </div>
+      </>
+    )}
+    <hr class="mk-divider" />
+    <div class="mk-spread">
+      <span class="mk-price-big">$149</span>
+      <span class="mk-btn mk-btn-pri">Buy</span>
+    </div>
+  </div>
+</div>
+
+<style>
+  .card {
+    padding: 12px;
+  }
+  .pic {
+    aspect-ratio: auto;
+    height: 92px;
+    color: #a3a8b0;
+  }
+  .meta b {
+    font-weight: 600;
+    color: var(--mk-ink);
+  }
+  .star {
+    color: #f2a91c;
+  }
+</style>

@@ -1,0 +1,98 @@
+---
+import MkIcon from '../MkIcon.astro';
+interface Props {
+  variant: 'good' | 'bad';
+}
+const { variant } = Astro.props;
+const week = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
+---
+
+{variant === 'good' ? (
+  <div class="mk">
+    <div class="mk-phone mk-col">
+      <div class="mk-center"><span class="mk-badge is-amber xp">+10 XP</span></div>
+      <p class="mk-h mk-center">Lesson complete</p>
+      <div>
+        <div class="mk-spread"><span class="mk-xs">Daily goal</span><span class="mk-xs mk-b ink">20 / 30 XP</span></div>
+        <div class="mk-row mk-gap-4 mk-mt-4">
+          <div class="mk-progress mk-grow" style="--v: 67%; --c: #f2a91c"></div>
+          <span class="chest"><MkIcon name="gift" size={11} /></span>
+        </div>
+      </div>
+      <div class="mk-sunk streak">
+        <div class="mk-row mk-gap-4"><span class="flame"><MkIcon name="fire" size={14} /></span><span class="mk-t mk-b">7-day streak</span></div>
+        <div class="week">
+          {week.map((d) => <span class="day"><i></i>{d}</span>)}
+        </div>
+      </div>
+      <p class="mk-xs mk-center">Next reward at 14 days</p>
+      <span class="mk-btn mk-btn-pri mk-btn-block">Continue</span>
+    </div>
+  </div>
+) : (
+  <div class="mk">
+    <div class="mk-phone mk-col">
+      <div class="mk-center"><span class="mk-badge xp">Lesson 1 of 120</span></div>
+      <p class="mk-h mk-center">Lesson finished</p>
+      <div>
+        <div class="mk-spread"><span class="mk-xs">Course progress</span><span class="mk-xs mk-b ink">1%</span></div>
+        <div class="mk-row mk-gap-4 mk-mt-4">
+          <div class="mk-progress mk-grow" style="--v: 1%"></div>
+        </div>
+      </div>
+      <div class="mk-sunk streak">
+        <p class="mk-t mk-b">Spanish A1</p>
+        <p class="mk-xs">119 lessons left. Finish them all to earn your certificate.</p>
+      </div>
+      <p class="mk-xs mk-center">&nbsp;</p>
+      <span class="mk-btn mk-btn-pri mk-btn-block">Next lesson</span>
+    </div>
+  </div>
+)}
+
+<style>
+  .ink {
+    color: var(--mk-ink);
+  }
+  .xp {
+    height: 20px;
+    padding: 0 9px;
+    font-size: 10.5px;
+  }
+  .chest {
+    display: grid;
+    place-items: center;
+    width: 18px;
+    height: 18px;
+    border-radius: 5px;
+    background: var(--mk-amber-soft);
+    color: var(--mk-amber);
+  }
+  .streak {
+    display: grid;
+    gap: 6px;
+    min-height: 66px;
+    padding: 9px;
+  }
+  .flame {
+    color: #ef7a1a;
+  }
+  .week {
+    display: grid;
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+    gap: 2px;
+  }
+  .day {
+    display: grid;
+    justify-items: center;
+    gap: 2px;
+    font-size: 9px;
+    color: var(--mk-2);
+  }
+  .day i {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: #ef7a1a;
+  }
+</style>

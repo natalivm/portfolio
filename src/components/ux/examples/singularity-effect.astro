@@ -1,0 +1,56 @@
+---
+import MkIcon from '../MkIcon.astro';
+interface Props {
+  variant: 'good' | 'bad';
+}
+const { variant } = Astro.props;
+const crowd = Array.from({ length: 27 });
+---
+
+{variant === 'good' ? (
+  <div class="mk">
+    <div class="mk-card mk-col">
+      <div class="mk-img is-1 pic"><MkIcon name="user" size={56} stroke={1.5} /></div>
+      <div>
+        <p class="mk-h">Help Maya get to art school</p>
+        <p class="mk-xs">Age 12 · wants to be an illustrator</p>
+      </div>
+      <p class="mk-s">Maya has drawn every day since she was five. $250 more pays for a year of classes and supplies.</p>
+      <div>
+        <div class="mk-spread"><span class="mk-t mk-b">$750 raised</span><span class="mk-xs">Goal $1,000</span></div>
+        <div class="mk-progress is-thin mk-mt-4" style="--v: 75%; --c: var(--mk-blue)"></div>
+      </div>
+      <span class="mk-btn mk-btn-pri mk-btn-block">Help Maya</span>
+    </div>
+  </div>
+) : (
+  <div class="mk">
+    <div class="mk-card mk-col">
+      <div class="mk-img is-grey pic">
+        <span class="crowd">{crowd.map(() => <MkIcon name="user" size={14} stroke={1.8} />)}</span>
+      </div>
+      <div>
+        <p class="mk-h">Help children in need</p>
+        <p class="mk-xs">Children’s homes across the region</p>
+      </div>
+      <p class="mk-s">More than 100,000 children need support. Your donation goes into a general fund.</p>
+      <div>
+        <div class="mk-spread"><span class="mk-t mk-b">$25,000 raised</span><span class="mk-xs">Goal $100,000</span></div>
+        <div class="mk-progress is-thin mk-mt-4" style="--v: 25%; --c: var(--mk-blue)"></div>
+      </div>
+      <span class="mk-btn mk-btn-pri mk-btn-block">Make a donation</span>
+    </div>
+  </div>
+)}
+
+<style>
+  .pic {
+    aspect-ratio: 2.4 / 1;
+  }
+  .crowd {
+    display: grid;
+    grid-template-columns: repeat(9, 14px);
+    gap: 1px 6px;
+    color: #a3a8b0;
+  }
+</style>

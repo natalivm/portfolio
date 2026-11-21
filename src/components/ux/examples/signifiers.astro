@@ -1,0 +1,95 @@
+---
+interface Props {
+  variant: 'good' | 'bad';
+}
+const { variant } = Astro.props;
+---
+
+<div class="mk">
+  <div class="mk-card mk-col mk-gap-12">
+    <div class="mk-spread">
+      <span class="mk-row mk-gap-6"><span class="sg-logo"></span><span class="mk-b">Weekly</span></span>
+      <span class="mk-row mk-gap-12 mk-xs"><span>Pricing</span><span>Log in</span></span>
+    </div>
+    <div class="mk-col mk-gap-6 mk-center sg-hero">
+      <p class="mk-h-lg">Plan your week in ten minutes</p>
+      <p class="mk-s">Tasks, calendar and notes in one calm place.</p>
+    </div>
+    <div class="sg-stage">
+      {variant === 'good' ? (
+        <span class="mk-btn mk-btn-lg sg-cta sg-halo">Start free trial</span>
+      ) : (
+        <span class="sg-alarm">
+          <i class="sg-spark is-l"></i>
+          <span class="mk-btn mk-btn-lg sg-cta sg-frame">Start free trial</span>
+          <i class="sg-spark is-r"></i>
+        </span>
+      )}
+    </div>
+    <p class="mk-xs mk-center">No card needed</p>
+  </div>
+</div>
+
+<style>
+  .sg-logo {
+    width: 14px;
+    height: 14px;
+    border-radius: 4px;
+    background: var(--mk-violet);
+  }
+  .sg-hero {
+    padding: 6px 8px 0;
+  }
+  .sg-stage {
+    display: grid;
+    place-items: center;
+    padding: 12px 0 6px;
+  }
+  .sg-cta {
+    padding: 0 22px;
+    background: var(--mk-violet);
+    color: #fff;
+  }
+  .sg-halo {
+    box-shadow:
+      0 0 0 5px rgb(122 76 240 / 0.2),
+      0 0 0 11px rgb(122 76 240 / 0.08);
+  }
+  .sg-frame {
+    outline: 2.5px solid var(--mk-red);
+    outline-offset: 4px;
+  }
+  .sg-alarm {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: 14px;
+  }
+  /* Little "flash" marks either side, so a still frame reads as blinking */
+  .sg-spark {
+    position: relative;
+    width: 10px;
+    height: 22px;
+  }
+  .sg-spark::before,
+  .sg-spark::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    width: 10px;
+    height: 2px;
+    border-radius: 2px;
+    background: var(--mk-red);
+  }
+  .sg-spark::before {
+    top: 3px;
+    transform: rotate(30deg);
+  }
+  .sg-spark::after {
+    bottom: 3px;
+    transform: rotate(-30deg);
+  }
+  .sg-spark.is-r {
+    transform: scaleX(-1);
+  }
+</style>

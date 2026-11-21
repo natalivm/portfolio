@@ -1,0 +1,73 @@
+---
+import MkIcon from '../MkIcon.astro';
+interface Props {
+  variant: 'good' | 'bad';
+}
+const { variant } = Astro.props;
+const all = [
+  { name: 'Premium', eta: '3–7 min', price: '$20', tone: 'is-dark' },
+  { name: 'Comfort', eta: '4–9 min', price: '$19', tone: 'is-amber' },
+  { name: 'Economy', eta: '4–6 min', price: '$13', tone: '' },
+];
+const rides = variant === 'good' ? all : [all[0], all[2]];
+---
+
+<div class="mk">
+  <div class="mk-card mk-col mk-gap-8">
+    <p class="mk-h">Which car shall we take?</p>
+    <div class="mk-col mk-gap-6">
+      {rides.map((r, i) => (
+        <div class={`dc-row${variant === 'good' && i === 0 ? ' is-pick' : ''}`}>
+          <span class={`dc-car ${r.tone}`}><MkIcon name="car" size={16} /></span>
+          <div class="mk-grow mk-col mk-gap-2">
+            <span class="mk-b">{r.name}</span>
+            <span class="mk-xs">{r.eta}</span>
+          </div>
+          <span class="dc-price">{r.price}</span>
+        </div>
+      ))}
+    </div>
+    {variant === 'good' ? (
+      <span class="mk-btn mk-btn-pri mk-btn-block mk-btn-lg mk-mt-4">Choose Premium</span>
+    ) : (
+      <span class="mk-btn mk-btn-pri mk-btn-block mk-btn-lg mk-mt-4">Choose a car</span>
+    )}
+  </div>
+</div>
+
+<style>
+  .dc-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 10px;
+    border: 1px solid var(--mk-line);
+    border-radius: 12px;
+  }
+  .dc-row.is-pick {
+    border-color: var(--mk-green);
+    background: var(--mk-green-soft);
+  }
+  .dc-car {
+    display: grid;
+    place-items: center;
+    flex: none;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: var(--mk-bg);
+    color: var(--mk-2);
+  }
+  .dc-car.is-dark {
+    background: var(--mk-pri);
+    color: #fff;
+  }
+  .dc-car.is-amber {
+    background: var(--mk-amber-soft);
+    color: var(--mk-amber);
+  }
+  .dc-price {
+    font-size: 14px;
+    font-weight: 700;
+  }
+</style>

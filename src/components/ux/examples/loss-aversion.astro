@@ -1,0 +1,89 @@
+---
+import MkIcon from '../MkIcon.astro';
+interface Props {
+  variant: 'good' | 'bad';
+}
+const { variant } = Astro.props;
+const perks = ['Unlimited projects', 'Full version history', 'Priority support', 'Weekly member deals'];
+---
+
+{variant === 'good' ? (
+  <div class="mk">
+    <div class="mk-card mk-col mk-gap-8 box">
+      <span class="close"><MkIcon name="x" size={11} /></span>
+      <div>
+        <p class="mk-h">Don’t lose your Pro tools</p>
+        <p class="mk-s mk-mt-4">Your free trial ends in</p>
+      </div>
+      <div class="timer">
+        <span>23</span><i>:</i><span>59</span><i>:</i><span>22</span>
+      </div>
+      <p class="mk-t mk-b">Without Pro, you’ll lose:</p>
+      <ul class="perks">
+        {perks.map((p) => (
+          <li><MkIcon name="check" size={10} stroke={2.6} />{p}</li>
+        ))}
+      </ul>
+      <span class="mk-btn mk-btn-pri mk-btn-block mk-btn-lg mk-mt-4">Keep my Pro features</span>
+    </div>
+  </div>
+) : (
+  <div class="mk">
+    <div class="mk-card mk-col mk-gap-8 box">
+      <span class="close"><MkIcon name="x" size={11} /></span>
+      <div>
+        <p class="mk-h">Special offer</p>
+        <p class="mk-s mk-mt-4">Get more out of the app with a Pro subscription.</p>
+      </div>
+      <p class="mk-t mk-b">Upgrade today to get:</p>
+      <ul class="perks">
+        {perks.map((p) => (
+          <li><MkIcon name="check" size={10} stroke={2.6} />{p}</li>
+        ))}
+      </ul>
+      <span class="mk-btn mk-btn-pri mk-btn-block mk-btn-lg mk-mt-4">Activate subscription</span>
+    </div>
+  </div>
+)}
+
+<style>
+  .box {
+    position: relative;
+  }
+  .close {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    display: grid;
+    place-items: center;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: var(--mk-bg);
+    color: var(--mk-2);
+  }
+  .timer {
+    display: flex;
+    align-items: baseline;
+    gap: 4px;
+    font-size: 26px;
+    font-weight: 700;
+    line-height: 1;
+  }
+  .timer i {
+    font-style: normal;
+    font-weight: 500;
+    color: var(--mk-3);
+  }
+  .perks {
+    display: grid;
+    gap: 4px;
+    font-size: 11px;
+    color: var(--mk-2);
+  }
+  .perks li {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+</style>

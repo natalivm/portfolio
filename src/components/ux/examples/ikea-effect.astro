@@ -1,0 +1,159 @@
+---
+import MkIcon from '../MkIcon.astro';
+interface Props {
+  variant: 'good' | 'bad';
+}
+const { variant } = Astro.props;
+const good = variant === 'good';
+---
+
+<div class="mk mk-wide">
+  <div class="mk-sunk mk-col mk-gap-6">
+    <div class="mk-grid-2 mk-gap-6">
+      <div class="wg">
+        <div class="mk-spread">
+          <span class="wt"><MkIcon name="card" size={12} /> My cards</span>
+          {good && <span class="mini"><MkIcon name="plus" size={9} stroke={2.6} />Add</span>}
+        </div>
+        <div class="bank">
+          <div class="mk-spread">
+            <span class="emv"></span>
+            <span class="mark">nimbo</span>
+          </div>
+          <div>
+            <p class="num">•••• 4821</p>
+            <p class="holder">Alex Morgan</p>
+          </div>
+        </div>
+      </div>
+      <div class="wg">
+        <div class="mk-spread">
+          <span class="wt"><MkIcon name="refresh" size={12} /> Rates</span>
+          {good && <span class="mini">All</span>}
+        </div>
+        <div class="conv">
+          <div class="mk-spread pair">
+            <span class="cur">USD <MkIcon name="chevron-down" size={9} /></span>
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 8h14l-4-4M19 16H5l4 4" /></svg>
+            <span class="cur">EUR <MkIcon name="chevron-down" size={9} /></span>
+          </div>
+          <p class="amt">$100.00</p>
+          <p class="rate">1 USD = <b>0.94</b> EUR</p>
+        </div>
+        <span class="mk-btn mk-btn-pri mk-btn-xs mk-btn-block">Exchange</span>
+      </div>
+    </div>
+    {good && (
+      <div class="custom"><MkIcon name="settings" size={12} /> Customise widgets</div>
+    )}
+  </div>
+</div>
+
+<style>
+  .wg {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    min-width: 0;
+    padding: 9px;
+    border-radius: 10px;
+    background: var(--mk-card);
+    box-shadow: var(--mk-shadow);
+  }
+  .wt {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 11px;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+  .mini {
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
+    height: 18px;
+    padding: 0 6px;
+    border-radius: 5px;
+    background: var(--mk-blue-soft);
+    color: var(--mk-blue);
+    font-size: 9.5px;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+  .bank {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    aspect-ratio: 1.586;
+    padding: 9px;
+    border-radius: 8px;
+    background: linear-gradient(135deg, #2a2d34, #121316);
+    color: #fff;
+  }
+  .emv {
+    width: 16px;
+    height: 12px;
+    border-radius: 3px;
+    background: linear-gradient(135deg, #f4d58d, #c9a24a);
+  }
+  .mark {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+  }
+  .num {
+    font-size: 9.5px;
+    color: rgb(255 255 255 / 0.7);
+  }
+  .holder {
+    font-size: 10px;
+    font-weight: 600;
+  }
+  .conv {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 7px;
+    border-radius: 8px;
+    background: var(--mk-bg);
+    text-align: center;
+  }
+  .pair {
+    gap: 2px;
+    color: var(--mk-2);
+  }
+  .cur {
+    display: inline-flex;
+    align-items: center;
+    gap: 1px;
+    font-size: 10px;
+    font-weight: 600;
+    color: var(--mk-ink);
+  }
+  .amt {
+    font-size: 15px;
+    font-weight: 700;
+    line-height: 1.1;
+  }
+  .rate {
+    font-size: 9px;
+    color: var(--mk-2);
+  }
+  .rate b {
+    color: var(--mk-ink);
+  }
+  .custom {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    height: 30px;
+    border: 1px dashed #b9c8f5;
+    border-radius: 8px;
+    background: var(--mk-card);
+    color: var(--mk-blue);
+    font-size: 11px;
+    font-weight: 600;
+  }
+</style>

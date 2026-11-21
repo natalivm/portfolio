@@ -1,0 +1,644 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Icon from '../components/Icon.astro';
+import '../styles/ux-kit.css';
+import { sections, laws } from '../data/uxLaws';
+
+// Each law's Do / Don't example lives in its own file, named by the law's slug.
+const files = import.meta.glob<{ default: any }>('../components/ux/examples/*.astro', { eager: true });
+const examples: Record<string, any> = Object.fromEntries(
+  Object.entries(files).map(([path, mod]) => [path.split('/').pop()!.replace('.astro', ''), mod.default]),
+);
+
+const numbered = laws.map((law, i) => ({ ...law, no: i + 1 }));
+const groups = sections
+  .map((s, i) => ({ ...s, n: i + 1, laws: numbered.filter((l) => l.section === s.id) }))
+  .filter((g) => g.laws.length);
+const pad = (n: number) => String(n).padStart(2, '0');
+const total = laws.length;
+---
+
+<Layout
+  title="UX laws"
+  current="laws"
+  description={`${total} laws of design psychology, each with a do and a don't drawn as an interface.`}
+>
+  <section class="wrap head" aria-labelledby="laws-title">
+    <h1 id="laws-title" class="display">
+      <span data-count>{total}</span>{' '}<span data-count-label>laws of design psychology,</span>
+      <span class="quiet" data-count-suffix>each with a do and a don’t</span>
+    </h1>
+    <p class="visually-hidden" aria-live="polite" data-announce></p>
+    <div class="head-foot">
+      <p class="intro">
+        How people perceive, decide and remember, and what that means for an interface. Every law gets one
+        sentence, a few ways to put it to work, and a do and a don’t drawn as real UI.
+      </p>
+      <p class="credit">
+        The list and its {groups.length} groups follow the Ukrainian collection{' '}
+        <span lang="uk">“100 законів психології дизайну”</span>. The summaries and examples are written for this page.
+      </p>
+    </div>
+  </section>
+
+  <div class="controls" data-controls>
+    <div class="wrap controls-in">
+      <div class="chips" role="group" aria-label="Show a group of laws" data-chips>
+        <button class="chip" type="button" data-s="" aria-pressed="true">All</button>
+        {groups.map((g) => (
+          <button class="chip" type="button" data-s={g.id} data-name={g.short} aria-pressed="false">
+            {g.short}
+          </button>
+        ))}
+      </div>
+      <label class="q">
+        <Icon name="search" size={16} />
+        <span class="visually-hidden">Find a law</span>
+        <input type="search" placeholder="Find a law" autocomplete="off" spellcheck="false" data-q />
+      </label>
+    </div>
+  </div>
+
+  <div class="wrap list" data-list>
+    {groups.map((g) => (
+      <section class="group" id={g.id} data-group={g.id} aria-labelledby={`${g.id}-title`}>
+        <h2 id={`${g.id}-title`} class="h2 group-title">
+          <span class="gno">{pad(g.n)}</span> {g.name}
+          <span class="quiet">{g.blurb}</span>
+        </h2>
+
+        {g.laws.map((law) => {
+          const Ex = examples[law.slug];
+          return (
+            <article
+              class="law"
+              id={law.slug}
+              data-law
+              data-s={g.id}
+              data-text={`${law.name} ${law.summary}`.toLowerCase()}
+              aria-labelledby={`${law.slug}-name`}
+            >
+              <div class="law-text">
+                <h3 id={`${law.slug}-name`} class="law-name">
+                  <span class="no">{pad(law.no)}</span> {law.name}
+                </h3>
+                <p class="sum">{law.summary}</p>
+                <p class="apply-title">In practice</p>
+                <ul class="apply">
+                  {law.apply.map((a) => <li>{a}</li>)}
+                </ul>
+                <a class="permalink" href={`#${law.slug}`} aria-label={`Link to ${law.name}`}>#</a>
+              </div>
+
+              <div class="ex-tile">
+                {(['good', 'bad'] as const).map((v) => (
+                  <figure class={`ex is-${v}`}>
+                    <div class="ex-frame">
+                      <span class="ex-tag">
+                        <span class="ex-mark" aria-hidden="true">
+                          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d={v === 'good' ? 'M5 12.5l4.5 4.5L19 7.5' : 'M6 6l12 12M18 6L6 18'} />
+                          </svg>
+                        </span>
+                        {v === 'good' ? 'Do' : 'Don’t'}
+                      </span>
+                      <div class="ex-stage" aria-hidden="true">
+                        {Ex ? <Ex variant={v} /> : <p class="ex-missing">Example coming</p>}
+                      </div>
+                    </div>
+                    <figcaption>{v === 'good' ? law.good : law.bad}</figcaption>
+                  </figure>
+                ))}
+              </div>
+            </article>
+          );
+        })}
+      </section>
+    ))}
+
+    <div class="empty" hidden data-empty>
+      <p>No law matches that. Try a broader word, or clear the search.</p>
+      <button class="pill pill-light" type="button" data-clear>Show all {total} laws</button>
+    </div>
+  </div>
+</Layout>
+
+<script>
+  const items = [...document.querySelectorAll<HTMLElement>('[data-law]')];
+  const groups = [...document.querySelectorAll<HTMLElement>('[data-group]')];
+  const chips = [...document.querySelectorAll<HTMLButtonElement>('[data-chips] .chip')];
+  const input = document.querySelector<HTMLInputElement>('[data-q]')!;
+  const countEl = document.querySelector<HTMLElement>('[data-count]')!;
+  const countLabel = document.querySelector<HTMLElement>('[data-count-label]')!;
+  const countSuffix = document.querySelector<HTMLElement>('[data-count-suffix]')!;
+  const announce = document.querySelector<HTMLElement>('[data-announce]')!;
+  const empty = document.querySelector<HTMLElement>('[data-empty]')!;
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const total = items.length;
+
+  const state = { s: '', q: '' };
+
+  // ---- Count roll, as on the work page ------------------------------------------
+  let rollFrame = 0;
+  const roll = (to: number) => {
+    const from = Number(countEl.textContent) || 0;
+    cancelAnimationFrame(rollFrame);
+    if (reduce || from === to) {
+      countEl.textContent = String(to);
+      return;
+    }
+    const t0 = performance.now();
+    const step = (t: number) => {
+      const k = Math.min((t - t0) / 420, 1);
+      const e = 1 - Math.pow(1 - k, 4);
+      countEl.textContent = String(Math.round(from + (to - from) * e));
+      if (k < 1) rollFrame = requestAnimationFrame(step);
+    };
+    rollFrame = requestAnimationFrame(step);
+  };
+
+  const writeUrl = () => {
+    const u = new URL(location.href);
+    state.s ? u.searchParams.set('s', state.s) : u.searchParams.delete('s');
+    state.q ? u.searchParams.set('q', state.q) : u.searchParams.delete('q');
+    history.replaceState(history.state, '', u);
+  };
+
+  const apply = () => {
+    const words = state.q.toLowerCase().split(/\s+/).filter(Boolean);
+    let shown = 0;
+    items.forEach((el) => {
+      const ok = (!state.s || el.dataset.s === state.s) && words.every((w) => el.dataset.text!.includes(w));
+      el.hidden = !ok;
+      if (ok) shown++;
+    });
+    groups.forEach((g) => (g.hidden = !g.querySelector('[data-law]:not([hidden])')));
+    chips.forEach((c) => c.setAttribute('aria-pressed', String(c.dataset.s === state.s)));
+    empty.hidden = shown > 0;
+
+    const name = chips.find((c) => c.dataset.s === state.s)?.dataset.name;
+    const all = shown === total && !name && !state.q;
+    countLabel.textContent = all ? 'laws of design psychology,' : shown === 1 ? 'law' : 'laws';
+    countSuffix.textContent = state.q
+      ? `matching “${state.q}”${name ? ` in ${name}` : ''}`
+      : name
+        ? `in ${name}`
+        : 'each with a do and a don’t';
+    roll(shown);
+    announce.textContent = `${shown} ${shown === 1 ? 'law' : 'laws'} shown`;
+    writeUrl();
+  };
+
+  // The chip row scrolls sideways when it does not fit; fade whichever edge has more chips behind it
+  const row = document.querySelector<HTMLElement>('[data-chips]')!;
+  const fade = () => {
+    const start = row.scrollLeft > 4;
+    const end = row.scrollLeft + row.clientWidth < row.scrollWidth - 4;
+    row.dataset.fade = start && end ? 'both' : start ? 'start' : end ? 'end' : '';
+  };
+  row.addEventListener('scroll', fade, { passive: true });
+  addEventListener('resize', fade);
+  fade();
+
+  chips.forEach((c) =>
+    c.addEventListener('click', () => {
+      state.s = c.dataset.s || '';
+      apply();
+      c.scrollIntoView({ block: 'nearest', inline: 'nearest', behavior: reduce ? 'auto' : 'smooth' });
+      // Bring the start of the list into view when the controls have scrolled away
+      const list = document.querySelector<HTMLElement>('[data-list]')!;
+      if (list.getBoundingClientRect().top < 0) list.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth' });
+    }),
+  );
+  document.querySelector('[data-chips]')!.addEventListener('keydown', (e) => {
+    const ev = e as KeyboardEvent;
+    const i = chips.indexOf(document.activeElement as HTMLButtonElement);
+    if (i < 0) return;
+    if (ev.key === 'ArrowRight') chips[(i + 1) % chips.length].focus();
+    if (ev.key === 'ArrowLeft') chips[(i - 1 + chips.length) % chips.length].focus();
+  });
+
+  let qT = 0;
+  input.addEventListener('input', () => {
+    clearTimeout(qT);
+    qT = window.setTimeout(() => {
+      state.q = input.value.trim();
+      apply();
+    }, 120);
+  });
+  document.querySelector('[data-clear]')!.addEventListener('click', () => {
+    state.s = '';
+    state.q = '';
+    input.value = '';
+    apply();
+    input.focus();
+  });
+
+  // A link to one law (#slug) always shows it, whatever the filter was
+  const reveal = () => {
+    const id = decodeURIComponent(location.hash.slice(1));
+    const el = id && document.getElementById(id);
+    if (el && el.hasAttribute('data-law') && el.hidden) {
+      state.s = '';
+      state.q = '';
+      input.value = '';
+      apply();
+      el.scrollIntoView();
+    }
+  };
+  addEventListener('hashchange', reveal);
+
+  // Initial state from the URL
+  const params = new URLSearchParams(location.search);
+  const s = params.get('s') || '';
+  state.s = chips.some((c) => c.dataset.s === s) ? s : '';
+  state.q = params.get('q') || '';
+  input.value = state.q;
+  if (state.s || state.q) apply();
+  countEl.textContent = String(items.filter((el) => !el.hidden).length);
+  reveal();
+</script>
+
+<style>
+  .head {
+    padding-block: clamp(24px, 3vw, 40px) clamp(20px, 2.4vw, 28px);
+  }
+  .head .display {
+    max-width: 22ch;
+    font-size: clamp(2.2rem, 4.6vw, 4rem);
+  }
+  .head-foot {
+    display: grid;
+    grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+    align-items: end;
+    gap: 16px clamp(32px, 6vw, 96px);
+    margin-top: clamp(18px, 2.2vw, 28px);
+  }
+  .intro {
+    max-width: 56ch;
+    font-size: 1.125rem;
+    color: var(--ink-2);
+  }
+  .credit {
+    max-width: 48ch;
+    font-size: 0.875rem;
+    color: var(--ink-2);
+  }
+
+  /* Filters stay in reach on a long page: they stick under the site header */
+  .controls {
+    position: sticky;
+    top: 72px;
+    z-index: 30;
+    background: rgb(242 243 245 / 0.82);
+    backdrop-filter: blur(18px) saturate(1.6);
+    -webkit-backdrop-filter: blur(18px) saturate(1.6);
+  }
+  .controls-in {
+    display: flex;
+    align-items: center;
+    gap: 12px 20px;
+    padding-block: 10px;
+  }
+  .chips {
+    flex: 1;
+    display: flex;
+    gap: 8px;
+    min-width: 0;
+    overflow-x: auto;
+    scrollbar-width: none;
+    margin-block: -4px;
+    padding-block: 4px;
+  }
+  .chips::-webkit-scrollbar {
+    display: none;
+  }
+  .chips[data-fade='end'] {
+    mask-image: linear-gradient(90deg, #000 calc(100% - 56px), transparent);
+  }
+  .chips[data-fade='start'] {
+    mask-image: linear-gradient(90deg, transparent, #000 56px);
+  }
+  .chips[data-fade='both'] {
+    mask-image: linear-gradient(90deg, transparent, #000 56px, #000 calc(100% - 56px), transparent);
+  }
+  .chip {
+    flex: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 44px;
+    padding: 0 16px;
+    border: 1px solid var(--line);
+    border-radius: var(--pill);
+    background: var(--surface);
+    color: var(--ink);
+    font-weight: 600;
+    font-size: 0.9375rem;
+    cursor: pointer;
+    transition:
+      background-color var(--t-fast) var(--ease-out),
+      border-color var(--t-fast) var(--ease-out),
+      color var(--t-fast) var(--ease-out);
+  }
+  .chip:hover {
+    border-color: #bfc3cb;
+  }
+  .n {
+    color: var(--ink-2);
+    font-weight: 500;
+  }
+  .chip[aria-pressed='true'] {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: var(--accent-ink);
+  }
+  .chip[aria-pressed='true'] .n {
+    color: #d9ddff;
+  }
+  .q {
+    flex: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    width: 220px;
+    min-height: 44px;
+    padding: 0 14px;
+    border: 1px solid var(--line);
+    border-radius: var(--pill);
+    background: var(--surface);
+    color: var(--ink-2);
+    cursor: text;
+    transition: border-color var(--t-fast) var(--ease-out);
+  }
+  .q:hover,
+  .q:focus-within {
+    border-color: #bfc3cb;
+  }
+  .q:focus-within {
+    outline: 2px solid var(--accent);
+    outline-offset: 3px;
+  }
+  .q input {
+    flex: 1;
+    min-width: 0;
+    height: 42px;
+    border: 0;
+    background: none;
+    color: var(--ink);
+    font: 500 0.9375rem var(--font-ui);
+    outline: none;
+  }
+  .q input::placeholder {
+    color: var(--ink-2);
+  }
+
+  /* ---------- The list ---------- */
+  .list {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: clamp(72px, 9vw, 128px);
+    margin-top: clamp(32px, 4vw, 56px);
+  }
+  .group {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: clamp(40px, 5vw, 64px);
+  }
+  .group-title {
+    max-width: 28ch;
+  }
+  .gno {
+    color: var(--ink-3);
+  }
+  .group-title .quiet {
+    margin-top: 0.35em;
+    max-width: 40ch;
+    font-size: 0.46em;
+    letter-spacing: -0.02em;
+    line-height: 1.2;
+  }
+
+  .law {
+    position: relative;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.75fr);
+    align-items: start;
+    gap: 24px clamp(32px, 4vw, 64px);
+    padding-top: clamp(32px, 4vw, 48px);
+    border-top: 1px solid var(--line);
+    scroll-margin-top: 150px;
+    content-visibility: auto;
+    contain-intrinsic-size: auto 520px;
+  }
+  .law-text {
+    position: relative;
+  }
+  .law-name {
+    font-size: clamp(1.5rem, 2.2vw, 2rem);
+    letter-spacing: -0.025em;
+    padding-right: 44px;
+  }
+  .no {
+    color: var(--ink-3);
+  }
+  .sum {
+    margin-top: 14px;
+    max-width: 52ch;
+    font-size: 1.0625rem;
+  }
+  .apply-title {
+    margin-top: 22px;
+    font-size: 0.9375rem;
+    font-weight: 600;
+  }
+  .apply {
+    display: grid;
+    gap: 8px;
+    margin: 10px 0 0;
+    padding: 0;
+    list-style: none;
+    max-width: 52ch;
+    color: var(--ink-2);
+    font-size: 0.9375rem;
+  }
+  .apply li {
+    position: relative;
+    padding-left: 18px;
+  }
+  .apply li::before {
+    content: '';
+    position: absolute;
+    left: 2px;
+    top: 0.62em;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--ink-3);
+  }
+  .permalink {
+    position: absolute;
+    top: 0;
+    right: 0;
+    display: grid;
+    place-items: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    color: var(--ink-2);
+    font-weight: 600;
+    text-decoration: none;
+    opacity: 0;
+    transition: opacity var(--t-fast) var(--ease-out), background-color var(--t-fast) var(--ease-out);
+  }
+  .law:hover .permalink,
+  .permalink:focus-visible {
+    opacity: 1;
+  }
+  .permalink:hover {
+    background: var(--surface);
+    color: var(--ink);
+  }
+
+  /* One white tile holds the pair; each example sits in a tinted frame */
+  .ex-tile {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+    padding: 8px;
+    border-radius: var(--radius-lg);
+    background: var(--surface);
+    box-shadow: var(--shadow-tile);
+  }
+  .ex {
+    display: flex;
+    flex-direction: column;
+    margin: 0;
+  }
+  .ex-frame {
+    position: relative;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 300px;
+    padding: 48px 16px 20px;
+    border-radius: var(--radius-md);
+    overflow: hidden;
+  }
+  .is-good .ex-frame {
+    background: #e7f5ed;
+  }
+  .is-bad .ex-frame {
+    background: #fcebee;
+  }
+  .ex-stage {
+    flex: 1;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    align-items: center;
+  }
+  .ex-tag {
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    height: 26px;
+    padding: 0 10px 0 4px;
+    border-radius: var(--pill);
+    background: var(--surface);
+    color: var(--ink);
+    font-size: 0.8125rem;
+    font-weight: 600;
+    box-shadow: 0 1px 2px rgb(22 23 26 / 0.08);
+  }
+  .ex-mark {
+    display: grid;
+    place-items: center;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    color: #fff;
+  }
+  .is-good .ex-mark {
+    background: #17914b;
+  }
+  .is-bad .ex-mark {
+    background: #dc3a45;
+  }
+  .ex figcaption {
+    padding: 12px 10px 8px;
+    color: var(--ink-2);
+    font-size: 0.875rem;
+    line-height: 1.45;
+  }
+  .ex-missing {
+    color: var(--ink-2);
+    text-align: center;
+    font-size: 0.875rem;
+  }
+
+  .empty {
+    display: grid;
+    justify-items: start;
+    gap: 16px;
+    padding: 24px 0 48px;
+    color: var(--ink-2);
+  }
+
+  @media (max-width: 1080px) {
+    .law {
+      grid-template-columns: minmax(0, 1fr);
+    }
+    .law-text {
+      max-width: 64ch;
+    }
+  }
+  @media (max-width: 860px) {
+    .head-foot {
+      grid-template-columns: minmax(0, 1fr);
+      align-items: start;
+    }
+  }
+  @media (max-width: 720px) {
+    .controls {
+      position: static;
+      background: none;
+      backdrop-filter: none;
+      -webkit-backdrop-filter: none;
+    }
+    .controls-in {
+      flex-direction: column;
+      align-items: stretch;
+      gap: 8px;
+      padding-inline: 0;
+    }
+    .chips {
+      padding-inline: var(--gutter);
+      scroll-padding-inline: var(--gutter);
+    }
+    .q {
+      width: auto;
+      margin-inline: var(--gutter);
+    }
+    .law {
+      scroll-margin-top: 84px;
+    }
+  }
+  @media (max-width: 640px) {
+    .ex-tile {
+      grid-template-columns: minmax(0, 1fr);
+      padding: 5px;
+      border-radius: var(--radius-md);
+    }
+    .ex-frame {
+      min-height: 0;
+      padding: 46px 12px 18px;
+      border-radius: 15px;
+    }
+    .permalink {
+      opacity: 1;
+    }
+  }
+</style>

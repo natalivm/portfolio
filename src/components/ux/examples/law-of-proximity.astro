@@ -1,0 +1,84 @@
+---
+import MkIcon from '../MkIcon.astro';
+interface Props {
+  variant: 'good' | 'bad';
+}
+const { variant } = Astro.props;
+const groups = [
+  [
+    { t: 'Airplane mode', i: 'plane', on: true },
+    { t: 'Wi-Fi', i: 'wifi', on: false },
+    { t: 'Bluetooth', i: 'bt', on: false },
+  ],
+  [
+    { t: 'Auto-brightness', i: 'sun', on: false },
+    { t: 'Night mode', i: 'moon', on: true },
+  ],
+] as const;
+---
+
+<div class="mk">
+  <div class="mk-phone">
+    <p class="mk-h title">Settings</p>
+    <div class:list={['list', variant === 'good' ? 'is-grouped' : 'is-even']}>
+      {groups.map((g) => (
+        <div class="grp">
+          {g.map((r) => (
+            <div class="row">
+              <span class="mk-ico ico">
+                {r.i === 'bt' ? (
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex:none">
+                    <path d="M7 7l10 10-5 4V3l5 4L7 17" />
+                  </svg>
+                ) : (
+                  <MkIcon name={r.i} size={13} />
+                )}
+              </span>
+              <span class="mk-grow lbl">{r.t}</span>
+              <span class:list={['mk-toggle', { 'is-on': r.on }]}></span>
+            </div>
+          ))}
+        </div>
+      ))}
+    </div>
+  </div>
+</div>
+
+<style>
+  .title {
+    margin-bottom: 12px;
+  }
+  .list,
+  .grp {
+    display: flex;
+    flex-direction: column;
+  }
+  /* Grouped: tight rows inside a group, a wide gap between groups */
+  .is-grouped {
+    gap: 22px;
+  }
+  .is-grouped .grp {
+    gap: 2px;
+  }
+  /* Even: the same space everywhere (the total height matches the grouped list) */
+  .is-even {
+    gap: 7px;
+  }
+  .is-even .grp {
+    gap: 7px;
+  }
+  .row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    height: 28px;
+  }
+  .ico {
+    width: 22px;
+    height: 22px;
+    border-radius: 6px;
+  }
+  .lbl {
+    font-size: 11.5px;
+  }
+</style>

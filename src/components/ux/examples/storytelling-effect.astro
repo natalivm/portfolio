@@ -1,0 +1,91 @@
+---
+import MkIcon from '../MkIcon.astro';
+interface Props {
+  variant: 'good' | 'bad';
+}
+const { variant } = Astro.props;
+---
+
+{variant === 'good' ? (
+  <div class="mk">
+    <div class="mk-card mk-col mk-gap-8 promo">
+      <div class="mk-spread">
+        <span class="wordmark"><i></i>nimbo</span>
+        <span class="mk-badge is-amber">Invite a friend</span>
+      </div>
+      <p class="mk-h-lg">Sam still owes you a coffee</p>
+      <div class="mk-col mk-gap-6 talk">
+        <div class="msg">
+          <span class="mk-avatar is-sm is-2">S</span>
+          <span class="bub">I’ll pay you back next week, promise.</span>
+        </div>
+        <div class="msg is-me">
+          <span class="bub">Open a Nimbo card with my link and we’re even.</span>
+        </div>
+      </div>
+      <p class="mk-s">When Sam joins, you both get <b class="ink">$5</b>. The coffee is on us.</p>
+      <span class="mk-btn mk-btn-pri mk-btn-block"><MkIcon name="coffee" size={13} /> Send Sam my link</span>
+    </div>
+  </div>
+) : (
+  <div class="mk">
+    <div class="mk-card mk-col mk-gap-8 promo">
+      <div class="mk-spread">
+        <span class="wordmark"><i></i>nimbo</span>
+        <span class="mk-badge">Referral</span>
+      </div>
+      <p class="mk-h-lg">Get $5</p>
+      <p class="mk-s">Invite a friend to open a card and get $5 to your account.</p>
+      <span class="mk-btn mk-btn-pri mk-btn-block mk-mt-4">Invite</span>
+    </div>
+  </div>
+)}
+
+<style>
+  .promo {
+    min-height: 168px;
+  }
+  .wordmark {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.01em;
+  }
+  .wordmark i {
+    width: 12px;
+    height: 12px;
+    border-radius: 4px;
+    background: linear-gradient(135deg, var(--mk-violet), var(--mk-blue));
+  }
+  .talk {
+    padding: 10px;
+    border-radius: var(--mk-r);
+    background: var(--mk-amber-soft);
+  }
+  .msg {
+    display: flex;
+    align-items: flex-end;
+    gap: 6px;
+  }
+  .msg.is-me {
+    justify-content: flex-end;
+  }
+  .bub {
+    max-width: 78%;
+    padding: 6px 9px;
+    border-radius: 12px 12px 12px 4px;
+    background: var(--mk-card);
+    font-size: 11px;
+    line-height: 1.35;
+  }
+  .is-me .bub {
+    border-radius: 12px 12px 4px 12px;
+    background: var(--mk-pri);
+    color: #fff;
+  }
+  .ink {
+    color: var(--mk-ink);
+  }
+</style>

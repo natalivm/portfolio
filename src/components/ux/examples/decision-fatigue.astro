@@ -1,0 +1,120 @@
+---
+import MkIcon from '../MkIcon.astro';
+interface Props {
+  variant: 'good' | 'bad';
+}
+const { variant } = Astro.props;
+---
+
+{variant === 'good' ? (
+  <div class="mk">
+    <div class="mk-card mk-col mk-gap-8">
+      <div class="mk-spread">
+        <p class="mk-h">Delivery address</p>
+        <span class="mk-link loc"><MkIcon name="target" size={12} />Use my location</span>
+      </div>
+      <div class="mk-field">
+        <span class="mk-label">Country</span>
+        <div class="mk-input">United Kingdom<span class="end"><MkIcon name="chevron-down" size={12} /></span></div>
+      </div>
+      <div class="mk-field drop-wrap">
+        <span class="mk-label">City</span>
+        <div class="mk-input is-focus">Man<span class="caret"></span></div>
+        <ul class="drop">
+          <li class="is-hl"><MkIcon name="pin" size={11} /><span><b>Man</b>chester</span></li>
+          <li><MkIcon name="pin" size={11} /><span><b>Man</b>sfield</span></li>
+        </ul>
+      </div>
+      <div class="mk-field">
+        <span class="mk-label">Street</span>
+        <div class="mk-input"><MkIcon name="search" size={12} /><span class="ph">Start typing a street</span></div>
+      </div>
+      <div class="mk-grid-3 mk-gap-6">
+        <div class="mk-field"><span class="mk-label">Building</span><div class="mk-input"><span class="ph">00</span></div></div>
+        <div class="mk-field"><span class="mk-label">Flat</span><div class="mk-input"><span class="ph">00</span></div></div>
+        <div class="mk-field"><span class="mk-label">Postcode</span><div class="mk-input"><span class="ph">00000</span></div></div>
+      </div>
+    </div>
+  </div>
+) : (
+  <div class="mk">
+    <div class="mk-card mk-col mk-gap-8">
+      <div class="mk-spread">
+        <p class="mk-h">Delivery address</p>
+      </div>
+      <div class="mk-field">
+        <span class="mk-label">Country</span>
+        <div class="mk-input"><span class="ph">Type your country</span></div>
+      </div>
+      <div class="mk-field">
+        <span class="mk-label">City</span>
+        <div class="mk-input"><span class="ph">Type your city</span></div>
+      </div>
+      <div class="mk-field">
+        <span class="mk-label">Street</span>
+        <div class="mk-input"><span class="ph">Type your street</span></div>
+      </div>
+      <div class="mk-grid-3 mk-gap-6">
+        <div class="mk-field"><span class="mk-label">Building</span><div class="mk-input"><span class="ph">00</span></div></div>
+        <div class="mk-field"><span class="mk-label">Flat</span><div class="mk-input"><span class="ph">00</span></div></div>
+        <div class="mk-field"><span class="mk-label">Postcode</span><div class="mk-input"><span class="ph">00000</span></div></div>
+      </div>
+    </div>
+  </div>
+)}
+
+<style>
+  .mk-spread {
+    min-height: 20px;
+  }
+  .loc {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 11px;
+  }
+  .end {
+    display: inline-flex;
+    margin-left: auto;
+    color: var(--mk-3);
+  }
+  .caret {
+    width: 1px;
+    height: 14px;
+    margin-left: -5px;
+    background: var(--mk-blue);
+  }
+  .drop-wrap {
+    position: relative;
+    z-index: 1;
+  }
+  .drop {
+    position: absolute;
+    top: calc(100% + 4px);
+    left: 0;
+    right: 0;
+    padding: 4px;
+    border: 1px solid var(--mk-line);
+    border-radius: 8px;
+    background: var(--mk-card);
+    box-shadow: 0 10px 24px -10px rgb(20 22 28 / 0.3);
+  }
+  .drop li {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    height: 24px;
+    padding: 0 6px;
+    border-radius: 5px;
+    font-size: 11px;
+    color: var(--mk-2);
+  }
+  .drop li.is-hl {
+    background: var(--mk-bg);
+    color: var(--mk-ink);
+  }
+  .drop b {
+    font-weight: 700;
+    color: var(--mk-ink);
+  }
+</style>

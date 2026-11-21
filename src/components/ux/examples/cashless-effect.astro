@@ -1,0 +1,111 @@
+---
+import MkIcon from '../MkIcon.astro';
+interface Props {
+  variant: 'good' | 'bad';
+}
+const { variant } = Astro.props;
+const good = variant === 'good';
+const methods = [
+  { icon: 'wallet', name: 'Wallet Pay', note: 'No fee', amount: '$49.00', on: true },
+  { icon: 'card', name: '•••• 1234', note: 'Card fee 2.5%', amount: '$50.23', on: false },
+  { icon: 'plus', name: 'Other card', note: '', amount: '', on: false },
+] as const;
+---
+
+<div class="mk">
+  <div class="mk-card box">
+    <p class="head">Choose a payment method</p>
+    <div class="mk-col mk-gap-6 rows">
+      {methods.map((m) => (
+        <div class:list={['opt', { 'is-on': m.on }]}>
+          <span class:list={['rad', { 'is-on': m.on }]}></span>
+          <span class="mk-ico"><MkIcon name={m.icon} size={13} /></span>
+          <span class="mk-grow">
+            <span class="mk-b name">{m.name}</span>
+            {good && m.note && <span class="mk-xs">{m.note}</span>}
+          </span>
+          {good && m.amount && <span class="mk-b amt">{m.amount}</span>}
+        </div>
+      ))}
+    </div>
+    {good && (
+      <div class="total">
+        <span class="mk-xs">Total to pay</span>
+        <span class="mk-price-big">$49.00</span>
+      </div>
+    )}
+    <div class="foot mk-grid-2">
+      <span class="mk-btn mk-btn-sec">Cancel</span>
+      <span class="mk-btn mk-btn-blue">{good ? 'Pay $49.00' : 'Pay'}</span>
+    </div>
+  </div>
+</div>
+
+<style>
+  .box {
+    padding: 0;
+    overflow: hidden;
+  }
+  .head {
+    padding: 8px 12px;
+    background: var(--mk-bg);
+    border-bottom: 1px solid var(--mk-line);
+    font-size: 9.5px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--mk-2);
+  }
+  .rows {
+    padding: 10px 12px 0;
+  }
+  .opt {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 42px;
+    padding: 6px 10px;
+    border: 1px solid var(--mk-line);
+    border-radius: 9px;
+  }
+  .opt.is-on {
+    border: 1.5px solid var(--mk-blue);
+  }
+  .name {
+    display: block;
+    font-size: 11.5px;
+  }
+  .amt {
+    font-size: 11.5px;
+  }
+  .rad {
+    flex: none;
+    display: inline-grid;
+    place-items: center;
+    width: 14px;
+    height: 14px;
+    border: 1.5px solid #b8bcc4;
+    border-radius: 50%;
+  }
+  .rad.is-on {
+    border-color: var(--mk-blue);
+  }
+  .rad.is-on::after {
+    content: '';
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--mk-blue);
+  }
+  .total {
+    display: grid;
+    justify-items: center;
+    gap: 4px;
+    margin: 10px 12px 0;
+    padding-top: 10px;
+    border-top: 1px solid var(--mk-line);
+  }
+  .foot {
+    padding: 12px;
+  }
+</style>

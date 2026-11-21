@@ -1,0 +1,94 @@
+---
+import MkIcon from '../MkIcon.astro';
+interface Props {
+  variant: 'good' | 'bad';
+}
+const { variant } = Astro.props;
+const groups = [
+  {
+    title: 'Users',
+    tiles: [
+      { icon: 'user', label: 'Active', value: '2,451', cls: 'is-blue' },
+      { icon: 'users', label: 'Total', value: '3,873', cls: 'is-blue' },
+    ],
+  },
+  {
+    title: 'Sales and revenue',
+    tiles: [
+      { icon: 'wallet', label: 'Revenue', value: '€45,230', cls: 'is-green' },
+      { icon: 'box', label: 'Sales', value: '156', cls: 'is-green' },
+    ],
+  },
+] as const;
+const mixed = [
+  { icon: 'user', text: 'Active users: 2,451' },
+  { icon: 'wallet', text: 'Revenue: €45,230' },
+  { icon: 'box', text: 'Sales: 156' },
+  { icon: 'users', text: 'Total users: 3,873' },
+] as const;
+---
+
+{variant === 'good' ? (
+  <div class="mk">
+    <div class="mk-sunk mk-col mk-gap-12 board">
+      <div class="mk-spread">
+        <span class="mk-h">Overview</span>
+        <span class="mk-chip">This week <MkIcon name="chevron-down" size={10} /></span>
+      </div>
+      {groups.map((g) => (
+        <div class="mk-col mk-gap-6">
+          <span class="mk-b">{g.title}</span>
+          <div class="mk-grid-2 mk-gap-6">
+            {g.tiles.map((t) => (
+              <div class="tile">
+                <span class:list={['mk-ico', t.cls]}><MkIcon name={t.icon} size={13} /></span>
+                <span class="mk-xs">{t.label}</span>
+                <span class="mk-h-lg">{t.value}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      ))}
+    </div>
+  </div>
+) : (
+  <div class="mk">
+    <div class="mk-sunk mk-col mk-gap-8 board">
+      <div class="mk-spread">
+        <span class="mk-h">Overview</span>
+        <span class="mk-chip">This week <MkIcon name="chevron-down" size={10} /></span>
+      </div>
+      <ul class="mk-col list">
+        {mixed.map((m) => (
+          <li class="mk-row mk-gap-6 mk-t">
+            <MkIcon name={m.icon} size={13} />
+            {m.text}
+          </li>
+        ))}
+      </ul>
+    </div>
+  </div>
+)}
+
+<style>
+  .board {
+    padding: 12px;
+  }
+  .tile {
+    display: grid;
+    justify-items: start;
+    gap: 2px;
+    padding: 10px;
+    border-radius: 10px;
+    background: var(--mk-card);
+    box-shadow: 0 1px 2px rgb(20 22 28 / 0.06);
+  }
+  .tile .mk-ico {
+    margin-bottom: 4px;
+  }
+  .list {
+    gap: 18px;
+    padding: 12px 2px 10px;
+    color: var(--mk-2);
+  }
+</style>

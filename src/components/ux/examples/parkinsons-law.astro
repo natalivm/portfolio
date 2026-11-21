@@ -1,0 +1,75 @@
+---
+import MkIcon from '../MkIcon.astro';
+interface Props {
+  variant: 'good' | 'bad';
+}
+const { variant } = Astro.props;
+---
+
+{variant === 'good' ? (
+  <div class="mk">
+    <div class="mk-card mk-col">
+      <div class="head">
+        <span class="mk-ico is-round is-lg"><MkIcon name="user" size={18} /></span>
+        <p class="mk-h">Sign in to your account</p>
+      </div>
+      <hr class="mk-divider" />
+      <div class="mk-field">
+        <span class="mk-label">Email</span>
+        <div class="mk-input"><span class="mk-muted"><MkIcon name="mail" size={13} /></span>hello@email.com</div>
+      </div>
+      <div class="mk-field">
+        <span class="mk-label">Password</span>
+        <div class="mk-input"><span class="mk-muted"><MkIcon name="lock" size={13} /></span><span class="mk-grow">••••••••</span><span class="mk-muted"><MkIcon name="eye" size={13} /></span></div>
+      </div>
+      <div class="mk-spread">
+        <span class="mk-row mk-gap-6"><span class="mk-check is-on"></span><span class="mk-xs keep">Stay signed in for 2 weeks</span></span>
+        <span class="mk-link small">Forgot password?</span>
+      </div>
+      <span class="mk-btn mk-btn-pri mk-btn-block">Sign in</span>
+    </div>
+  </div>
+) : (
+  <div class="mk">
+    <div class="mk-card mk-col">
+      <div class="head">
+        <span class="mk-ico is-round is-lg"><MkIcon name="user" size={18} /></span>
+        <p class="mk-h">Sign in to your account</p>
+      </div>
+      <hr class="mk-divider" />
+      <div class="mk-field">
+        <span class="mk-label">Email</span>
+        <div class="mk-input"><span class="mk-muted"><MkIcon name="mail" size={13} /></span>hello@email.com</div>
+      </div>
+      <div class="mk-field">
+        <span class="mk-label">Password</span>
+        <div class="mk-input"><span class="mk-muted"><MkIcon name="lock" size={13} /></span><span class="mk-grow">••••••••</span><span class="mk-muted"><MkIcon name="eye" size={13} /></span></div>
+      </div>
+      <span class="mk-btn mk-btn-pri mk-btn-block">Sign in</span>
+      <p class="mk-xs mk-center note"><MkIcon name="clock" size={11} />You will be signed out when you close this tab</p>
+    </div>
+  </div>
+)}
+
+<style>
+  .head {
+    display: grid;
+    justify-items: center;
+    gap: 6px;
+  }
+  .keep {
+    color: var(--mk-ink);
+    font-weight: 500;
+  }
+  .small {
+    font-size: 10px;
+    text-decoration: underline;
+  }
+  .note {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    color: var(--mk-3);
+  }
+</style>

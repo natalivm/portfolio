@@ -1,0 +1,136 @@
+---
+import MkIcon from '../MkIcon.astro';
+interface Props {
+  variant: 'good' | 'bad';
+}
+const { variant } = Astro.props;
+const top = [
+  { t: 'Home' },
+  { t: 'About', more: true },
+  { t: 'Services', more: true, open: true },
+  { t: 'Work', more: true },
+  { t: 'Contact' },
+];
+const sub = ['Branding', 'Web design', 'Mobile apps', 'Consulting'];
+const all = [
+  'Home', 'About us', 'Services', 'Projects', 'Blog', 'Contact', 'Prices', 'Team', 'Careers', 'Partners',
+  'Reviews', 'News', 'FAQ', 'Documents', 'Gallery', 'Events', 'Training', 'Support', 'Guarantees',
+];
+---
+
+{variant === 'good' ? (
+  <div class="mk mk-wide">
+    <div class="mk-window">
+      <div class="mk-bar"><i></i><i></i><i></i></div>
+      <div class="mk-body mk-col mk-gap-12">
+        <div class="brand"><span class="logo"></span>Fieldwork Studio</div>
+        <div class="pills">
+          {top.map((p) => (
+            <span class="slot">
+              <span class:list={['mk-chip', { 'is-on': p.open }]}>
+                {p.t}
+                {p.more && <MkIcon name={p.open ? 'chevron-up' : 'chevron-down'} size={9} stroke={2.6} />}
+              </span>
+              {p.open && (
+                <span class="menu">
+                  {sub.map((s) => <span class="mi">{s}</span>)}
+                </span>
+              )}
+            </span>
+          ))}
+        </div>
+        <div class="hero is-tall">
+          <span class="mk-line is-h w-50"></span>
+          <span class="mk-line is-h w-40"></span>
+          <span class="mk-line w-60 mk-mt-4"></span>
+        </div>
+      </div>
+    </div>
+  </div>
+) : (
+  <div class="mk mk-wide">
+    <div class="mk-window">
+      <div class="mk-bar"><i></i><i></i><i></i></div>
+      <div class="mk-body mk-col mk-gap-12">
+        <div class="brand"><span class="logo"></span>Fieldwork Studio</div>
+        <div class="pills">
+          {all.map((t) => <span class="mk-chip">{t}</span>)}
+        </div>
+        <div class="hero">
+          <span class="mk-line is-h w-50"></span>
+          <span class="mk-line w-60 mk-mt-4"></span>
+        </div>
+      </div>
+    </div>
+  </div>
+)}
+
+<style>
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+    font-weight: 700;
+  }
+  .logo {
+    width: 14px;
+    height: 14px;
+    border-radius: 4px;
+    background: var(--mk-pri);
+  }
+  .mk-window > .mk-body {
+    padding: 12px 10px;
+  }
+  .pills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px 3px;
+  }
+  .pills .mk-chip {
+    height: 22px;
+    padding: 0 6px;
+    gap: 1px;
+    font-size: 10px;
+    box-shadow: 0 1px 2px rgb(20 22 28 / 0.06);
+  }
+  .slot {
+    position: relative;
+    display: inline-flex;
+  }
+  .menu {
+    position: absolute;
+    z-index: 1;
+    top: calc(100% + 5px);
+    left: 0;
+    display: flex;
+    flex-direction: column;
+    width: 104px;
+    padding: 4px;
+    border: 1px solid var(--mk-line);
+    border-radius: 9px;
+    background: var(--mk-card);
+    box-shadow: var(--mk-shadow);
+  }
+  .mi {
+    padding: 4px 7px;
+    border-radius: 6px;
+    font-size: 10.5px;
+  }
+  .mi:first-child {
+    background: var(--mk-bg);
+  }
+  .hero {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    gap: 6px;
+    min-height: 40px;
+    padding: 12px;
+    border-radius: 9px;
+    background: var(--mk-bg);
+  }
+  .hero.is-tall {
+    min-height: 124px;
+  }
+</style>

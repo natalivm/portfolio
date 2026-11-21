@@ -6,6 +6,7 @@ A personal design portfolio built to stay quick to browse at 30+ projects.
 - **Two depths of project**: full case-study pages (`/work/<slug>/`) and quick-view projects that open in a lightbox from the grid, with previous/next inside the current filter.
 - **Never lose your place**: the "All work" links return to the last filter and scroll position.
 - **Find any project**: press ⌘K / Ctrl K (or `/`) and type a name, client, discipline or year.
+- **UX laws** (`/ux-laws/`): 100 laws of design psychology in ten groups, filterable and searchable, each with a do and a don't drawn as live UI. Content is in `src/data/uxLaws.ts`; each law's example is `src/components/ux/examples/<slug>.astro`.
 - **Case studies** show "3 of 8", previous/next (← → keys work too) and three related projects.
 
 ## Make it yours

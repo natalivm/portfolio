@@ -1,0 +1,181 @@
+---
+/**
+ * The UX laws page as a tile on the home grid. Same size and anatomy as a project tile (white tile,
+ * 20px frame with a 4:3 cover, title, meta line); its cover is one real Do / Don't pair from the
+ * page, drawn small.
+ */
+import '../styles/ux-kit.css';
+import { laws, sections } from '../data/uxLaws';
+
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+const files = import.meta.glob<{ default: any }>('./ux/examples/*.astro', { eager: true });
+const Ex = files['./ux/examples/cognitive-load.astro']?.default;
+---
+
+<a class="tile laws-tile" href={`${base}/ux-laws/`}>
+  <div class="frame">
+    <div class="pair" aria-hidden="true">
+      {Ex && (['good', 'bad'] as const).map((v) => (
+        <div class={`mini is-${v}`}>
+          <span class="mark">
+            <svg width="7" height="7" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
+              <path d={v === 'good' ? 'M5 12.5l4.5 4.5L19 7.5' : 'M6 6l12 12M18 6L6 18'} />
+            </svg>
+          </span>
+          <div class="mini-stage"><Ex variant={v} /></div>
+        </div>
+      ))}
+    </div>
+  </div>
+  <div class="text">
+    <h3 class="title">UX laws</h3>
+    <p class="meta">
+      <span>Design psychology · {sections.length} groups</span>
+      <span class="year">{laws.length} laws</span>
+    </p>
+  </div>
+  <span class="kind">Reference</span>
+</a>
+
+<style>
+  .tile {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    padding: 8px;
+    border-radius: var(--radius-lg);
+    background: var(--surface);
+    box-shadow: var(--shadow-tile);
+    text-decoration: none;
+    color: var(--ink);
+    transition:
+      transform var(--t-med) var(--ease-out),
+      box-shadow var(--t-med) var(--ease-out);
+  }
+  .frame {
+    overflow: hidden;
+    aspect-ratio: 4 / 3;
+    border-radius: var(--radius-md);
+    background: var(--surface-2);
+  }
+  .pair {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 6px;
+    height: 100%;
+    padding: 6px;
+    transition: transform 700ms var(--ease-out);
+  }
+  .mini {
+    position: relative;
+    display: grid;
+    place-items: center;
+    padding: 16px 6px 8px;
+    border-radius: 15px;
+    overflow: hidden;
+  }
+  .mini.is-good {
+    background: #e7f5ed;
+  }
+  .mini.is-bad {
+    background: #fcebee;
+  }
+  .mini-stage {
+    width: 100%;
+    zoom: 0.5;
+  }
+  .mark {
+    position: absolute;
+    top: 8px;
+    left: 8px;
+    display: grid;
+    place-items: center;
+    width: 13px;
+    height: 13px;
+    border-radius: 50%;
+    color: #fff;
+  }
+  .is-good .mark {
+    background: #17914b;
+  }
+  .is-bad .mark {
+    background: #dc3a45;
+  }
+  .text {
+    padding: 14px 12px 10px;
+  }
+  .title {
+    font-size: 1.125rem;
+    letter-spacing: -0.02em;
+    line-height: 1.2;
+  }
+  .meta {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    margin-top: 4px;
+    color: var(--ink-2);
+    font-size: 0.875rem;
+  }
+  .year {
+    flex: none;
+  }
+  .kind {
+    position: absolute;
+    top: 18px;
+    left: 18px;
+    padding: 4px 10px;
+    border-radius: var(--pill);
+    background: rgb(255 255 255 / 0.92);
+    color: var(--ink);
+    font-size: 0.75rem;
+    font-weight: 600;
+    opacity: 0;
+    transform: translateY(-4px);
+    transition:
+      opacity var(--t-fast) var(--ease-out),
+      transform var(--t-fast) var(--ease-out);
+  }
+  @media (hover: hover) {
+    .tile:hover {
+      transform: translateY(-4px);
+      box-shadow: var(--shadow-lift);
+    }
+    .tile:hover .pair {
+      transform: scale(1.03);
+    }
+    .tile:hover .kind,
+    .tile:focus-visible .kind {
+      opacity: 1;
+      transform: none;
+    }
+  }
+  .tile:focus-visible {
+    outline-offset: 4px;
+    border-radius: var(--radius-lg);
+  }
+  .tile:active {
+    transform: scale(0.99);
+  }
+  /* Narrow tiles: the mockups shrink with them */
+  @media (max-width: 640px) {
+    .pair {
+      gap: 4px;
+      padding: 4px;
+    }
+    .mini {
+      padding: 12px 3px 4px;
+      border-radius: 11px;
+    }
+    .mini-stage {
+      zoom: 0.26;
+    }
+    .mark {
+      top: 5px;
+      left: 5px;
+      width: 10px;
+      height: 10px;
+    }
+  }
+</style>

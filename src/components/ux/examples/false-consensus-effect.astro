@@ -1,0 +1,83 @@
+---
+import MkIcon from '../MkIcon.astro';
+interface Props {
+  variant: 'good' | 'bad';
+}
+const { variant } = Astro.props;
+const options = [
+  { title: 'For print', note: 'High quality, ready for a print shop' },
+  { title: 'For web', note: 'Smaller file that loads fast' },
+  { title: 'For editing', note: 'Keeps every layer' },
+];
+const fields = [
+  { label: 'Colour profile', value: 'sRGB IEC61966-2.1' },
+  { label: 'Resolution', value: '300 dpi' },
+  { label: 'File format', value: 'TIFF (LZW)' },
+];
+---
+
+{variant === 'good' ? (
+  <div class="mk">
+    <div class="mk-card mk-col mk-gap-10">
+      <span class="mk-h">Export file</span>
+      <div class="mk-col mk-gap-6">
+        {options.map((o, i) => (
+          <div class:list={['opt', { 'is-on': i === 0 }]}>
+            <span class:list={['mk-radio', { 'is-on': i === 0 }]}></span>
+            <span class="mk-grow">
+              <span class="mk-b name">{o.title}</span>
+              <span class="mk-xs">{o.note}</span>
+            </span>
+          </div>
+        ))}
+      </div>
+      <span class="mk-btn mk-btn-pri mk-btn-block mk-btn-lg">Export</span>
+    </div>
+  </div>
+) : (
+  <div class="mk">
+    <div class="mk-card mk-col mk-gap-10">
+      <span class="mk-h">Export file</span>
+      <div class="mk-col mk-gap-6">
+        {fields.map((f) => (
+          <div class="mk-field">
+            <span class="mk-label">{f.label}</span>
+            <div class="mk-input field">
+              <span class="mk-grow">{f.value}</span>
+              <span class="mk-muted"><MkIcon name="chevron-down" size={12} /></span>
+            </div>
+          </div>
+        ))}
+      </div>
+      <span class="mk-btn mk-btn-pri mk-btn-block mk-btn-lg">Export</span>
+    </div>
+  </div>
+)}
+
+<style>
+  .mk-gap-10 {
+    gap: 10px;
+  }
+  .opt {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-height: 42px;
+    padding: 6px 10px;
+    border: 1px solid var(--mk-line);
+    border-radius: 9px;
+  }
+  .opt.is-on {
+    border: 1.5px solid var(--mk-pri);
+  }
+  .name {
+    display: block;
+    font-size: 11.5px;
+  }
+  .field {
+    height: 28px;
+  }
+  .mk-label {
+    margin-bottom: 3px;
+  }
+</style>

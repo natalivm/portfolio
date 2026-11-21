@@ -1,0 +1,66 @@
+---
+import MkIcon from '../MkIcon.astro';
+interface Props {
+  variant: 'good' | 'bad';
+}
+const { variant } = Astro.props;
+---
+
+<div class="mk">
+  <div class="mk-card mk-col mk-gap-12">
+    <div class="mk-col mk-gap-6 ub-head">
+      <span class="mk-avatar is-lg is-3">M</span>
+      <p class="mk-h">Leave a tip for Maya</p>
+      <p class="mk-xs">Your order arrived in 24 min</p>
+    </div>
+    {variant === 'good' ? (
+      <>
+        <div class="ub-stepper">
+          <span class="ub-btn"><MkIcon name="minus" size={14} /></span>
+          <span class="ub-val">$3</span>
+          <span class="ub-btn"><MkIcon name="plus" size={14} /></span>
+        </div>
+        <span class="mk-btn mk-btn-pri mk-btn-block mk-btn-lg">Pay $3</span>
+      </>
+    ) : (
+      <>
+        <div class="mk-input ub-empty"><span class="ph">Enter amount</span></div>
+        <span class="mk-btn mk-btn-pri mk-btn-block mk-btn-lg">Pay</span>
+      </>
+    )}
+  </div>
+</div>
+
+<style>
+  .ub-head {
+    align-items: center;
+    text-align: center;
+  }
+  .ub-stepper {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 40px;
+    padding: 0 5px;
+    border: 1px solid var(--mk-line);
+    border-radius: 10px;
+  }
+  .ub-btn {
+    display: grid;
+    place-items: center;
+    width: 30px;
+    height: 30px;
+    border-radius: 8px;
+    background: var(--mk-bg);
+  }
+  .ub-val {
+    font-size: 18px;
+    font-weight: 700;
+  }
+  .ub-empty {
+    height: 40px;
+    justify-content: center;
+    border-radius: 10px;
+    font-size: 13px;
+  }
+</style>

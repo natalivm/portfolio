@@ -1,0 +1,95 @@
+---
+import MkIcon from '../MkIcon.astro';
+interface Props {
+  variant: 'good' | 'bad';
+}
+const { variant } = Astro.props;
+---
+
+<div class="mk">
+  <div class="stage">
+    <div class="mk-card mk-col mk-gap-12">
+      <p class="mk-h">Create post</p>
+      <div class="mk-steps">
+        <div class="mk-step is-done"><i><MkIcon name="check" size={11} stroke={3} /></i>Media</div>
+        <div class="mk-step is-current"><i>2</i>Text</div>
+        <div class="mk-step"><i>3</i>Publish</div>
+      </div>
+      <div class="mk-field">
+        <span class="mk-label">Topic</span>
+        <div class="mk-input">Weekend in the hills</div>
+      </div>
+      <div class="mk-field">
+        <span class="mk-label">Post details</span>
+        <div class={`mk-input is-area${variant === 'good' ? ' is-focus' : ''}`}>
+          <span>We set off before sunrise and<span class="caret"></span></span>
+        </div>
+        {variant === 'good' ? (
+          <div class="mk-spread mk-help">
+            <span class="mk-row mk-gap-4 saved"><MkIcon name="check-circle" size={11} />Saved a few seconds ago</span>
+            <span>29/300</span>
+          </div>
+        ) : (
+          <div class="mk-spread mk-help">
+            <span></span>
+            <span>29/300</span>
+          </div>
+        )}
+      </div>
+      <span class="mk-btn mk-btn-pri mk-btn-block">Continue</span>
+    </div>
+    {variant === 'bad' && (
+      <div class="dim">
+        <div class="mk-dialog pop mk-col">
+          <div class="mk-spread">
+            <p class="mk-h">Attention!</p>
+            <span class="x"><MkIcon name="x" size={10} /></span>
+          </div>
+          <p class="mk-s">Autosave in 10 seconds!</p>
+          <span class="mk-btn mk-btn-pri mk-btn-block mk-btn-sm">Save now</span>
+        </div>
+      </div>
+    )}
+  </div>
+</div>
+
+<style>
+  .stage {
+    position: relative;
+  }
+  .caret {
+    display: inline-block;
+    width: 1.5px;
+    height: 13px;
+    margin-left: 1px;
+    vertical-align: -2px;
+    background: var(--mk-blue);
+  }
+  .saved {
+    color: var(--mk-green);
+  }
+  .dim {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    padding: 16px;
+    border-radius: 14px;
+    background: rgb(27 29 34 / 0.42);
+  }
+  .pop {
+    max-width: 200px;
+    gap: 8px;
+    padding: 12px 14px 14px;
+    background: var(--mk-red-soft);
+  }
+  .x {
+    display: grid;
+    place-items: center;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: var(--mk-card);
+    color: var(--mk-2);
+  }
+</style>

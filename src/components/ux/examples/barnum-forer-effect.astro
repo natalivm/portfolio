@@ -1,0 +1,75 @@
+---
+import MkIcon from '../MkIcon.astro';
+interface Props { variant: 'good' | 'bad' }
+const { variant } = Astro.props;
+---
+
+{variant === 'good' ? (
+  <div class="mk">
+    <div class="mk-card note">
+      <span class="close"><MkIcon name="x" size={12} /></span>
+      <div class="mk-row top">
+        <span class="mk-ico is-blue is-lg"><MkIcon name="trophy" size={18} /></span>
+        <div class="mk-grow mk-col mk-gap-6">
+          <p class="mk-xs meta">Monthly progress · now</p>
+          <p class="mk-h">You’re learning fast</p>
+          <p class="mk-s">You finished 8 of 10 modules this month.</p>
+          <div class="mk-row mk-gap-6">
+            <div class="mk-progress mk-grow" style="--v: 80%; --c: var(--mk-blue)"></div>
+            <span class="mk-xs mk-b">8/10</span>
+          </div>
+          <p class="mk-s">Next: review <b>Array methods</b> and retake the quiz. Your last score was 65%.</p>
+          <div class="mk-row mk-gap-4 mk-mt-4">
+            <span class="mk-btn mk-btn-pri mk-btn-sm">Review topic</span>
+            <span class="mk-btn mk-btn-ghost mk-btn-sm">Later</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+) : (
+  <div class="mk">
+    <div class="mk-card note">
+      <span class="close"><MkIcon name="x" size={12} /></span>
+      <div class="mk-row top">
+        <span class="mk-ico is-blue is-lg"><MkIcon name="trophy" size={18} /></span>
+        <div class="mk-grow mk-col mk-gap-6">
+          <p class="mk-xs meta">Monthly progress · now</p>
+          <p class="mk-h">You’re a natural learner</p>
+          <p class="mk-s">You have remarkable potential and a truly curious mind.</p>
+          <div class="mk-row mk-gap-4 mk-wrap">
+            <span class="mk-badge is-blue">Curious</span>
+            <span class="mk-badge is-blue">Creative</span>
+            <span class="mk-badge is-blue">Determined</span>
+          </div>
+          <p class="mk-s">Keep it up, trust the process and always believe in yourself.</p>
+          <div class="mk-row mk-gap-4 mk-mt-4">
+            <span class="mk-btn mk-btn-pri mk-btn-sm">Thanks</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+)}
+
+<style>
+  .note {
+    position: relative;
+  }
+  .top {
+    align-items: flex-start;
+    padding-right: 14px;
+  }
+  .close {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    color: var(--mk-3);
+  }
+  .meta {
+    margin-bottom: -4px;
+  }
+  .mk-s b {
+    color: var(--mk-ink);
+  }
+</style>

@@ -1,0 +1,76 @@
+---
+import MkIcon from '../MkIcon.astro';
+interface Props { variant: 'good' | 'bad' }
+const { variant } = Astro.props;
+const steps = ['Personal details', 'Business activity', 'Address', 'Finances', 'Documents', 'Confirmation'];
+---
+
+{variant === 'good' ? (
+  <div class="mk">
+    <div class="mk-card mk-col mk-gap-12">
+      <div>
+        <p class="mk-h">Register a company</p>
+        <p class="mk-xs mk-mt-4">About 25 min in total. Have your ID and tax number ready.</p>
+      </div>
+      <div class="mk-col mk-gap-6">
+        <div class="mk-spread">
+          <span class="mk-s"><b>Step 1 of 6</b> · Personal details</span>
+          <span class="mk-row mk-gap-2 mk-xs"><MkIcon name="clock" size={11} />~2 min</span>
+        </div>
+        <div class="mk-progress is-thin" style="--v: 16%; --c: var(--mk-blue)"></div>
+      </div>
+      <div class="mk-field">
+        <span class="mk-label">Full name <span class="req">*</span></span>
+        <div class="mk-input"><span class="mk-muted"><MkIcon name="user" size={12} /></span><span class="ph">Jane Doe</span></div>
+      </div>
+      <div class="mk-field">
+        <span class="mk-label">Phone number <span class="req">*</span></span>
+        <div class="mk-input">+1 <span class="ph">(555) 000-0000</span></div>
+      </div>
+      <div class="mk-grid-2">
+        <span class="mk-btn mk-btn-soft">Save draft</span>
+        <span class="mk-btn mk-btn-pri">Continue</span>
+      </div>
+    </div>
+  </div>
+) : (
+  <div class="mk">
+    <div class="mk-card mk-col mk-gap-12">
+      <p class="mk-h">Register a company</p>
+      <ol class="mk-col mk-gap-6">
+        {steps.map((s, i) => (
+          <li class="step"><i>{i + 1}</i>{s}</li>
+        ))}
+      </ol>
+      <span class="mk-btn mk-btn-pri mk-btn-block">Start</span>
+    </div>
+  </div>
+)}
+
+<style>
+  .mk-s b {
+    color: var(--mk-ink);
+  }
+  .step {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    height: 27px;
+    padding: 0 8px;
+    border-radius: 8px;
+    background: var(--mk-bg);
+    font-size: 11px;
+    font-weight: 500;
+  }
+  .step i {
+    display: grid;
+    place-items: center;
+    width: 18px;
+    height: 18px;
+    border-radius: 6px;
+    background: var(--mk-card);
+    font-size: 10px;
+    font-style: normal;
+    font-weight: 600;
+  }
+</style>

@@ -2,7 +2,8 @@
  * Every project on the site comes from this list.
  *
  * Next Games, Sort Journey and Beat Saber are real projects. Lumen Clinic, Kiln & Co. and Tidal
- * Festival are SAMPLE CONTENT: invented placeholders that keep the homepage grid full.
+ * Festival are SAMPLE CONTENT: invented placeholders. Lumen Clinic and Kiln & Co. keep the
+ * homepage grid full (the UX laws tile takes the last slot); Tidal Festival is on the work page only.
  * Replace them with your own work, then set `showSampleNotice` to false in
  * src/data/site.ts.
  *
@@ -62,7 +63,7 @@ const raw: Project[] = [
   { slug: 'river-race', title: 'River Race', client: 'Bluetile Games', year: 2026, disciplines: ['Art direction', 'AI production', 'Illustration'], art: 'waves', palette: ['#3ab5c3', '#04262e', '#f6b62a'], caseStudy: true, theme: 'river', cover: '/covers/river-race.webp', coverAlt: 'River Race key art: a crowned corgi leads a pink and a purple pet up a path of lily pads toward three trophies on a jungle island, while more pets wait on a wooden dock', link: { label: 'Sort Journey on Google Play', href: 'https://play.google.com/store/apps/details?id=com.playgames.sorting' }, summary: 'River Race, a timed event in Sort Journey: hop up the river one won level at a time, and fall in on your first loss.' },
   { slug: 'lumen-clinic', title: 'Lumen Clinic', client: 'Lumen Clinic', year: 2025, disciplines: ['Branding', 'Digital'], art: 'sun', palette: ['#f2efe8', '#1b2a4a', '#f2a93b'], caseStudy: true, featured: true, role: 'Identity and web design', summary: 'Sample project. A calmer identity for a family clinic, built around morning light rather than medical blue.' },
   { slug: 'kiln-and-co', title: 'Kiln & Co.', client: 'Kiln & Co. Ceramics', year: 2024, disciplines: ['Packaging', 'Illustration'], art: 'arch', palette: ['#c8553d', '#fbeee0', '#2d3047'], caseStudy: true, featured: true, role: 'Packaging and illustration', summary: 'Sample project. Shipping boxes for a ceramics studio, printed with the outline of the piece inside.' },
-  { slug: 'tidal-festival', title: 'Tidal Festival', client: 'Tidal Festival', year: 2024, disciplines: ['Branding', 'Motion'], art: 'waves', palette: ['#0b1d51', '#ffd6e0', '#ff5d73'], caseStudy: true, featured: true, role: 'Identity and motion', summary: 'Sample project. A seaside music festival identity whose wave mark moves with the tide timetable.' },
+  { slug: 'tidal-festival', title: 'Tidal Festival', client: 'Tidal Festival', year: 2024, disciplines: ['Branding', 'Motion'], art: 'waves', palette: ['#0b1d51', '#ffd6e0', '#ff5d73'], caseStudy: true, role: 'Identity and motion', summary: 'Sample project. A seaside music festival identity whose wave mark moves with the tide timetable.' },
 ];
 
 /** Newest first; ties keep the order above. */

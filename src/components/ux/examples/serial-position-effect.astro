@@ -1,0 +1,123 @@
+---
+import MkIcon from '../MkIcon.astro';
+interface Props {
+  variant: 'good' | 'bad';
+}
+const { variant } = Astro.props;
+const item = {
+  home: { icon: 'home', label: 'Home' },
+  users: { icon: 'users', label: 'Users' },
+  messages: { icon: 'chat', label: 'Messages' },
+  finance: { icon: 'wallet', label: 'Finance' },
+  analytics: { icon: 'chart', label: 'Analytics' },
+  settings: { icon: 'settings', label: 'Settings' },
+} as const;
+const goodOrder = [item.home, item.users, item.messages, item.finance, item.analytics, item.settings];
+const badOrder = [item.messages, item.users, item.home, item.finance, item.settings, item.analytics];
+---
+
+{variant === 'good' ? (
+  <div class="mk">
+    <div class="mk-window">
+      <div class="mk-bar"><i></i><i></i><i></i></div>
+      <div class="app">
+        <nav class="side">
+          <p class="brand"><span class="logo"></span>Ledgerly</p>
+          <ul class="nav">
+            {goodOrder.map((it) => (
+              <li class:list={{ 'is-on': it.label === 'Home' }}><MkIcon name={it.icon} size={13} />{it.label}</li>
+            ))}
+          </ul>
+        </nav>
+        <div class="main">
+          <div class="mk-line is-h w-60"></div>
+          <div class="mk-grid-2 mk-gap-6 mk-mt-8">
+            <div class="mk-sunk tile-s"><div class="mk-line w-50"></div><div class="mk-line is-dark w-70 mk-mt-8"></div></div>
+            <div class="mk-sunk tile-s"><div class="mk-line w-50"></div><div class="mk-line is-dark w-70 mk-mt-8"></div></div>
+          </div>
+          <div class="mk-sunk mk-mt-8 big"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+) : (
+  <div class="mk">
+    <div class="mk-window">
+      <div class="mk-bar"><i></i><i></i><i></i></div>
+      <div class="app">
+        <nav class="side">
+          <p class="brand"><span class="logo"></span>Ledgerly</p>
+          <ul class="nav">
+            {badOrder.map((it) => (
+              <li class:list={{ 'is-on': it.label === 'Home' }}><MkIcon name={it.icon} size={13} />{it.label}</li>
+            ))}
+          </ul>
+        </nav>
+        <div class="main">
+          <div class="mk-line is-h w-60"></div>
+          <div class="mk-grid-2 mk-gap-6 mk-mt-8">
+            <div class="mk-sunk tile-s"><div class="mk-line w-50"></div><div class="mk-line is-dark w-70 mk-mt-8"></div></div>
+            <div class="mk-sunk tile-s"><div class="mk-line w-50"></div><div class="mk-line is-dark w-70 mk-mt-8"></div></div>
+          </div>
+          <div class="mk-sunk mk-mt-8 big"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+)}
+
+<style>
+  .app {
+    display: flex;
+  }
+  .side {
+    flex: none;
+    width: 112px;
+    padding: 10px 8px;
+    border-right: 1px solid var(--mk-line);
+  }
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin: 0 0 10px 4px;
+    font-size: 11px;
+    font-weight: 700;
+  }
+  .logo {
+    width: 14px;
+    height: 14px;
+    border-radius: 4px;
+    background: var(--mk-pri);
+  }
+  .nav {
+    display: grid;
+    gap: 2px;
+  }
+  .nav li {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    height: 26px;
+    padding: 0 6px;
+    border-radius: 7px;
+    font-size: 11px;
+    color: var(--mk-2);
+  }
+  .nav li.is-on {
+    background: var(--mk-bg);
+    color: var(--mk-ink);
+    font-weight: 600;
+  }
+  .main {
+    flex: 1;
+    min-width: 0;
+    padding: 12px 10px;
+  }
+  .tile-s {
+    padding: 8px;
+  }
+  .big {
+    height: 92px;
+  }
+</style>

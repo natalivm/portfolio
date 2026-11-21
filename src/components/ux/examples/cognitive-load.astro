@@ -1,0 +1,59 @@
+---
+interface Props {
+  variant: 'good' | 'bad';
+}
+const { variant } = Astro.props;
+const many = [
+  'Phone number', 'Email', 'Password',
+  'First name', 'Last name', 'Middle name',
+  'Country', 'City', 'Address',
+  'House no.', 'Apartment', 'Postcode',
+  'Delivery method', 'Payment method', 'Comment',
+];
+---
+
+{variant === 'good' ? (
+  <div class="mk">
+    <div class="mk-card mk-col mk-gap-12">
+      <div class="mk-steps">
+        <div class="mk-step is-current"><i>1</i>Contact</div>
+        <div class="mk-step"><i>2</i>Delivery</div>
+        <div class="mk-step"><i>3</i>Payment</div>
+      </div>
+      <div class="mk-field">
+        <span class="mk-label">Phone number <span class="req">*</span></span>
+        <div class="mk-input">+1 <span class="ph">(555) 000-0000</span></div>
+      </div>
+      <div class="mk-field">
+        <span class="mk-label">Full name <span class="req">*</span></span>
+        <div class="mk-input"><span class="ph">Jane Doe</span></div>
+      </div>
+      <span class="mk-btn mk-btn-pri mk-btn-block mk-btn-lg">Next</span>
+    </div>
+  </div>
+) : (
+  <div class="mk mk-wide">
+    <div class="mk-card">
+      <div class="mk-grid-3 mk-gap-6">
+        {many.map((f) => (
+          <div class="mk-field">
+            <span class="mk-label is-tiny">{f} <span class="req">*</span></span>
+            <div class="mk-input is-sm"></div>
+          </div>
+        ))}
+      </div>
+      <span class="mk-btn mk-btn-pri mk-btn-block mk-btn-sm mk-mt-12">Place order</span>
+    </div>
+  </div>
+)}
+
+<style>
+  .is-tiny {
+    font-size: 9px;
+    font-weight: 500;
+    margin-bottom: 2px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+</style>

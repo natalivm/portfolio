@@ -1,0 +1,111 @@
+---
+import MkIcon from '../MkIcon.astro';
+interface Props {
+  variant: 'good' | 'bad';
+}
+const { variant } = Astro.props;
+const good = variant === 'good';
+const steps = [
+  { n: 1, title: 'Confirm your identity', perk: 'Transfers up to $10,000' },
+  { n: 2, title: 'Confirm your address', perk: 'Get free card delivery' },
+];
+---
+
+<div class="mk">
+  <div class="mk-phone">
+    <div class="mk-nav top">
+      <MkIcon name="chevron-left" size={14} />
+      <span class="mk-b">Verification</span>
+      <span class="sp"></span>
+    </div>
+    <p class="mk-h title">Finish setting up your account</p>
+    <p class="mk-xs">2 steps · about 3 minutes</p>
+    <div class="mk-col mk-gap-6 mk-mt-12">
+      {steps.map((s, i) => (
+        <div class:list={['step', { 'is-next': i > 0 }]}>
+          <span class="num">{s.n}</span>
+          <span class="mk-grow">
+            <span class="name">{s.title}</span>
+            {good && (
+              <span class="perk">
+                <MkIcon name={i === 0 ? 'zap' : 'truck'} size={10} />
+                {s.perk}
+              </span>
+            )}
+          </span>
+          {i === 0 && <MkIcon name="chevron-right" size={12} class="mk-chev" />}
+        </div>
+      ))}
+    </div>
+    <span class="mk-btn mk-btn-pri mk-btn-block mk-mt-16">Start verification</span>
+  </div>
+</div>
+
+<style>
+  .mk-phone {
+    width: 232px;
+  }
+  .top {
+    min-height: 22px;
+    margin-bottom: 8px;
+    font-size: 11px;
+  }
+  .sp {
+    width: 14px;
+  }
+  .title {
+    margin-bottom: 2px;
+    font-size: 13px;
+  }
+  .step {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 9px 8px;
+    border: 1px solid var(--mk-line);
+    border-radius: 10px;
+    background: var(--mk-card);
+  }
+  .step.is-next {
+    border-color: transparent;
+    background: var(--mk-bg);
+    color: var(--mk-3);
+  }
+  .num {
+    flex: none;
+    display: grid;
+    place-items: center;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: var(--mk-blue);
+    color: #fff;
+    font-size: 10px;
+    font-weight: 700;
+  }
+  .is-next .num {
+    background: var(--mk-card);
+    color: var(--mk-3);
+    border: 1px solid var(--mk-line);
+  }
+  .name {
+    display: block;
+    font-size: 11px;
+    font-weight: 600;
+    line-height: 1.25;
+  }
+  .perk {
+    display: flex;
+    align-items: center;
+    gap: 3px;
+    margin-top: 3px;
+    font-size: 9.5px;
+    font-weight: 600;
+    color: var(--mk-green);
+    line-height: 1.25;
+  }
+  .is-next .perk {
+    color: var(--mk-2);
+    font-weight: 500;
+  }
+</style>

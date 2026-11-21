@@ -1,0 +1,72 @@
+---
+import MkIcon from '../MkIcon.astro';
+interface Props {
+  variant: 'good' | 'bad';
+}
+const { variant } = Astro.props;
+---
+
+<div class="mk">
+  <div class="mk-card mk-col mk-gap-12">
+    <div class="mk-row mk-gap-12">
+      <div class="mk-img is-5 is-sq thumb"><MkIcon name="leaf" size={22} /></div>
+      <div class="mk-col mk-gap-2 mk-grow">
+        <p class="mk-xs">Baby food · from 6 months</p>
+        <p class="mk-h">Oat &amp; apple porridge</p>
+        <p class="mk-b mk-t">$4.50 <span class="mk-xs">· 200 g</span></p>
+      </div>
+    </div>
+    {variant === 'good' ? (
+      <div class="cert">
+        <svg class="seal" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z" fill="#1b1d22" stroke="#1b1d22" stroke-width="2" />
+          <path d="M8.5 12.2l2.4 2.4 4.6-5" stroke="#fff" stroke-width="2.2" />
+        </svg>
+        <div class="mk-col mk-gap-2">
+          <p class="mk-b mk-t">Verified and certified</p>
+          <p class="mk-xs">Lab-tested against EU baby-food limits. Recipe reviewed by Dr Lena Hart, paediatric dietitian.</p>
+          <span class="mk-xs green-link">View certificates</span>
+        </div>
+      </div>
+    ) : (
+      <div class="mk-row claim">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z" fill="#1b1d22" stroke="#1b1d22" stroke-width="2" />
+          <path d="M8.5 12.2l2.4 2.4 4.6-5" stroke="#fff" stroke-width="2.2" />
+        </svg>
+        <span class="big">Approved by experts</span>
+      </div>
+    )}
+    <span class="mk-btn mk-btn-pri mk-btn-block">Add to cart</span>
+  </div>
+</div>
+
+<style>
+  .thumb {
+    width: 64px;
+  }
+  .cert {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 10px 12px;
+    border-radius: 10px;
+    background: var(--mk-green-soft);
+  }
+  .seal {
+    flex: none;
+  }
+  .green-link {
+    color: var(--mk-green);
+    font-weight: 600;
+  }
+  .claim {
+    gap: 10px;
+    padding: 10px 0;
+  }
+  .big {
+    font-size: 17px;
+    font-weight: 700;
+    line-height: 1.2;
+  }
+</style>

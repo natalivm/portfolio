@@ -1,0 +1,101 @@
+---
+import MkIcon from '../MkIcon.astro';
+interface Props {
+  variant: 'good' | 'bad';
+}
+const { variant } = Astro.props;
+---
+
+{variant === 'good' ? (
+  <div class="mk">
+    <div class="mk-card mk-col mk-gap-12">
+      <div class="mk-spread">
+        <div>
+          <p class="mk-h">Profile setup</p>
+          <p class="mk-s mk-mt-4">2 of 3 steps completed</p>
+        </div>
+        <span class="mk-badge is-green">2/3</span>
+      </div>
+      <div class="mk-progress is-thin" style="--v: 66%; --c: var(--mk-green)"></div>
+      <ul class="mk-col mk-gap-6">
+        <li class="st is-done"><span class="tick"><MkIcon name="check" size={10} stroke={3} /></span>Basic information</li>
+        <li class="st is-done"><span class="tick"><MkIcon name="check" size={10} stroke={3} /></span>Interests</li>
+        <li class="st is-open">
+          <span class="todo"></span>
+          <span class="mk-grow">Contacts</span>
+          <span class="ring"><b>50%</b></span>
+        </li>
+      </ul>
+    </div>
+  </div>
+) : (
+  <div class="mk">
+    <div class="mk-card mk-col mk-gap-12">
+      <div>
+        <p class="mk-h">Profile setup</p>
+        <p class="mk-s mk-mt-4">Edit your profile details</p>
+      </div>
+      <ul class="mk-col mk-gap-6">
+        <li class="st">Basic information</li>
+        <li class="st">Interests</li>
+        <li class="st">Contacts</li>
+      </ul>
+    </div>
+  </div>
+)}
+
+<style>
+  .st {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    height: 36px;
+    padding: 0 10px;
+    border: 1px solid var(--mk-line);
+    border-radius: 9px;
+    font-size: 12px;
+    font-weight: 500;
+  }
+  .st.is-done {
+    background: var(--mk-green-soft);
+    border-color: transparent;
+    color: #0e5a2f;
+  }
+  .tick {
+    display: grid;
+    place-items: center;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: var(--mk-green);
+    color: #fff;
+  }
+  .todo {
+    width: 16px;
+    height: 16px;
+    border: 1.5px dashed var(--mk-3);
+    border-radius: 50%;
+  }
+  .ring {
+    display: grid;
+    place-items: center;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: conic-gradient(var(--mk-green) 50%, var(--mk-line) 0);
+  }
+  .ring::before {
+    content: '';
+    grid-area: 1 / 1;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: var(--mk-card);
+  }
+  .ring b {
+    grid-area: 1 / 1;
+    position: relative;
+    font-size: 9px;
+    font-weight: 700;
+  }
+</style>

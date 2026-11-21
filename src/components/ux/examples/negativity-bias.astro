@@ -1,0 +1,102 @@
+---
+import MkIcon from '../MkIcon.astro';
+interface Props {
+  variant: 'good' | 'bad';
+}
+const { variant } = Astro.props;
+---
+
+{variant === 'good' ? (
+  <div class="mk">
+    <div class="mk-card mk-col mk-gap-12">
+      <p class="mk-h">Upload files</p>
+      <div class="drop">
+        <span class="mk-ico is-round"><MkIcon name="upload" size={14} /></span>
+        <p class="mk-t mk-b">Choose a file or drag it here</p>
+        <p class="mk-xs">JPEG, PNG, PDF or MP4, up to 50 MB</p>
+        <span class="mk-btn mk-btn-sec mk-btn-xs mk-mt-4">Choose file</span>
+      </div>
+      <div class="file">
+        <span class="ftype">PDF</span>
+        <div class="mk-grow">
+          <p class="mk-t mk-b">brief-v2.pdf</p>
+          <p class="mk-xs">0 of 120 KB · <span class="err">Connection lost</span></p>
+          <span class="mk-link retry"><MkIcon name="refresh" size={11} />Try again</span>
+        </div>
+        <span class="bin"><MkIcon name="trash" size={14} /></span>
+      </div>
+    </div>
+  </div>
+) : (
+  <div class="mk">
+    <div class="mk-card mk-col mk-gap-12">
+      <p class="mk-h">Upload files</p>
+      <div class="drop is-red">
+        <span class="mk-ico is-round"><MkIcon name="upload" size={14} /></span>
+        <p class="mk-t mk-b">Choose a file or drag it here</p>
+        <p class="mk-xs">JPEG, PNG, PDF or MP4, up to 50 MB</p>
+        <span class="mk-btn mk-btn-sec mk-btn-xs mk-mt-4">Choose file</span>
+      </div>
+      <p class="fail"><MkIcon name="warning" size={13} />Something went wrong! Failed to upload the file</p>
+    </div>
+  </div>
+)}
+
+<style>
+  .drop {
+    display: grid;
+    justify-items: center;
+    gap: 3px;
+    padding: 12px 10px;
+    border: 1.5px dashed #c9ccd3;
+    border-radius: 10px;
+    text-align: center;
+  }
+  .drop.is-red {
+    border: 1.5px solid var(--mk-red);
+  }
+  .file {
+    display: flex;
+    align-items: flex-start;
+    gap: 9px;
+    padding: 9px 10px;
+    border: 1.5px solid var(--mk-red);
+    border-radius: 10px;
+  }
+  .ftype {
+    flex: none;
+    display: grid;
+    place-items: center;
+    width: 26px;
+    height: 30px;
+    border-radius: 5px;
+    background: var(--mk-red-soft);
+    color: var(--mk-red);
+    font-size: 9px;
+    font-weight: 700;
+  }
+  .err {
+    color: var(--mk-red);
+    font-weight: 600;
+  }
+  .retry {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    margin-top: 3px;
+    font-size: 10.5px;
+    color: var(--mk-red);
+    text-decoration: underline;
+  }
+  .bin {
+    color: var(--mk-red);
+  }
+  .fail {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--mk-red);
+    font-size: 11px;
+    font-weight: 600;
+  }
+</style>

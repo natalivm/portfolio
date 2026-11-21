@@ -1,0 +1,84 @@
+---
+import MkIcon from '../MkIcon.astro';
+interface Props {
+  variant: 'good' | 'bad';
+}
+const { variant } = Astro.props;
+---
+
+{variant === 'good' ? (
+  <div class="mk">
+    <div class="mk-card mk-col mk-gap-12">
+      <div class="mk-spread">
+        <span class="mk-h">Payment</span>
+        <span class="mk-s">Total <span class="mk-b tl-ink">$48.00</span></span>
+      </div>
+      <div class="mk-field">
+        <span class="mk-label">Card number</span>
+        <div class="mk-input is-focus">
+          4149 5200 1<span class="tl-caret"></span>
+          <span class="tl-net"><i></i><i></i></span>
+        </div>
+        <span class="mk-help">Card type detected from the first digits</span>
+      </div>
+      <div class="mk-grid-2">
+        <div class="mk-field">
+          <span class="mk-label">Expiry date</span>
+          <div class="mk-input"><span class="ph">MM/YY</span></div>
+        </div>
+        <div class="mk-field">
+          <span class="mk-label">CVV</span>
+          <div class="mk-input"><span class="ph">123</span><span class="tl-end mk-muted"><MkIcon name="card" size={14} /></span></div>
+        </div>
+      </div>
+      <span class="mk-btn mk-btn-pri mk-btn-block mk-btn-lg">Pay $48.00</span>
+    </div>
+  </div>
+) : (
+  <div class="mk">
+    <div class="mk-card mk-col mk-gap-12">
+      <div class="mk-spread">
+        <span class="mk-h">Payment</span>
+        <span class="mk-s">Total <span class="mk-b tl-ink">$48.00</span></span>
+      </div>
+      <div class="mk-col">
+        <div class="mk-input"><span class="ph">Select card type</span><span class="tl-end mk-muted"><MkIcon name="chevron-down" size={14} /></span></div>
+        <div class="mk-input"><span class="ph">Enter card number</span></div>
+        <div class="mk-input"><span class="ph">Enter expiry date</span></div>
+        <div class="mk-input"><span class="ph">Enter CVV code</span></div>
+      </div>
+      <span class="mk-btn mk-btn-pri mk-btn-block mk-btn-lg">Pay $48.00</span>
+    </div>
+  </div>
+)}
+
+<style>
+  .tl-ink {
+    color: var(--mk-ink);
+  }
+  .tl-caret {
+    width: 1.5px;
+    height: 15px;
+    margin-left: -4px;
+    background: var(--mk-ink);
+  }
+  .tl-end {
+    display: inline-flex;
+    margin-left: auto;
+  }
+  .tl-net {
+    display: inline-flex;
+    margin-left: auto;
+  }
+  .tl-net i {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: var(--mk-blue);
+  }
+  .tl-net i + i {
+    margin-left: -6px;
+    background: var(--mk-violet);
+    opacity: 0.85;
+  }
+</style>

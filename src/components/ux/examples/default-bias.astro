@@ -1,0 +1,84 @@
+---
+import MkIcon from '../MkIcon.astro';
+interface Props {
+  variant: 'good' | 'bad';
+}
+const { variant } = Astro.props;
+const options = [
+  { on: true, title: 'Important updates', sub: 'Product changes and security notices' },
+  { on: false, title: 'Special offers', sub: 'Discount codes and sales' },
+  { on: false, title: 'Tips and guides', sub: 'How-tos, about once a month' },
+];
+---
+
+{variant === 'good' ? (
+  <div class="mk">
+    <div class="mk-card mk-col mk-gap-12 box">
+      <span class="close"><MkIcon name="x" size={11} /></span>
+      <div>
+        <p class="mk-h">Newsletter</p>
+        <p class="mk-s mk-mt-4">Choose what you’d like to receive.</p>
+      </div>
+      <div class="mk-input"><span class="ph">you@example.com</span></div>
+      <ul class="mk-col mk-gap-8">
+        {options.map((o) => (
+          <li class="opt">
+            <span class:list={['mk-check', { 'is-on': o.on }]}></span>
+            <div>
+              <p class="mk-t mk-b">{o.title}</p>
+              <p class="mk-xs">{o.sub}</p>
+            </div>
+          </li>
+        ))}
+      </ul>
+      <span class="mk-btn mk-btn-pri mk-btn-block">Subscribe</span>
+    </div>
+  </div>
+) : (
+  <div class="mk">
+    <div class="mk-card mk-col mk-gap-12 box">
+      <span class="close"><MkIcon name="x" size={11} /></span>
+      <div>
+        <p class="mk-h">Newsletter</p>
+        <p class="mk-s mk-mt-4">Get the latest from us by email.</p>
+      </div>
+      <div class="mk-input"><span class="ph">you@example.com</span></div>
+      <div class="opt">
+        <span class="mk-check is-on"></span>
+        <p class="fine">I agree to receive advertising, promotions, special offers, marketing materials and other commercial messages from us and our partners.</p>
+      </div>
+      <span class="mk-btn mk-btn-pri mk-btn-block">Subscribe</span>
+    </div>
+  </div>
+)}
+
+<style>
+  .box {
+    position: relative;
+  }
+  .close {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    display: grid;
+    place-items: center;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: var(--mk-bg);
+    color: var(--mk-2);
+  }
+  .opt {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  .opt .mk-check {
+    margin-top: 1px;
+  }
+  .fine {
+    font-size: 9.5px;
+    line-height: 1.4;
+    color: var(--mk-3);
+  }
+</style>
