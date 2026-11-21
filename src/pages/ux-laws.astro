@@ -32,7 +32,7 @@ const total = laws.length;
     <div class="head-foot">
       <p class="intro">
         How people perceive, decide and remember, and what that means for an interface. Every law gets one
-        sentence, a few ways to put it to work, and a do and a don't drawn as real UI.
+        sentence, a few ways to put it to work, and a do and a don’t drawn as real UI.
       </p>
       <p class="credit">
         The list and its {groups.length} groups follow the Ukrainian collection{' '}
@@ -44,10 +44,10 @@ const total = laws.length;
   <div class="controls" data-controls>
     <div class="wrap controls-in">
       <div class="chips" role="group" aria-label="Show a group of laws" data-chips>
-        <button class="chip" type="button" data-s="" aria-pressed="true">All <span class="n">{total}</span></button>
+        <button class="chip" type="button" data-s="" aria-pressed="true">All</button>
         {groups.map((g) => (
           <button class="chip" type="button" data-s={g.id} data-name={g.short} aria-pressed="false">
-            {g.short} <span class="n">{g.laws.length}</span>
+            {g.short}
           </button>
         ))}
       </div>
@@ -189,10 +189,22 @@ const total = laws.length;
     writeUrl();
   };
 
+  // The chip row scrolls sideways when it does not fit; fade whichever edge has more chips behind it
+  const row = document.querySelector<HTMLElement>('[data-chips]')!;
+  const fade = () => {
+    const start = row.scrollLeft > 4;
+    const end = row.scrollLeft + row.clientWidth < row.scrollWidth - 4;
+    row.dataset.fade = start && end ? 'both' : start ? 'start' : end ? 'end' : '';
+  };
+  row.addEventListener('scroll', fade, { passive: true });
+  addEventListener('resize', fade);
+  fade();
+
   chips.forEach((c) =>
     c.addEventListener('click', () => {
       state.s = c.dataset.s || '';
       apply();
+      c.scrollIntoView({ block: 'nearest', inline: 'nearest', behavior: reduce ? 'auto' : 'smooth' });
       // Bring the start of the list into view when the controls have scrolled away
       const list = document.querySelector<HTMLElement>('[data-list]')!;
       if (list.getBoundingClientRect().top < 0) list.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth' });
@@ -301,6 +313,15 @@ const total = laws.length;
   .chips::-webkit-scrollbar {
     display: none;
   }
+  .chips[data-fade='end'] {
+    mask-image: linear-gradient(90deg, #000 calc(100% - 56px), transparent);
+  }
+  .chips[data-fade='start'] {
+    mask-image: linear-gradient(90deg, transparent, #000 56px);
+  }
+  .chips[data-fade='both'] {
+    mask-image: linear-gradient(90deg, transparent, #000 56px, #000 calc(100% - 56px), transparent);
+  }
   .chip {
     flex: none;
     display: inline-flex;
@@ -375,11 +396,13 @@ const total = laws.length;
   /* ---------- The list ---------- */
   .list {
     display: grid;
+    grid-template-columns: minmax(0, 1fr);
     gap: clamp(72px, 9vw, 128px);
     margin-top: clamp(32px, 4vw, 56px);
   }
   .group {
     display: grid;
+    grid-template-columns: minmax(0, 1fr);
     gap: clamp(40px, 5vw, 64px);
   }
   .group-title {
@@ -511,6 +534,7 @@ const total = laws.length;
   .ex-stage {
     flex: 1;
     display: grid;
+    grid-template-columns: minmax(0, 1fr);
     align-items: center;
   }
   .ex-tag {
@@ -579,7 +603,10 @@ const total = laws.length;
   }
   @media (max-width: 720px) {
     .controls {
-      top: 64px;
+      position: static;
+      background: none;
+      backdrop-filter: none;
+      -webkit-backdrop-filter: none;
     }
     .controls-in {
       flex-direction: column;
@@ -596,7 +623,7 @@ const total = laws.length;
       margin-inline: var(--gutter);
     }
     .law {
-      scroll-margin-top: 190px;
+      scroll-margin-top: 84px;
     }
   }
   @media (max-width: 640px) {
