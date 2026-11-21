@@ -102,20 +102,31 @@ const principles = [
 ];
 ---
 
-<canvas class="rr-bg" aria-hidden="true" data-rr-bg></canvas>
-<div class="rr-drift" aria-hidden="true">
-  {[
-    { k: 3, l: '1.5vw', w: 92, d: 58, at: -6 },
-    { k: 5, l: '3vw', w: 70, d: 74, at: -40 },
-    { k: 2, r: '1.2vw', w: 86, d: 64, at: -22 },
-    { k: 6, r: '3.4vw', w: 64, d: 80, at: -58 },
-    { k: 4, l: '0.6vw', w: 58, d: 70, at: -66 },
-  ].map((d) => (
-    <img src={art(`pad-${d.k}`)} width="300" height="120" alt="" style={`${d.l ? `left:${d.l}` : `right:${d.r}`};width:${d.w}px;--d:${d.d}s;--at:${d.at}s`} />
-  ))}
-</div>
-
 <article class="wrap case">
+  <div class="rr-pads" aria-hidden="true">
+    {[
+    { s: 'r', t: -15, o: 20, w: 78, k: 4, r: 8 },
+    { s: 'l', t: -8, o: 22, w: 66, k: 6, r: -6 },
+    { s: 'l', t: 2, o: 18, w: 84, k: 3, r: -10 },
+    { s: 'r', t: 6, o: 22, w: 70, k: 5, r: 12 },
+    { s: 'l', t: 13, o: 40, w: 58, k: 6, r: 6 },
+    { s: 'r', t: 18, o: 14, w: 88, k: 2, r: -6 },
+    { s: 'l', t: 25, o: 12, w: 74, k: 4, r: 14 },
+    { s: 'r', t: 31, o: 38, w: 60, k: 6, r: -12 },
+    { s: 'l', t: 38, o: 30, w: 90, k: 2, r: 4 },
+    { s: 'r', t: 44, o: 20, w: 76, k: 3, r: 9 },
+    { s: 'l', t: 51, o: 16, w: 62, k: 5, r: -8 },
+    { s: 'r', t: 57, o: 30, w: 86, k: 4, r: -3 },
+    { s: 'l', t: 64, o: 28, w: 78, k: 7, r: 10 },
+    { s: 'r', t: 70, o: 12, w: 64, k: 6, r: 16 },
+    { s: 'l', t: 77, o: 14, w: 86, k: 3, r: -14 },
+    { s: 'r', t: 83, o: 26, w: 80, k: 2, r: 6 },
+    { s: 'l', t: 90, o: 36, w: 60, k: 5, r: 2 },
+    { s: 'r', t: 96, o: 16, w: 72, k: 4, r: -9 },
+    ].map((d) => (
+      <img class={d.s} src={art(`pad-${d.k}`)} width="300" height="120" alt="" loading="lazy" decoding="async" style={`--t:${d.t}%;--o:${d.o}px;--w:${d.w}px;--r:${d.r}deg`} />
+    ))}
+  </div>
   <section class="sec">
     <div class="sec-head" data-fig>
       <h2 class="ribbon"><span>River Race</span></h2>
@@ -602,132 +613,39 @@ const principles = [
       })();
     }
   }
-
-  // ---------- The river behind the page: light rippling on moving water ----------
-  const cv = document.querySelector<HTMLCanvasElement>('[data-rr-bg]');
-  const gl = cv?.getContext('webgl', { premultipliedAlpha: true, alpha: true, antialias: false });
-  if (cv && gl) {
-    const FRAG = `
-      precision mediump float;
-      uniform vec2 uRes;
-      uniform float uT;
-      uniform float uScroll;
-      float hash(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
-      float noise(vec2 p) {
-        vec2 i = floor(p), f = fract(p);
-        f = f * f * (3.0 - 2.0 * f);
-        return mix(mix(hash(i), hash(i + vec2(1.0, 0.0)), f.x), mix(hash(i + vec2(0.0, 1.0)), hash(i + vec2(1.0, 1.0)), f.x), f.y);
-      }
-      float fbm(vec2 p) {
-        float v = 0.0, a = 0.5;
-        for (int i = 0; i < 4; i++) { v += a * noise(p); p = p * 2.03 + vec2(3.1, 1.7); a *= 0.5; }
-        return v;
-      }
-      void main() {
-        vec2 p = gl_FragCoord.xy / uRes.y * 3.0;
-        p.y += uT * 0.06 - uScroll;            // the water flows down the page, and scrolls with it
-        vec2 w = vec2(fbm(p + uT * 0.05), fbm(p + vec2(5.2, 1.3) - uT * 0.04));
-        float a1 = 1.0 - smoothstep(0.0, 0.045, abs(fbm(p * 1.5 + w * 1.5) - 0.5));
-        float a2 = 1.0 - smoothstep(0.0, 0.035, abs(fbm(p * 2.3 - w * 1.2 + uT * 0.03) - 0.5));
-        float light = a1 * 0.17 + a2 * 0.09;
-        float shade = smoothstep(0.55, 0.85, w.x) * 0.07;
-        float a = light + shade * (1.0 - light);
-        gl_FragColor = vec4(vec3(0.9, 1.0, 1.0) * light, a);
-      }`;
-    const sh = (type: number, src: string) => {
-      const o = gl.createShader(type)!;
-      gl.shaderSource(o, src);
-      gl.compileShader(o);
-      return o;
-    };
-    const prog = gl.createProgram()!;
-    gl.attachShader(prog, sh(gl.VERTEX_SHADER, 'attribute vec2 a; void main() { gl_Position = vec4(a, 0.0, 1.0); }'));
-    gl.attachShader(prog, sh(gl.FRAGMENT_SHADER, FRAG));
-    gl.linkProgram(prog);
-    if (gl.getProgramParameter(prog, gl.LINK_STATUS)) {
-      gl.useProgram(prog);
-      gl.bindBuffer(gl.ARRAY_BUFFER, gl.createBuffer());
-      gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 1, -1, -1, 1, 1, 1]), gl.STATIC_DRAW);
-      const loc = gl.getAttribLocation(prog, 'a');
-      gl.enableVertexAttribArray(loc);
-      gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
-      const uRes = gl.getUniformLocation(prog, 'uRes');
-      const uT = gl.getUniformLocation(prog, 'uT');
-      const uScroll = gl.getUniformLocation(prog, 'uScroll');
-      const size = () => {
-        const k = 0.5; // soft light: half resolution is plenty
-        cv.width = Math.round(innerWidth * k);
-        cv.height = Math.round(innerHeight * k);
-        gl.viewport(0, 0, cv.width, cv.height);
-        gl.uniform2f(uRes, cv.width, cv.height);
-      };
-      const draw = (t: number) => {
-        gl.uniform1f(uT, t / 1000);
-        gl.uniform1f(uScroll, (scrollY / innerHeight) * 3.0 * -1);
-        gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
-      };
-      size();
-      addEventListener('resize', () => { size(); draw(performance.now()); });
-      document.documentElement.setAttribute('data-river', '');
-      if (reduce) {
-        draw(0);
-        addEventListener('scroll', () => draw(0), { passive: true });
-      } else {
-        let last = 0;
-        const frame = (t: number) => {
-          if (t - last > 40 && !document.hidden) { last = t; draw(t); } // about 25 frames a second is plenty for water
-          requestAnimationFrame(frame);
-        };
-        requestAnimationFrame(frame);
-      }
-    }
-  }
 </script>
 
 <style>
-  .rr-bg {
-    position: fixed;
-    inset: 0;
-    z-index: -1;
-    width: 100%;
-    height: 100%;
-    pointer-events: none;
-  }
-  /* a few lily pads drifting down the river, out at the edges of wide screens */
-  .rr-drift {
-    position: fixed;
-    inset: 0;
-    z-index: -1;
-    overflow: hidden;
-    pointer-events: none;
-  }
-  .rr-drift img {
+  /* Lily pads resting on the river, spread down both margins of wide screens; they scroll with the page */
+  .rr-pads {
     position: absolute;
-    top: 0;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+  }
+  .rr-pads img {
+    position: absolute;
+    top: var(--t);
+    width: var(--w);
     height: auto;
+    rotate: var(--r);
     filter: drop-shadow(0 6px 8px rgb(4 38 46 / 0.25));
-    animation: drift var(--d) linear var(--at) infinite;
   }
-  @keyframes drift {
-    0% { transform: translateY(-20vh) rotate(-8deg); }
-    25% { transform: translateY(18vh) translateX(10px) rotate(4deg); }
-    50% { transform: translateY(55vh) rotate(-3deg); }
-    75% { transform: translateY(90vh) translateX(-8px) rotate(6deg); }
-    100% { transform: translateY(125vh) rotate(-8deg); }
+  /* measured from the window's edge, so they stay in the margin whatever the column width */
+  .rr-pads .l {
+    left: calc((100% - 100vw) / 2 + var(--o));
   }
-  @media (max-width: 1279px) {
-    .rr-drift {
+  .rr-pads .r {
+    right: calc((100% - 100vw) / 2 + var(--o));
+  }
+  @media (max-width: 1399px) {
+    .rr-pads {
       display: none;
-    }
-  }
-  @media (prefers-reduced-motion: reduce) {
-    .rr-drift img {
-      animation: none;
-      transform: translateY(calc(var(--at) * -1.2vh));
     }
   }
 
   .case {
+    position: relative;
     display: grid;
     grid-template-columns: minmax(0, 1fr);
     gap: clamp(72px, 9vw, 128px);
