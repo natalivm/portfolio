@@ -17,10 +17,14 @@ const { title, description = site.intro, current, theme } = Astro.props;
 const themeColor = theme === 'blue' ? '#4c96ff' : theme === 'space' ? '#0a0b18' : theme === 'river' ? '#3ab5c3' : theme === 'sky' ? '#8fd3f5' : '#f2f3f5';
 const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 const pageTitle = title ? `${title} · ${site.name}` : `${site.name}, ${site.role}`;
+// The Beat Saber page can open veiled, behind a Reveal button and its plasma. Off while the page is
+// being built: set to true to bring it back.
+const VEIL = false;
+const veiled = VEIL && theme === 'space';
 ---
 
 <!doctype html>
-<html lang="en" data-m={site.emailCode} data-theme={theme} data-veil={theme === 'space' ? '' : undefined}>
+<html lang="en" data-m={site.emailCode} data-theme={theme} data-veil={veiled ? '' : undefined}>
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -28,7 +32,7 @@ const pageTitle = title ? `${title} · ${site.name}` : `${site.name}, ${site.rol
     <meta name="description" content={description} />
     <meta name="theme-color" content={themeColor} />
     <link rel="icon" href={`${base}/favicon.svg`} type="image/svg+xml" />
-    {theme === 'space' && (
+    {veiled && (
       <>
         {/* The page opens on the logo alone. Not with reduced motion; and without scripts, nothing is hidden. */}
         <script is:inline>

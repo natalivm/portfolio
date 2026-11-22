@@ -1,0 +1,802 @@
+---
+/**
+ * The Beat Saber main menu, rebuilt as a live panel that hangs in the page's space: Challenges on
+ * the left, the music packs in the middle, Multiplayer on the right, and the bar below. It has no
+ * backdrop of its own. The side panels curve toward the viewer like the game's menu around the
+ * player; the whole menu floats, leans a little with the pointer, and a soft laser dot follows the
+ * pointer over it.
+ *
+ * Everything works: challenge timers count down, the pack pages turn, a pack can be picked, the
+ * multiplayer pack and difficulty cycle, and Join looks for a lobby.
+ *
+ * Album art goes in public/cases/beat-saber/albums/, named as `img` on each pack below: square covers
+ * for albums, tall ones (about 9:16) for banners. A tile whose file is missing shows a placeholder in
+ * the pack's colours.
+ */
+import '@fontsource-variable/teko';
+
+interface Props {
+  class?: string;
+}
+const { class: cls = '' } = Astro.props;
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+const albumSrc = (f: string) => `${base}/cases/beat-saber/albums/${f}`;
+
+type Album = { title: string; sub?: string; img?: string; tall?: boolean; look: string };
+const blank = (n: number): Album => ({ title: `Pack ${n}`, look: 'blank' });
+// a page is four columns, three rows: square albums on top, banners two rows tall below,
+// in the game's arrangement (two squares stack in the gap between banners)
+const pages: Album[][] = [
+  [
+    { title: 'Daft Punk', img: 'daft-punk.webp', look: 'ost-b' },
+    { title: 'Lady Gaga', sub: 'Music Pack', img: 'lady-gaga.webp', look: 'magenta' },
+    { title: 'Imagine Dragons', sub: 'Music Pack', img: 'imagine-dragons.webp', look: 'ost-c' },
+    { title: 'Britney Spears', img: 'britney-spears.webp', look: 'violet' },
+    { title: 'TinyTAN', img: 'tinytan.webp', tall: true, look: 'magenta' },
+    { title: 'Skrillex', sub: 'Music Pack', img: 'skrillex.webp', look: 'teal' },
+    { title: 'Linkin Park', sub: 'Music Pack', img: 'linkin-park.webp', tall: true, look: 'ash' },
+    { title: 'Monstercat', sub: 'Music Pack Vol. 1', img: 'monstercat.webp', tall: true, look: 'cat' },
+    { title: 'Rocket League', sub: '× Monstercat', img: 'rocket-league.webp', look: 'cat' },
+  ],
+  [
+    { title: 'OST', sub: 'Vol. 1', look: 'ost-a' },
+    { title: 'OST', sub: 'Vol. 2', look: 'ost-b' },
+    { title: 'OST', sub: 'Vol. 3', look: 'ost-c' },
+    { title: 'Volume Four', sub: 'Beat Saber', look: 'cube' },
+    { title: 'Camellia', look: 'teal' },
+    { title: 'Extras', look: 'violet' },
+    ...Array.from({ length: 6 }, (_, i) => blank(16 + i)),
+  ],
+  Array.from({ length: 12 }, (_, i) => blank(22 + i)),
+  Array.from({ length: 12 }, (_, i) => blank(34 + i)),
+];
+
+const challenges = [
+  { t: 'Clear 20 songs', note: '(5 remaining)', mins: 6 * 24 * 60 + 5 * 60, xp: '+1.5K XP', done: 15, of: 20 },
+  { t: 'Clear any song with no arrows modifier', mins: 85, xp: '+1.5K XP', card: true, done: 0, of: 1 },
+];
+const nextChallengeMins = 2 * 60 + 34;
+const packs = ['Any', ...new Set(pages[0].map((a) => (a.sub && a.title === 'OST' ? `${a.title} ${a.sub}` : a.title)))];
+const difficulties = ['Easy', 'Normal', 'Hard', 'Expert', 'Expert+'];
+---
+
+<div class:list={['bsm', cls]} data-bsm role="group" aria-label="Beat Saber main menu, interactive">
+  <div class="bsm-float">
+    <div class="bsm-scene" data-scene>
+      <!-- challenges -->
+      <section class="bsm-panel left" aria-labelledby="bsm-ch">
+        <h3 id="bsm-ch" class="bsm-h">Challenges</h3>
+        <ul class="bsm-list" role="list">
+          {challenges.map((c) => (
+            <li>
+              <button type="button" class:list={['ch', c.card && 'stack']} data-ch style={`--p:${c.done / c.of}`} aria-label={`${c.t}, ${c.done} of ${c.of} done`}>
+                <span class="ch-t">{c.t} {c.note && <span class="ch-note">{c.note}</span>}</span>
+                <span class="ch-foot">
+                  <span class="ch-time"><svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="7.5" /><path d="M10 6v4.2l2.6 1.6" /></svg><span data-left={c.mins}></span></span>
+                  <span class="ch-xp">{c.card && <span class="ch-plus">+<i class="ch-card" aria-hidden="true"></i></span>}{c.xp}</span>
+                </span>
+                <span class="ch-bar" aria-hidden="true"><i></i></span>
+              </button>
+            </li>
+          ))}
+          <li>
+            <div class="ch next" aria-live="polite">new challenge in<br /><span data-left={nextChallengeMins}></span></div>
+          </li>
+        </ul>
+      </section>
+
+      <!-- singleplayer -->
+      <section class="bsm-panel mid" aria-labelledby="bsm-sp">
+        <h3 id="bsm-sp" class="bsm-h">Singleplayer</h3>
+        <div class="packs" data-packs>
+          <div class="pages" data-pages>
+            {pages.map((page, pi) => (
+              <div class="page" data-page={pi} aria-hidden={pi === 0 ? undefined : 'true'}>
+                {page.map((a) => (
+                  <button type="button" class:list={['tile', a.tall && 'tall', `look-${a.look}`]} data-tile tabindex={pi === 0 ? undefined : -1} aria-label={[a.title, a.sub].filter(Boolean).join(' ')}>
+                    <span class:list={['art', a.title.length > 9 && 'long']} aria-hidden="true">
+                      <span class="art-t">{a.title}</span>
+                      {a.sub && <span class="art-s">{a.sub}</span>}
+                    </span>
+                    {a.img && <img src={albumSrc(a.img)} alt="" loading="lazy" decoding="async" onerror="this.remove()" />}
+                  </button>
+                ))}
+              </div>
+            ))}
+          </div>
+        </div>
+        <div class="dots" role="tablist" aria-label="Pack pages">
+          {pages.map((_, i) => (
+            <button type="button" role="tab" data-dot={i} aria-selected={i === 0 ? 'true' : 'false'} aria-label={`Page ${i + 1}`}></button>
+          ))}
+        </div>
+      </section>
+
+      <!-- multiplayer -->
+      <section class="bsm-panel right" aria-labelledby="bsm-mp">
+        <h3 id="bsm-mp" class="bsm-h">Multiplayer</h3>
+        <div class="mp">
+          <button type="button" class="pick" data-cycle={JSON.stringify(packs)} data-i="0">
+            <span class="pick-l">Music Pack</span>
+            <span class="pick-v" data-v>{packs[0]}</span>
+          </button>
+          <button type="button" class="pick" data-cycle={JSON.stringify(difficulties)} data-i="3">
+            <span class="pick-l">Difficulty</span>
+            <span class="pick-v" data-v>{difficulties[3]}</span>
+          </button>
+          <button type="button" class="join" data-join><span data-join-t>Join</span></button>
+          <div class="pair">
+            <button type="button" class="blue" data-press>Create<br />Server</button>
+            <button type="button" class="blue" data-press>Join with<br />Code</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- the bar below -->
+      <nav class="bar" aria-label="Menu bar">
+        <button type="button" class="pill" data-press>Party</button>
+        <button type="button" class="pill" data-press>Campaign</button>
+        <button type="button" class="ico" data-press aria-label="Settings">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3.2" /><path d="M12 2.8v2.4M12 18.8v2.4M2.8 12h2.4M18.8 12h2.4M5.5 5.5l1.7 1.7M16.8 16.8l1.7 1.7M5.5 18.5l1.7-1.7M16.8 7.2l1.7-1.7" /><circle cx="12" cy="12" r="6.6" /></svg>
+        </button>
+        <button type="button" class="ico" data-press aria-label="Help">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8.6 8.4a3.6 3.6 0 1 1 5.2 3.2c-1.1.6-1.8 1.3-1.8 2.6v.6" /><circle cx="12" cy="18.6" r="0.6" /></svg>
+        </button>
+        <button type="button" class="ico" data-press aria-label="Edit avatar">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 13.5V19a1.5 1.5 0 0 1-1.5 1.5h-12A1.5 1.5 0 0 1 4 19V7a1.5 1.5 0 0 1 1.5-1.5H11" /><path d="M17.2 3.8l3 3L12 15l-3.6.6.6-3.6z" /></svg>
+        </button>
+        <button type="button" class="ico" data-press aria-label="Exit">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 4h4.5A1.5 1.5 0 0 1 20 5.5v13a1.5 1.5 0 0 1-1.5 1.5H14" /><path d="M4 12h10M10 8l4 4-4 4" /></svg>
+        </button>
+      </nav>
+    </div>
+  </div>
+  <i class="laser" aria-hidden="true" data-laser></i>
+</div>
+
+<style>
+  /* sizes are in design pixels at a 1320 px wide menu (--u), so the whole menu scales as one */
+  .bsm {
+    --cyan: #8fe6ff;
+    --val: #22b9ff;
+    --ink: #e8f6fd;
+    --mute: rgb(196 226 240 / 0.56);
+    --tile: linear-gradient(180deg, rgb(18 58 80 / 0.74), rgb(10 38 56 / 0.74));
+    --edge: rgb(150 225 255 / 0.1);
+    position: relative;
+    width: min(100%, 1240px);
+    margin-inline: auto;
+    container-type: inline-size;
+    perspective: 1700px;
+    font-family: 'Teko Variable', 'Teko', var(--font-display), sans-serif;
+    color: var(--ink);
+    -webkit-tap-highlight-color: transparent;
+  }
+  .bsm-float {
+    transform-style: preserve-3d;
+    animation: bsm-float 7s ease-in-out infinite;
+  }
+  @keyframes bsm-float {
+    50% { translate: 0 -8px; }
+  }
+  .bsm-scene {
+    --u: calc(100cqw / 1320);
+    display: grid;
+    grid-template-columns: 306fr 564fr 306fr;
+    grid-template-areas: 'l m r' '. bar .';
+    column-gap: calc(var(--u) * 72);
+    row-gap: calc(var(--u) * 34);
+    padding-inline: calc(var(--u) * 22);
+    transform: rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg));
+    transform-style: preserve-3d;
+  }
+  button {
+    font: inherit;
+    color: inherit;
+    border: 0;
+    cursor: pointer;
+  }
+  /* in the 3D scene the layout layers can sit over the buttons for the hit test: only buttons take the pointer */
+  .bsm-float,
+  .bsm-scene,
+  .bsm-scene * {
+    pointer-events: none;
+  }
+  .bsm-scene button {
+    pointer-events: auto;
+  }
+  .bsm-scene button * {
+    pointer-events: none;
+  }
+
+  /* panels: the sides curve toward the viewer, the way the menu wraps around the player */
+  .bsm-panel {
+    display: grid;
+    align-content: start;
+    gap: calc(var(--u) * 22);
+    transform-style: preserve-3d;
+    transition: translate 1s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 700ms ease;
+  }
+  .left {
+    grid-area: l;
+    transform-origin: right center;
+    transform: rotateY(16deg);
+  }
+  .mid {
+    grid-area: m;
+  }
+  .right {
+    grid-area: r;
+    transform-origin: left center;
+    transform: rotateY(-16deg);
+  }
+  .bsm:not(.on) .bsm-panel,
+  .bsm:not(.on) .bar {
+    opacity: 0;
+    translate: 0 calc(var(--u) * 30) calc(var(--u) * -260);
+  }
+  .bsm.on .left { transition-delay: 120ms; }
+  .bsm.on .right { transition-delay: 240ms; }
+  .bsm.on .bar { transition-delay: 360ms; }
+  .bsm-h {
+    margin: 0;
+    color: var(--mute);
+    font-size: calc(var(--u) * 40);
+    font-style: italic;
+    font-weight: 500;
+    line-height: 1;
+    letter-spacing: 0.02em;
+    text-align: center;
+    text-transform: uppercase;
+    text-shadow: 0 0 calc(var(--u) * 14) rgb(120 210 255 / 0.25);
+  }
+
+  /* challenges */
+  .bsm-list {
+    display: grid;
+    gap: calc(var(--u) * 20);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .ch {
+    position: relative;
+    display: grid;
+    align-content: space-between;
+    width: 100%;
+    min-height: calc(var(--u) * 124);
+    padding: calc(var(--u) * 12) calc(var(--u) * 16) calc(var(--u) * 12);
+    border-radius: calc(var(--u) * 10);
+    background: var(--tile);
+    box-shadow: inset 0 0 0 1px var(--edge);
+    text-align: left;
+    transition: box-shadow 200ms ease, translate 200ms ease;
+  }
+  .ch.stack {
+    box-shadow: inset 0 0 0 1px var(--edge), calc(var(--u) * -8) 0 0 calc(var(--u) * -2) rgb(14 48 68 / 0.7), calc(var(--u) * -15) 0 0 calc(var(--u) * -5) rgb(14 48 68 / 0.45);
+  }
+  .ch-t {
+    font-size: calc(var(--u) * 25);
+    font-style: italic;
+    font-weight: 500;
+    line-height: 1;
+  }
+  .ch-note {
+    margin-left: calc(var(--u) * 8);
+    color: var(--mute);
+  }
+  .ch-foot {
+    display: flex;
+    align-items: end;
+    justify-content: space-between;
+    margin-top: calc(var(--u) * 12);
+  }
+  .ch-time {
+    display: flex;
+    align-items: center;
+    gap: calc(var(--u) * 8);
+    color: var(--mute);
+    font-size: calc(var(--u) * 24);
+    font-style: italic;
+  }
+  .ch-time svg {
+    width: calc(var(--u) * 22);
+    height: calc(var(--u) * 22);
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.6;
+    stroke-linecap: round;
+  }
+  .ch-xp {
+    display: flex;
+    align-items: center;
+    gap: calc(var(--u) * 10);
+    font-size: calc(var(--u) * 30);
+    font-style: italic;
+    font-weight: 600;
+  }
+  .ch-plus {
+    display: flex;
+    align-items: center;
+    gap: calc(var(--u) * 6);
+  }
+  .ch-card {
+    width: calc(var(--u) * 18);
+    height: calc(var(--u) * 26);
+    border-radius: calc(var(--u) * 3);
+    background: linear-gradient(160deg, #e9eef2, #9aa6ae);
+    transform: skewX(-8deg);
+  }
+  .ch-bar {
+    position: absolute;
+    left: calc(var(--u) * 16);
+    right: calc(var(--u) * 16);
+    bottom: calc(var(--u) * 5);
+    height: calc(var(--u) * 3);
+    border-radius: 2px;
+    background: rgb(150 225 255 / 0.12);
+    opacity: 0;
+    transition: opacity 200ms ease;
+  }
+  .ch-bar i {
+    display: block;
+    width: calc(var(--p) * 100%);
+    height: 100%;
+    border-radius: inherit;
+    background: var(--val);
+    box-shadow: 0 0 6px var(--val);
+  }
+  .ch:hover .ch-bar,
+  .ch:focus-visible .ch-bar {
+    opacity: 1;
+  }
+  .ch.next {
+    display: grid;
+    place-content: center;
+    color: rgb(196 226 240 / 0.3);
+    background: rgb(14 46 66 / 0.35);
+    font-size: calc(var(--u) * 30);
+    font-style: italic;
+    line-height: 0.95;
+    text-align: center;
+  }
+
+  /* singleplayer: the pack wall, in pages */
+  .packs {
+    overflow: hidden;
+    margin: calc(var(--u) * -14);
+    padding: calc(var(--u) * 14);
+  }
+  .pages {
+    display: flex;
+    transition: translate 600ms cubic-bezier(0.3, 0.8, 0.2, 1);
+    translate: calc(var(--page, 0) * (-100% - var(--u) * 28)) 0;
+    gap: calc(var(--u) * 28);
+  }
+  .page {
+    display: grid;
+    flex: 0 0 100%;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    grid-auto-rows: calc(var(--u) * 129); /* (564 - 3 gaps) / 4: square cells */
+    gap: calc(var(--u) * 16);
+  }
+  .tile {
+    position: relative;
+    overflow: hidden;
+    padding: 0;
+    border-radius: calc(var(--u) * 10);
+    background: #0b2232;
+    box-shadow: inset 0 0 0 1px var(--edge);
+    transition: scale 220ms cubic-bezier(0.3, 1.4, 0.5, 1), box-shadow 200ms ease;
+  }
+  .tile.tall {
+    grid-row: span 2;
+  }
+  .tile img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  /* banner art is a little wider than the slot: ease it in, half squeezed, half cropped */
+  .tile.tall img {
+    left: -4.5%;
+    width: 109%;
+    object-fit: fill;
+  }
+  .tile:hover,
+  .tile:focus-visible {
+    z-index: 1;
+    scale: 1.06;
+    outline: none;
+    box-shadow: 0 0 0 calc(var(--u) * 2.5) var(--cyan), 0 0 calc(var(--u) * 26) rgb(60 190 255 / 0.55);
+  }
+  .tile[aria-pressed='true'] {
+    box-shadow: 0 0 0 calc(var(--u) * 3.5) #fff, 0 0 calc(var(--u) * 30) rgb(255 255 255 / 0.5);
+  }
+  .art {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-content: center;
+    padding: calc(var(--u) * 8);
+    text-align: center;
+    line-height: 0.85;
+  }
+  .art-t {
+    font-size: calc(var(--u) * 40);
+    font-style: italic;
+    font-weight: 600;
+    text-transform: uppercase;
+  }
+  .art-s {
+    margin-top: calc(var(--u) * 6);
+    font-size: calc(var(--u) * 22);
+    font-style: italic;
+    font-weight: 500;
+    text-transform: uppercase;
+    opacity: 0.85;
+  }
+  /* placeholder looks, until the album art arrives */
+  .look-ost-a { background: radial-gradient(90% 70% at 50% 100%, #0f4b9b, #050b1c 70%); }
+  .look-ost-b { background: radial-gradient(90% 80% at 50% 100%, #a3121f, #200307 75%); }
+  .look-ost-c { background: radial-gradient(90% 70% at 50% 90%, #1c4fd8, #060c22 75%); }
+  .look-cube { background: radial-gradient(70% 70% at 50% 45%, #e21b3a, #4a0710 80%); }
+  .look-magenta { background: linear-gradient(180deg, #ff2b8a, #8a1aa6 55%, #3b0c56); }
+  .look-teal { background: linear-gradient(160deg, #1b2f3a, #0e5b6c 50%, #091820); }
+  .look-ash { background: linear-gradient(180deg, #d9d6d2, #8a8582 55%, #3a1b1b); color: #1b1414; }
+  .look-cat { background: radial-gradient(80% 60% at 50% 40%, #1d5fc6, #0a1f4a 80%); }
+  .look-violet { background: linear-gradient(160deg, #3b1260, #a2258a 60%, #31104d); }
+  .look-blank { background: linear-gradient(180deg, rgb(18 58 80 / 0.55), rgb(10 38 56 / 0.55)); color: rgb(196 226 240 / 0.28); }
+  .look-ost-a .art-t, .look-ost-b .art-s, .look-ost-c .art-t { color: #ff4f62; text-shadow: 0 0 calc(var(--u) * 10) #ff2a44; }
+  .look-ost-a .art-s, .look-ost-b .art-t, .look-ost-c .art-s, .look-cat .art-t { color: #8fd8ff; text-shadow: 0 0 calc(var(--u) * 10) #29a8ff; }
+  .art.long .art-t { font-size: calc(var(--u) * 26); }
+  .look-blank .art-t { font-size: calc(var(--u) * 24); }
+  .dots {
+    display: flex;
+    justify-content: center;
+    gap: calc(var(--u) * 16);
+    margin-top: calc(var(--u) * 6);
+  }
+  .dots button {
+    width: calc(var(--u) * 13);
+    height: calc(var(--u) * 13);
+    padding: 0;
+    border-radius: 50%;
+    background: rgb(196 226 240 / 0.3);
+    transition: background-color 200ms ease, scale 200ms ease;
+  }
+  .dots button[aria-selected='true'] {
+    background: #fff;
+    box-shadow: 0 0 calc(var(--u) * 8) rgb(255 255 255 / 0.7);
+  }
+  .dots button:hover {
+    scale: 1.3;
+  }
+
+  /* multiplayer */
+  .mp {
+    display: grid;
+    gap: calc(var(--u) * 16);
+  }
+  .pick {
+    display: grid;
+    gap: calc(var(--u) * 2);
+    padding: calc(var(--u) * 12) 0 calc(var(--u) * 10);
+    border-radius: calc(var(--u) * 10);
+    background: var(--tile);
+    box-shadow: inset 0 0 0 1px var(--edge);
+    font-style: italic;
+    line-height: 1;
+    transition: box-shadow 200ms ease;
+  }
+  .pick-l {
+    font-size: calc(var(--u) * 30);
+    font-weight: 500;
+    color: rgb(232 246 253 / 0.8);
+  }
+  .pick-v {
+    color: var(--val);
+    font-size: calc(var(--u) * 32);
+    font-weight: 600;
+    text-transform: uppercase;
+    text-shadow: 0 0 calc(var(--u) * 10) rgb(34 185 255 / 0.45);
+  }
+  .pick-v.flip {
+    animation: bsm-flip 260ms ease;
+  }
+  @keyframes bsm-flip {
+    from { opacity: 0; translate: 0 calc(var(--u) * 10); }
+  }
+  .join {
+    position: relative;
+    overflow: hidden;
+    min-height: calc(var(--u) * 124);
+    border-radius: calc(var(--u) * 10);
+    background: linear-gradient(200deg, #ff3d8e, #ef2073 60%);
+    font-size: calc(var(--u) * 66);
+    font-style: italic;
+    font-weight: 600;
+    text-transform: uppercase;
+    box-shadow: 0 0 calc(var(--u) * 24) rgb(255 40 120 / 0.35);
+    transition: scale 160ms ease, box-shadow 200ms ease;
+  }
+  .join::before {
+    content: '';
+    position: absolute;
+    top: calc(var(--u) * -30);
+    right: calc(var(--u) * -40);
+    width: calc(var(--u) * 150);
+    height: calc(var(--u) * 46);
+    background: rgb(255 255 255 / 0.12);
+    rotate: 24deg;
+    box-shadow: 0 calc(var(--u) * 60) 0 rgb(255 255 255 / 0.08);
+  }
+  .join:hover {
+    box-shadow: 0 0 calc(var(--u) * 40) rgb(255 40 120 / 0.65);
+  }
+  .join[data-state='busy'] {
+    background: linear-gradient(200deg, #c0306c, #a51c55 60%);
+    font-size: calc(var(--u) * 40);
+  }
+  .join[data-state='found'] {
+    background: linear-gradient(200deg, #31e39b, #0fb57a 60%);
+    font-size: calc(var(--u) * 40);
+  }
+  .pair {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: calc(var(--u) * 14);
+  }
+  .blue {
+    min-height: calc(var(--u) * 84);
+    border-radius: calc(var(--u) * 8);
+    background: linear-gradient(180deg, #1a93ff, #1077e8);
+    font-size: calc(var(--u) * 30);
+    font-style: italic;
+    font-weight: 600;
+    line-height: 0.9;
+    text-transform: uppercase;
+    transition: scale 160ms ease, box-shadow 200ms ease;
+  }
+  .blue:hover {
+    box-shadow: 0 0 calc(var(--u) * 24) rgb(26 147 255 / 0.6);
+  }
+  .pick:hover,
+  .ch:hover {
+    box-shadow: inset 0 0 0 calc(var(--u) * 2) rgb(143 230 255 / 0.55), 0 0 calc(var(--u) * 20) rgb(60 190 255 / 0.25);
+  }
+  .pressed {
+    scale: 0.95;
+  }
+
+  /* the bar below */
+  .bar {
+    grid-area: bar;
+    display: flex;
+    justify-content: center;
+    gap: calc(var(--u) * 12);
+    transition: translate 1s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 700ms ease;
+  }
+  .pill,
+  .ico {
+    min-height: calc(var(--u) * 66);
+    border-radius: 999px;
+    background: rgb(18 58 80 / 0.7);
+    box-shadow: inset 0 0 0 1px var(--edge);
+    color: rgb(214 236 246 / 0.75);
+    transition: box-shadow 200ms ease, color 200ms ease, scale 160ms ease;
+  }
+  .pill {
+    min-width: calc(var(--u) * 180);
+    padding: 0 calc(var(--u) * 28);
+    font-size: calc(var(--u) * 32);
+    font-style: italic;
+    font-weight: 500;
+    text-transform: uppercase;
+  }
+  .ico {
+    display: grid;
+    place-items: center;
+    width: calc(var(--u) * 66);
+    padding: 0;
+  }
+  .ico svg {
+    width: calc(var(--u) * 32);
+    height: calc(var(--u) * 32);
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.7;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+  .pill:hover,
+  .ico:hover {
+    color: #fff;
+    box-shadow: inset 0 0 0 calc(var(--u) * 2) rgb(143 230 255 / 0.55), 0 0 calc(var(--u) * 20) rgb(60 190 255 / 0.3);
+  }
+  .bsm button:focus-visible {
+    outline: calc(var(--u) * 3) solid #fff;
+    outline-offset: calc(var(--u) * 3);
+  }
+
+  /* the laser dot that follows the pointer over the menu */
+  .laser {
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 2;
+    width: 14px;
+    height: 14px;
+    margin: -7px 0 0 -7px;
+    border-radius: 50%;
+    background: radial-gradient(circle, #fff 0 22%, rgb(143 230 255 / 0.9) 30%, rgb(60 190 255 / 0) 72%);
+    box-shadow: 0 0 16px 4px rgb(60 190 255 / 0.55);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 200ms ease;
+  }
+  .bsm.aim .laser {
+    opacity: 1;
+  }
+
+  /* narrow screens: one column, flat, the packs first */
+  @container (max-width: 760px) {
+    .bsm-scene {
+      --u: calc(100cqw / 640);
+      grid-template-columns: minmax(0, 1fr);
+      grid-template-areas: 'm' 'r' 'l' 'bar';
+      row-gap: calc(var(--u) * 48);
+      transform: none;
+    }
+    .left,
+    .right {
+      transform: none;
+    }
+    .bar {
+      flex-wrap: wrap;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .bsm-float {
+      animation: none;
+    }
+    .bsm-panel,
+    .bar,
+    .pages {
+      transition: none;
+    }
+  }
+</style>
+
+<script>
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  document.querySelectorAll<HTMLElement>('[data-bsm]').forEach((menu) => {
+    const scene = menu.querySelector<HTMLElement>('[data-scene]')!;
+    const laser = menu.querySelector<HTMLElement>('[data-laser]')!;
+
+    // it boots in once it is on screen, or, when the page opens veiled, as the veil lifts
+    const root = document.documentElement;
+    const boot = () => requestAnimationFrame(() => menu.classList.add('on'));
+    if (root.hasAttribute('data-veil')) {
+      new MutationObserver((_, mo) => {
+        if (!root.hasAttribute('data-revealing')) return;
+        mo.disconnect();
+        setTimeout(boot, 850);
+      }).observe(root, { attributes: true, attributeFilter: ['data-revealing'] });
+    } else {
+      new IntersectionObserver((es, io) => {
+        if (!es.some((e) => e.isIntersecting)) return;
+        io.disconnect();
+        boot();
+      }, { threshold: 0.15 }).observe(menu);
+    }
+
+    // challenge timers count down
+    const fmt = (m: number) => {
+      m = Math.max(0, Math.round(m));
+      const d = Math.floor(m / 1440), h = Math.floor((m % 1440) / 60), mm = m % 60;
+      return d ? `${d}d ${h}h` : h ? `${h}h ${mm}m` : `${mm}m`;
+    };
+    const t0 = Date.now();
+    const timers = [...menu.querySelectorAll<HTMLElement>('[data-left]')].map((el) => ({ el, mins: Number(el.dataset.left) }));
+    const tick = () => { const gone = (Date.now() - t0) / 60000; for (const t of timers) t.el.textContent = fmt(t.mins - gone); };
+    tick();
+    setInterval(tick, 15000);
+
+    // pack pages, and picking a pack
+    const pages = menu.querySelector<HTMLElement>('[data-pages]')!;
+    const dots = [...menu.querySelectorAll<HTMLButtonElement>('[data-dot]')];
+    const pageEls = [...menu.querySelectorAll<HTMLElement>('[data-page]')];
+    const goPage = (i: number) => {
+      pages.style.setProperty('--page', String(i));
+      dots.forEach((d, j) => d.setAttribute('aria-selected', String(j === i)));
+      pageEls.forEach((p, j) => {
+        p.toggleAttribute('aria-hidden', j !== i);
+        p.querySelectorAll<HTMLElement>('[data-tile]').forEach((t) => (t.tabIndex = j === i ? 0 : -1));
+      });
+    };
+    dots.forEach((d, i) => d.addEventListener('click', () => goPage(i)));
+    let page = 0;
+    menu.querySelector('[data-packs]')!.addEventListener('wheel', (e) => {
+      const we = e as WheelEvent;
+      if (Math.abs(we.deltaX) < 20) return;
+      page = Math.max(0, Math.min(dots.length - 1, page + Math.sign(we.deltaX)));
+      goPage(page);
+    }, { passive: true });
+    dots.forEach((d, i) => d.addEventListener('click', () => { page = i; }));
+    const tiles = [...menu.querySelectorAll<HTMLButtonElement>('[data-tile]')];
+    tiles.forEach((t) => t.addEventListener('click', () => {
+      const on = t.getAttribute('aria-pressed') !== 'true';
+      tiles.forEach((x) => x.removeAttribute('aria-pressed'));
+      if (on) t.setAttribute('aria-pressed', 'true');
+    }));
+
+    // the multiplayer pickers cycle through their values
+    menu.querySelectorAll<HTMLButtonElement>('[data-cycle]').forEach((b) => {
+      const vals: string[] = JSON.parse(b.dataset.cycle!);
+      const v = b.querySelector<HTMLElement>('[data-v]')!;
+      b.addEventListener('click', () => {
+        const i = (Number(b.dataset.i) + 1) % vals.length;
+        b.dataset.i = String(i);
+        v.textContent = vals[i];
+        v.classList.remove('flip');
+        void v.offsetWidth;
+        v.classList.add('flip');
+      });
+    });
+
+    // Join looks for a lobby
+    const join = menu.querySelector<HTMLButtonElement>('[data-join]')!;
+    const jt = menu.querySelector<HTMLElement>('[data-join-t]')!;
+    let busy = false;
+    join.addEventListener('click', () => {
+      if (busy) return;
+      busy = true;
+      join.dataset.state = 'busy';
+      let n = 0;
+      const dotsT = setInterval(() => { jt.textContent = 'Finding lobby' + '.'.repeat(n++ % 4); }, 300);
+      setTimeout(() => {
+        clearInterval(dotsT);
+        join.dataset.state = 'found';
+        jt.textContent = 'Lobby found';
+        setTimeout(() => { join.removeAttribute('data-state'); jt.textContent = 'Join'; busy = false; }, 1600);
+      }, 2200);
+    });
+
+    // a press on everything else
+    menu.querySelectorAll<HTMLElement>('[data-press], [data-join], [data-cycle]').forEach((b) => {
+      b.addEventListener('pointerdown', () => b.classList.add('pressed'));
+      const up = () => b.classList.remove('pressed');
+      b.addEventListener('pointerup', up);
+      b.addEventListener('pointerleave', up);
+    });
+
+    // the menu leans a little toward the pointer, and the laser dot follows it over the menu
+    if (reduce) return;
+    let tx = 0, ty = 0, x = 0, y = 0, raf = 0, visible = true;
+    const loop = () => {
+      x += (tx - x) * 0.08;
+      y += (ty - y) * 0.08;
+      scene.style.setProperty('--ry', `${(x * 5).toFixed(3)}deg`);
+      scene.style.setProperty('--rx', `${(-y * 3.5).toFixed(3)}deg`);
+      raf = Math.abs(tx - x) + Math.abs(ty - y) > 0.001 && visible ? requestAnimationFrame(loop) : 0;
+    };
+    addEventListener('pointermove', (e) => {
+      const r = menu.getBoundingClientRect();
+      tx = Math.max(-1, Math.min(1, (e.clientX - (r.left + r.width / 2)) / (innerWidth / 2)));
+      ty = Math.max(-1, Math.min(1, (e.clientY - (r.top + r.height / 2)) / (innerHeight / 2)));
+      if (!raf && visible) raf = requestAnimationFrame(loop);
+    }, { passive: true });
+    new IntersectionObserver((es) => { visible = es[0].isIntersecting; }).observe(menu);
+    menu.addEventListener('pointermove', (e) => {
+      if (e.pointerType !== 'mouse') return;
+      const r = menu.getBoundingClientRect();
+      laser.style.translate = `${e.clientX - r.left}px ${e.clientY - r.top}px`;
+      menu.classList.add('aim');
+    });
+    menu.addEventListener('pointerleave', () => menu.classList.remove('aim'));
+  });
+</script>
