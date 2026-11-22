@@ -8,7 +8,10 @@
  * laser dot follows the pointer over it.
  *
  * Everything works: challenge timers count down, the pack pages turn, a pack can be picked, the
- * multiplayer pack and difficulty cycle, and Join looks for a lobby.
+ * multiplayer pack and difficulty cycle, and Join looks for a lobby. Under it runs the music pack
+ * pass, a battle pass: a blue band with the level, the XP and a reward at each milestone. Its tab
+ * opens the list of passes, one per music pack, each with its own progress; a reward that has been
+ * reached can be claimed.
  *
  * Album art goes in public/cases/beat-saber/albums/, named as `img` on each pack below: square covers
  * for albums, tall ones for banners, cut to the slot's shape (129 : 274) with no transparent edge. A tile whose file is missing shows a placeholder in
@@ -60,6 +63,25 @@ const challenges = [
 const nextChallengeMins = 2 * 60 + 34;
 const packs = ['Any', ...new Set(pages[0].map((a) => (a.sub && a.title === 'OST' ? `${a.title} ${a.sub}` : a.title)))];
 const difficulties = ['Easy', 'Normal', 'Hard', 'Expert', 'Expert+'];
+
+// Music pack passes: a battle pass per pack, six rewards each, at levels 2, 4, … 12.
+// `claimed` is how many rewards are already collected; a reward whose level is reached and not yet
+// collected can be claimed on the bar. The first pass is the one showing.
+const REWARDS = ['Bonus song', 'Saber colours', 'Note trail', 'Avatar jacket', 'Platform skin', 'Title: Legend'];
+const passes = [
+  { name: 'Harmony Highway', pack: 'Linkin Park', img: 'linkin-park.webp', level: 4, xp: 300, max: 1500, claimed: 1 },
+  { name: 'Bass Canyon', pack: 'Skrillex', img: 'skrillex.webp', level: 9, xp: 1200, max: 2000, claimed: 3 },
+  { name: 'Robot Boulevard', pack: 'Daft Punk', img: 'daft-punk.webp', level: 12, xp: 0, max: 0, claimed: 6 },
+  { name: 'Neon Avenue', pack: 'Lady Gaga', img: 'lady-gaga.webp', level: 1, xp: 120, max: 500, claimed: 0 },
+];
+const msLevel = (i: number) => 2 * (i + 1);
+const msState = (ps: (typeof passes)[number], i: number) => (i < ps.claimed ? 'claimed' : ps.level >= msLevel(i) ? 'ready' : 'locked');
+const msNote = (st: string, i: number) => (st === 'claimed' ? 'Claimed' : st === 'ready' ? 'Click to claim' : `Reach level ${msLevel(i)}`);
+// the scale: its first stretch covers levels 1 to 9, its second 9 to 13
+const at = (ps: (typeof passes)[number]) => ps.level + (ps.max ? ps.xp / ps.max : 0);
+const fillA = (ps: (typeof passes)[number]) => Math.min(1, Math.max(0, (at(ps) - 1) / 8));
+const fillB = (ps: (typeof passes)[number]) => Math.min(1, Math.max(0, (at(ps) - 9) / 4));
+const first = passes[0];
 ---
 
 <div class:list={['bsm', cls]} data-bsm role="group" aria-label="Beat Saber main menu, interactive">
@@ -155,6 +177,71 @@ const difficulties = ['Easy', 'Normal', 'Hard', 'Expert', 'Expert+'];
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 4h4.5A1.5 1.5 0 0 1 20 5.5v13a1.5 1.5 0 0 1-1.5 1.5H14" /><path d="M4 12h10M10 8l4 4-4 4" /></svg>
         </button>
       </nav>
+
+      <!-- the music pack pass: a battle pass, with a reward at each milestone -->
+      <section class="pass" data-pass data-passes={JSON.stringify(passes)} aria-label="Music pack pass">
+        <div class="pass-menu" data-pass-menu role="menu" aria-label="Music pack passes" inert>
+          <p class="pm-h">Music pack passes</p>
+          {passes.map((ps, i) => (
+            <button type="button" class="pm" role="menuitemradio" aria-checked={i === 0 ? 'true' : 'false'} data-pass-item={i}>
+              <img src={albumSrc(ps.img)} alt="" loading="lazy" decoding="async" />
+              <span class="pm-text">
+                <span class="pm-name">{ps.name}</span>
+                <span class="pm-pack">{ps.pack} Music Pack</span>
+              </span>
+              <span class="pm-prog">
+                <span class="pm-lv">{ps.claimed === 6 ? 'Complete' : `Level ${ps.level}`}</span>
+                <span class="pm-bar"><i style={`--v:${Math.min(1, (at(ps) - 1) / 11)}`}></i></span>
+                <span class="pm-rw"><span data-pm-rw>{ps.claimed}</span>/6 rewards</span>
+              </span>
+            </button>
+          ))}
+        </div>
+        <button type="button" class="pass-tab" data-pass-tab aria-haspopup="menu" aria-expanded="false">
+          <span class="pass-names">
+            <span class="pass-name" data-pass-name>{first.name}</span>
+            <span class="pass-sub">Rewards <span data-pass-count>{first.claimed}</span>/6</span>
+          </span>
+          <img class="pass-thumb" data-pass-thumb src={albumSrc(first.img)} alt="" loading="lazy" decoding="async" />
+          <svg class="pass-chev" viewBox="0 0 12 12" aria-hidden="true"><path d="M2.5 7.500L6 4l3.500 3.500" /></svg>
+        </button>
+        <div class="pass-seg a">
+          <div class="pass-level">
+            <span class="pass-chip">Level <span data-pass-level>{first.level}</span></span>
+            <span class="pass-xp" data-pass-xp>{first.max ? `${first.xp} / ${first.max} XP` : 'Complete'}</span>
+          </div>
+          <div class="pass-scale" data-scale="a" style={`--fill:${fillA(first)}`}>
+          {[0, 1, 2, 3].map((i) => {
+            const st = msState(first, i);
+            return (
+              <button type="button" class="ms" data-ms={i} data-state={st} aria-label={`Level ${msLevel(i)}: ${REWARDS[i]}`}>
+                <span class="ms-tip">
+                  <span class="ms-lv">Level {msLevel(i)}</span>
+                  <span class="ms-rw">{REWARDS[i]}</span>
+                  <span class="ms-st" data-ms-st>{msNote(st, i)}</span>
+                </span>
+              </button>
+            );
+          })}
+          </div>
+        </div>
+        <div class="pass-seg b">
+          <div class="pass-scale" data-scale="b" style={`--fill:${fillB(first)}`}>
+          {[4, 5].map((i) => {
+            const st = msState(first, i);
+            return (
+              <button type="button" class="ms" data-ms={i} data-state={st} aria-label={`Level ${msLevel(i)}: ${REWARDS[i]}`}>
+                <span class="ms-tip">
+                  <span class="ms-lv">Level {msLevel(i)}</span>
+                  <span class="ms-rw">{REWARDS[i]}</span>
+                  <span class="ms-st" data-ms-st>{msNote(st, i)}</span>
+                </span>
+              </button>
+            );
+          })}
+          </div>
+        </div>
+      </section>
     </div>
   </div>
   <i class="laser" aria-hidden="true" data-laser></i>
@@ -192,7 +279,7 @@ const difficulties = ['Easy', 'Normal', 'Hard', 'Expert', 'Expert+'];
     --u: calc(100cqw / 1364);
     display: grid;
     grid-template-columns: minmax(0, 306fr) minmax(0, 564fr) minmax(0, 306fr);
-    grid-template-areas: 'l m r' '. bar .';
+    grid-template-areas: 'l m r' '. bar .' 'pass pass pass';
     column-gap: calc(var(--u) * 72);
     row-gap: calc(var(--u) * 34);
     padding-inline: calc(var(--u) * 22);
@@ -240,13 +327,15 @@ const difficulties = ['Easy', 'Normal', 'Hard', 'Expert', 'Expert+'];
     transform: rotateY(-16deg);
   }
   .bsm:not(.on) .bsm-panel,
-  .bsm:not(.on) .bar {
+  .bsm:not(.on) .bar,
+  .bsm:not(.on) .pass {
     opacity: 0;
     translate: 0 calc(var(--u) * 30) calc(var(--u) * -260);
   }
   .bsm.on .left { transition-delay: 120ms; }
   .bsm.on .right { transition-delay: 240ms; }
   .bsm.on .bar { transition-delay: 360ms; }
+  .bsm.on .pass { transition-delay: 480ms; }
   .bsm-h {
     margin: 0;
     font-family: inherit; /* the site's heading font would win otherwise */
@@ -844,6 +933,342 @@ const difficulties = ['Easy', 'Normal', 'Hard', 'Expert', 'Expert+'];
     outline-offset: calc(var(--u) * 4);
   }
 
+  /* ---------- the music pack pass: a blue band under the menu, bent like the panels above it ---------- */
+  .pass {
+    --blue: #1b84f2;
+    grid-area: pass;
+    position: relative;
+    display: flex;
+    height: calc(var(--u) * 68);
+    margin-top: calc(var(--u) * 14);
+    transform-style: preserve-3d;
+    transition: translate 1s var(--ease), opacity 700ms ease;
+  }
+  .pass-tab,
+  .pass-seg {
+    background: var(--blue);
+    box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.28), 0 0 calc(var(--u) * 30) rgb(27 132 242 / 0.45);
+  }
+  .pass-tab {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: calc(var(--u) * 10);
+    flex: 0 0 calc(var(--u) * 306);
+    margin-right: calc(var(--u) * 12);
+    padding: 0 calc(var(--u) * 34) 0 calc(var(--u) * 20);
+    border-radius: calc(var(--u) * 12);
+    text-align: left;
+    transform-origin: right center;
+    transform: rotateY(16deg);
+    transition: background-color 240ms ease, box-shadow 240ms ease, translate 260ms var(--ease);
+  }
+  .pass-tab:hover,
+  .pass-tab:focus-visible,
+  .pass-tab[aria-expanded='true'] {
+    background: #3a9bff;
+    box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.6), 0 0 calc(var(--u) * 44) rgb(27 132 242 / 0.8);
+    translate: 0 calc(var(--u) * -3);
+  }
+  .pass-names {
+    display: grid;
+    min-width: 0;
+    line-height: 0.95;
+  }
+  .pass-name {
+    overflow: hidden;
+    font-size: calc(var(--u) * 28);
+    font-weight: 600;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+  .pass-sub {
+    justify-self: end;
+    color: rgb(255 255 255 / 0.85);
+    font-size: calc(var(--u) * 21);
+  }
+  .pass-thumb {
+    flex: none;
+    width: calc(var(--u) * 50);
+    height: calc(var(--u) * 50);
+    border-radius: calc(var(--u) * 8);
+    object-fit: cover;
+    object-position: 50% 12%;
+    box-shadow: 0 0 0 1px rgb(255 255 255 / 0.35);
+  }
+  .pass-chev {
+    position: absolute;
+    right: calc(var(--u) * 12);
+    width: calc(var(--u) * 14);
+    height: calc(var(--u) * 14);
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    opacity: 0.8;
+    transition: rotate 300ms var(--ease);
+  }
+  .pass-tab[aria-expanded='true'] .pass-chev {
+    rotate: 180deg;
+  }
+  .pass-seg {
+    display: flex;
+    align-items: center;
+    min-width: 0;
+  }
+  .pass-seg.a {
+    flex: 1;
+    border-radius: calc(var(--u) * 12) 0 0 calc(var(--u) * 12);
+  }
+  .pass-seg.b {
+    flex: 0 0 calc(var(--u) * 306);
+    border-radius: 0 calc(var(--u) * 12) calc(var(--u) * 12) 0;
+    padding-right: calc(var(--u) * 26);
+    transform-origin: left center;
+    transform: rotateY(-16deg);
+  }
+  .pass-level {
+    display: flex;
+    flex: none;
+    align-items: center;
+    gap: calc(var(--u) * 14);
+    padding-inline: calc(var(--u) * 16) calc(var(--u) * 18);
+  }
+  .pass-chip {
+    padding: calc(var(--u) * 5) calc(var(--u) * 16) calc(var(--u) * 3);
+    border-radius: 99px;
+    background: rgb(255 255 255 / 0.24);
+    font-size: calc(var(--u) * 24);
+    font-weight: 600;
+    line-height: 1;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+  .pass-xp {
+    color: rgb(255 255 255 / 0.9);
+    font-size: calc(var(--u) * 22);
+    font-weight: 500;
+    white-space: nowrap;
+  }
+  /* the scale: a line through the milestones, lit as far as the player has come */
+  .pass-scale {
+    position: relative;
+    display: flex;
+    flex: 1;
+    align-items: center;
+    justify-content: space-around;
+    align-self: stretch;
+  }
+  .pass-scale::before,
+  .pass-scale::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 0;
+    height: calc(var(--u) * 3);
+    margin-top: calc(var(--u) * -1.5);
+    border-radius: 2px;
+  }
+  .pass-scale::before {
+    right: 0;
+    background: rgb(255 255 255 / 0.28);
+  }
+  .pass-scale::after {
+    width: calc(var(--fill, 0) * 100%);
+    background: #fff;
+    box-shadow: 0 0 calc(var(--u) * 10) rgb(255 255 255 / 0.9);
+    transition: width 900ms var(--ease);
+  }
+  .bsm:not(.on) .pass-scale::after {
+    width: 0;
+  }
+  .ms {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    place-items: center;
+    width: calc(var(--u) * 24);
+    height: calc(var(--u) * 24);
+    padding: 0;
+    border-radius: 50%;
+    background: #0f5bb8;
+    box-shadow: 0 0 0 calc(var(--u) * 3) rgb(255 255 255 / 0.45);
+    transition: scale 240ms cubic-bezier(0.3, 1.5, 0.5, 1), background-color 240ms ease, box-shadow 240ms ease;
+  }
+  .ms::before {
+    content: '';
+    position: absolute;
+    inset: calc(var(--u) * -12);
+  }
+  .ms[data-state='claimed'] {
+    background: #fff;
+    box-shadow: 0 0 0 calc(var(--u) * 3) #fff;
+  }
+  .ms[data-state='claimed']::after {
+    content: '✓';
+    color: var(--blue);
+    font: normal 700 calc(var(--u) * 15) / 1 var(--font-ui);
+  }
+  .ms[data-state='ready'] {
+    background: #fff;
+    box-shadow: 0 0 0 calc(var(--u) * 3) #fff, 0 0 calc(var(--u) * 20) #fff;
+    animation: ms-ready 1.5s ease-out infinite;
+  }
+  @keyframes ms-ready {
+    from { box-shadow: 0 0 0 calc(var(--u) * 3) #fff, 0 0 0 0 rgb(255 255 255 / 0.7); }
+    to { box-shadow: 0 0 0 calc(var(--u) * 3) #fff, 0 0 0 calc(var(--u) * 18) rgb(255 255 255 / 0); }
+  }
+  .ms:hover,
+  .ms:focus-visible {
+    scale: 1.3;
+  }
+  .ms.pop {
+    animation: ms-pop 500ms var(--ease);
+  }
+  @keyframes ms-pop {
+    40% { scale: 1.7; }
+  }
+  /* what a milestone gives, shown over it on hover */
+  .ms-tip {
+    position: absolute;
+    bottom: calc(100% + var(--u) * 20);
+    left: 50%;
+    display: grid;
+    gap: calc(var(--u) * 3);
+    padding: calc(var(--u) * 10) calc(var(--u) * 16) calc(var(--u) * 8);
+    border-radius: calc(var(--u) * 12);
+    background: rgb(8 26 46 / 0.94);
+    box-shadow: inset 0 0 0 1px var(--line), 0 calc(var(--u) * 10) calc(var(--u) * 24) rgb(0 0 0 / 0.4);
+    line-height: 1;
+    text-align: center;
+    white-space: nowrap;
+    opacity: 0;
+    translate: -50% calc(var(--u) * 8);
+    transition: opacity 180ms ease, translate 260ms var(--ease);
+  }
+  .ms:hover .ms-tip,
+  .ms:focus-visible .ms-tip {
+    opacity: 1;
+    translate: -50% 0;
+  }
+  .ms-lv {
+    color: var(--mute);
+    font-size: calc(var(--u) * 17);
+    text-transform: uppercase;
+  }
+  .ms-rw {
+    font-size: calc(var(--u) * 24);
+    font-weight: 500;
+  }
+  .ms-st {
+    color: var(--cyan);
+    font-size: calc(var(--u) * 17);
+  }
+
+  /* the list of passes, opened from the tab */
+  .pass-menu {
+    position: absolute;
+    bottom: calc(100% + var(--u) * 16);
+    left: 0;
+    z-index: 3;
+    display: grid;
+    gap: calc(var(--u) * 6);
+    width: calc(var(--u) * 470);
+    padding: calc(var(--u) * 12);
+    border-radius: calc(var(--u) * 18);
+    background: rgb(8 24 42 / 0.9);
+    -webkit-backdrop-filter: blur(14px);
+    backdrop-filter: blur(14px);
+    box-shadow: inset 0 0 0 1px var(--line), 0 calc(var(--u) * 24) calc(var(--u) * 60) rgb(0 0 0 / 0.5);
+    /* in front of the challenges panel, whose near edge leans out toward the viewer */
+    transform: translateZ(calc(var(--u) * 110));
+    transform-origin: 20% 100%;
+    opacity: 0;
+    scale: 0.94;
+    translate: 0 calc(var(--u) * 10);
+    visibility: hidden;
+    transition: opacity 200ms ease, scale 260ms var(--ease), translate 260ms var(--ease), visibility 0s 260ms;
+  }
+  .pass-menu.open {
+    opacity: 1;
+    scale: 1;
+    translate: 0 0;
+    visibility: visible;
+    transition-delay: 0s;
+  }
+  .pm-h {
+    margin: 0;
+    padding: calc(var(--u) * 4) calc(var(--u) * 8) calc(var(--u) * 6);
+    color: var(--mute);
+    font-size: calc(var(--u) * 19);
+    text-transform: uppercase;
+  }
+  .pm {
+    display: grid;
+    grid-template-columns: calc(var(--u) * 54) minmax(0, 1fr) calc(var(--u) * 130);
+    align-items: center;
+    gap: calc(var(--u) * 14);
+    padding: calc(var(--u) * 8);
+    border-radius: calc(var(--u) * 12);
+    background: transparent;
+    box-shadow: inset 0 0 0 1px transparent;
+    text-align: left;
+    transition: background-color 200ms ease, box-shadow 200ms ease;
+  }
+  .pm:hover,
+  .pm:focus-visible {
+    background: var(--glass-h);
+    box-shadow: inset 0 0 0 1px var(--line-h);
+  }
+  .pm[aria-checked='true'] {
+    background: rgb(27 132 242 / 0.3);
+    box-shadow: inset 0 0 0 1px rgb(90 175 255 / 0.9);
+  }
+  .pm img {
+    width: calc(var(--u) * 54);
+    height: calc(var(--u) * 54);
+    border-radius: calc(var(--u) * 9);
+    object-fit: cover;
+    object-position: 50% 12%;
+  }
+  .pm-text,
+  .pm-prog {
+    display: grid;
+    gap: calc(var(--u) * 3);
+    min-width: 0;
+    line-height: 1;
+  }
+  .pm-name {
+    font-size: calc(var(--u) * 26);
+    font-weight: 500;
+  }
+  .pm-pack,
+  .pm-rw {
+    color: var(--mute);
+    font-size: calc(var(--u) * 17);
+  }
+  .pm-lv {
+    color: var(--cyan);
+    font-size: calc(var(--u) * 19);
+    text-transform: uppercase;
+  }
+  .pm-bar {
+    display: block;
+    height: calc(var(--u) * 5);
+    overflow: hidden;
+    border-radius: 3px;
+    background: rgb(255 255 255 / 0.14);
+  }
+  .pm-bar i {
+    display: block;
+    width: calc(var(--v) * 100%);
+    height: 100%;
+    border-radius: inherit;
+    background: var(--val);
+  }
+
   /* the laser dot that follows the pointer over the menu */
   .laser {
     position: absolute;
@@ -869,13 +1294,55 @@ const difficulties = ['Easy', 'Normal', 'Hard', 'Expert', 'Expert+'];
     .bsm-scene {
       --u: calc(100cqw / 608); /* 22 + 564 + 22: the pack wall keeps its square cells */
       grid-template-columns: minmax(0, 1fr);
-      grid-template-areas: 'm' 'r' 'l' 'bar';
+      grid-template-areas: 'm' 'r' 'l' 'bar' 'pass';
       row-gap: calc(var(--u) * 52);
       transform: none;
     }
     .left,
     .right {
       transform: none;
+    }
+    .pass {
+      flex-wrap: wrap;
+      row-gap: calc(var(--u) * 12);
+      height: auto;
+    }
+    .pass-tab {
+      flex-basis: 100%;
+      height: calc(var(--u) * 68);
+      margin-right: 0;
+      transform: none;
+    }
+    .pass-seg {
+      height: calc(var(--u) * 68);
+    }
+    .pass-seg.a {
+      flex: 1 1 60%; /* wide enough to wrap under the tab, then it takes what the last stretch leaves */
+    }
+    .pass-seg.b {
+      flex-basis: calc(var(--u) * 150);
+      padding-right: calc(var(--u) * 12);
+      transform: none;
+    }
+    .pass-xp {
+      display: none;
+    }
+    .pass-menu {
+      width: 100%;
+      transform: none;
+    }
+    /* reward notes only exist while they show, so they cannot widen the page; the last ones open leftward */
+    .ms-tip {
+      display: none;
+    }
+    .ms:hover .ms-tip,
+    .ms:focus-visible .ms-tip {
+      display: grid;
+    }
+    .pass-seg.b .ms-tip {
+      left: auto;
+      right: calc(var(--u) * -14);
+      translate: 0 0;
     }
     .bar {
       flex-wrap: wrap;
@@ -891,11 +1358,16 @@ const difficulties = ['Easy', 'Normal', 'Hard', 'Expert', 'Expert+'];
     }
   }
   @media (prefers-reduced-motion: reduce) {
-    .join[data-state='busy'] {
+    .join[data-state='busy'],
+    .ms[data-state='ready'],
+    .ms.pop {
       animation: none;
     }
     .bsm-panel,
     .bar,
+    .pass,
+    .pass-menu,
+    .pass-scale::after,
     .pages,
     .tile,
     .ch-bar i {
@@ -1008,8 +1480,73 @@ const difficulties = ['Easy', 'Normal', 'Hard', 'Expert', 'Expert+'];
       }, 2200);
     });
 
+    // the music pack pass: the tab opens the list of passes; picking one puts it on the bar;
+    // a milestone that has been reached can be claimed
+    const pass = menu.querySelector<HTMLElement>('[data-pass]')!;
+    type Pass = { name: string; pack: string; img: string; level: number; xp: number; max: number; claimed: number };
+    const passes: Pass[] = JSON.parse(pass.dataset.passes!);
+    const tab = pass.querySelector<HTMLButtonElement>('[data-pass-tab]')!;
+    const list = pass.querySelector<HTMLElement>('[data-pass-menu]')!;
+    const items = [...pass.querySelectorAll<HTMLButtonElement>('[data-pass-item]')];
+    const stones = [...pass.querySelectorAll<HTMLButtonElement>('[data-ms]')];
+    const thumb = pass.querySelector<HTMLImageElement>('[data-pass-thumb]')!;
+    const albums = thumb.src.slice(0, thumb.src.lastIndexOf('/') + 1);
+    const q = (sel: string) => pass.querySelector<HTMLElement>(sel)!;
+    let cur = 0;
+    const show = (i: number) => {
+      cur = i;
+      const ps = passes[i];
+      const at = ps.level + (ps.max ? ps.xp / ps.max : 0);
+      q('[data-pass-name]').textContent = ps.name;
+      q('[data-pass-count]').textContent = String(ps.claimed);
+      q('[data-pass-level]').textContent = String(ps.level);
+      q('[data-pass-xp]').textContent = ps.max ? `${ps.xp} / ${ps.max} XP` : 'Complete';
+      thumb.src = albums + ps.img;
+      q('[data-scale="a"]').style.setProperty('--fill', String(Math.min(1, Math.max(0, (at - 1) / 8))));
+      q('[data-scale="b"]').style.setProperty('--fill', String(Math.min(1, Math.max(0, (at - 9) / 4))));
+      stones.forEach((st, k) => {
+        const lv = 2 * (k + 1);
+        const state = k < ps.claimed ? 'claimed' : ps.level >= lv ? 'ready' : 'locked';
+        st.dataset.state = state;
+        st.querySelector('[data-ms-st]')!.textContent = state === 'claimed' ? 'Claimed' : state === 'ready' ? 'Click to claim' : `Reach level ${lv}`;
+      });
+      items.forEach((it, k) => {
+        it.setAttribute('aria-checked', String(k === i));
+        it.querySelector('[data-pm-rw]')!.textContent = String(passes[k].claimed);
+      });
+    };
+    const openList = (on: boolean) => {
+      list.classList.toggle('open', on);
+      list.toggleAttribute('inert', !on);
+      tab.setAttribute('aria-expanded', String(on));
+      if (on) items[cur].focus({ preventScroll: true });
+    };
+    tab.addEventListener('click', () => openList(!list.classList.contains('open')));
+    items.forEach((it, i) => it.addEventListener('click', () => { show(i); openList(false); tab.focus({ preventScroll: true }); }));
+    document.addEventListener('pointerdown', (e) => {
+      if (list.classList.contains('open') && !list.contains(e.target as Node) && !tab.contains(e.target as Node)) openList(false);
+    });
+    pass.addEventListener('keydown', (e) => {
+      if (!list.classList.contains('open')) return;
+      if (e.key === 'Escape') { openList(false); tab.focus({ preventScroll: true }); }
+      if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+        e.preventDefault();
+        const k = items.indexOf(document.activeElement as HTMLButtonElement);
+        items[(k + (e.key === 'ArrowDown' ? 1 : -1) + items.length) % items.length].focus({ preventScroll: true });
+      }
+    });
+    stones.forEach((st) => st.addEventListener('click', () => {
+      if (st.dataset.state !== 'ready') return;
+      // rewards are claimed in order: this one and any reached before it
+      passes[cur].claimed = Number(st.dataset.ms) + 1;
+      show(cur);
+      st.classList.remove('pop');
+      void st.offsetWidth;
+      st.classList.add('pop');
+    }));
+
     // a press on everything else
-    menu.querySelectorAll<HTMLElement>('[data-press], [data-join], [data-cycle]').forEach((b) => {
+    menu.querySelectorAll<HTMLElement>('[data-press], [data-join], [data-cycle], [data-pass-tab]').forEach((b) => {
       b.addEventListener('pointerdown', () => b.classList.add('pressed'));
       const up = () => b.classList.remove('pressed');
       b.addEventListener('pointerup', up);
