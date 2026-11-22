@@ -29,7 +29,7 @@ const { class: cls = '' } = Astro.props;
 const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 const albumSrc = (f: string) => `${base}/cases/beat-saber/albums/${f}`;
 
-type Album = { title: string; sub?: string; img?: string; tall?: boolean; look: string };
+type Album = { title: string; sub?: string; img?: string; tall?: boolean; look: string; kind?: 'random' | 'all' };
 const blank = (n: number): Album => ({ title: `Pack ${n}`, look: 'blank' });
 // a page is four columns, three rows: square albums on top, banners two rows tall below,
 // in the game's arrangement (two squares stack in the gap between banners)
@@ -42,20 +42,23 @@ const pages: Album[][] = [
     { title: 'TinyTAN', img: 'tinytan.webp', tall: true, look: 'magenta' },
     { title: 'Skrillex', sub: 'Music Pack', img: 'skrillex.webp', look: 'teal' },
     { title: 'Linkin Park', sub: 'Music Pack', img: 'linkin-park.webp', tall: true, look: 'ash' },
-    { title: 'Monstercat', sub: 'Music Pack Vol. 1', img: 'monstercat.webp', tall: true, look: 'cat' },
+    // two tiles that are not packs: a dice for a random album, and the three dots that open every album
+    { title: 'Random album', look: 'special', kind: 'random' },
     { title: 'Rocket League', sub: '× Monstercat', img: 'rocket-league.webp', look: 'cat' },
+    { title: 'All albums', look: 'special', kind: 'all' },
   ],
   [
     { title: 'OST', sub: 'Vol. 1', look: 'ost-a' },
     { title: 'OST', sub: 'Vol. 2', look: 'ost-b' },
     { title: 'OST', sub: 'Vol. 3', look: 'ost-c' },
     { title: 'Volume Four', sub: 'Beat Saber', look: 'cube' },
+    { title: 'Monstercat', sub: 'Music Pack Vol. 1', img: 'monstercat.webp', tall: true, look: 'cat' },
     { title: 'Camellia', look: 'teal' },
     { title: 'Extras', look: 'violet' },
-    ...Array.from({ length: 6 }, (_, i) => blank(16 + i)),
+    ...Array.from({ length: 4 }, (_, i) => blank(16 + i)),
   ],
-  Array.from({ length: 12 }, (_, i) => blank(22 + i)),
-  Array.from({ length: 12 }, (_, i) => blank(34 + i)),
+  Array.from({ length: 12 }, (_, i) => blank(20 + i)),
+  Array.from({ length: 12 }, (_, i) => blank(32 + i)),
 ];
 
 // The song screen: what each pack holds. Song titles are the packs' own; lengths, tempos and note
@@ -77,7 +80,8 @@ const seed = (str: string) => {
   for (const c of str) h = Math.imul(h ^ c.charCodeAt(0), 16777619);
   return h >>> 0;
 };
-const library = pages.flat().map((a) => {
+const albums = pages.flat().filter((a) => !a.kind);
+const library = albums.map((a) => {
   const titles = SONGS[a.title] ?? Array.from({ length: 8 }, (_, i) => `Track ${i + 1}`);
   const name = a.title === 'OST' ? `${a.title} ${a.sub}` : a.title;
   const by = ARTIST[a.title] ?? (SONGS[a.title] ? a.title : 'Various artists');
@@ -91,7 +95,6 @@ const library = pages.flat().map((a) => {
     }),
   };
 });
-const offset = pages.map((_, i) => pages.slice(0, i).reduce((n, pg) => n + pg.length, 0));
 const modes = [
   { name: 'Standard', icon: 'M5 19L19 5M5 5l14 14' },
   { name: 'One Saber', icon: 'M5 19L19 5' },
@@ -114,7 +117,7 @@ const challenges = [
   { t: 'Clear any song with no arrows modifier', mins: 85, xp: '+1.5K XP', card: true, done: 0, of: 1 },
 ];
 const nextChallengeMins = 2 * 60 + 34;
-const packs = ['Any', ...new Set(pages[0].map((a) => (a.sub && a.title === 'OST' ? `${a.title} ${a.sub}` : a.title)))];
+const packs = ['Any', ...new Set(pages[0].filter((a) => !a.kind).map((a) => (a.sub && a.title === 'OST' ? `${a.title} ${a.sub}` : a.title)))];
 const difficulties = ['Easy', 'Normal', 'Hard', 'Expert', 'Expert+'];
 
 // Music pack passes: a battle pass per pack, six rewards each, at levels 2, 4, … 12.
@@ -169,8 +172,21 @@ const first = passes[0];
           <div class="pages" data-pages>
             {pages.map((page, pi) => (
               <div class="page" data-page={pi} aria-hidden={pi === 0 ? undefined : 'true'}>
-                {page.map((a) => (
-                  <button type="button" class:list={['tile', a.tall && 'tall', `look-${a.look}`]} data-tile data-pack={offset[pi] + page.indexOf(a)} tabindex={pi === 0 ? undefined : -1} aria-label={`${[a.title, a.sub].filter(Boolean).join(' ')}: open the songs`}>
+                {page.map((a) => a.kind ? (
+                  <button type="button" class="tile special" data-tile data-special={a.kind} tabindex={pi === 0 ? undefined : -1} aria-label={a.kind === 'random' ? 'Random album: open one at random' : 'All albums'}>
+                    {a.kind === 'random' ? (
+                      <svg class="dice" viewBox="0 0 48 48" aria-hidden="true">
+                        <path class="face" d="M24 5.500l15 7.200v20.600L24 42.500 9 33.300V12.700z" />
+                        <path class="edge" d="M9 12.700l15 8.300 15-8.300M24 21v21.500" />
+                        <circle cx="24" cy="12.900" r="2.300" /><circle cx="14" cy="24.500" r="2.100" /><circle cx="19" cy="33" r="2.100" />
+                        <circle cx="29.500" cy="24.500" r="2.100" /><circle cx="34" cy="31" r="2.100" /><circle cx="31.800" cy="27.800" r="2.100" />
+                      </svg>
+                    ) : (
+                      <svg class="more" viewBox="0 0 48 48" aria-hidden="true"><circle cx="12" cy="24" r="4.200" /><circle cx="24" cy="24" r="4.200" /><circle cx="36" cy="24" r="4.200" /></svg>
+                    )}
+                  </button>
+                ) : (
+                  <button type="button" class:list={['tile', a.tall && 'tall', `look-${a.look}`]} data-tile data-pack={albums.indexOf(a)} tabindex={pi === 0 ? undefined : -1} aria-label={`${[a.title, a.sub].filter(Boolean).join(' ')}: open the songs`}>
                     <span class:list={['art', a.title.length > 9 && 'long']} aria-hidden="true">
                       <span class="art-t">{a.title}</span>
                       {a.sub && <span class="art-s">{a.sub}</span>}
@@ -179,6 +195,23 @@ const first = passes[0];
                   </button>
                 ))}
               </div>
+            ))}
+          </div>
+        </div>
+        <!-- every album at once, opened by the three dots -->
+        <div class="all" data-all inert>
+          <div class="all-head">
+            <p>All albums <span>{albums.length}</span></p>
+            <button type="button" class="all-close glass" data-all-close aria-label="Back to the pages">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 7l10 10M17 7L7 17" /></svg>
+            </button>
+          </div>
+          <div class="all-grid">
+            {albums.map((a, i) => (
+              <button type="button" class:list={['all-item', `look-${a.look}`]} data-all-item={i} style={`--k:${i}`} aria-label={`${[a.title, a.sub].filter(Boolean).join(' ')}: open the songs`}>
+                <span class="all-art">{a.img ? <img src={albumSrc(a.img)} alt="" loading="lazy" decoding="async" /> : <span>{a.title}</span>}</span>
+                <span class="all-name">{a.title === 'OST' ? `${a.title} ${a.sub}` : a.title}</span>
+              </button>
             ))}
           </div>
         </div>
@@ -429,7 +462,8 @@ const first = passes[0];
   }
   .bsm-scene label,
   .bsm-scene input,
-  .bsm-scene .s-list {
+  .bsm-scene .s-list,
+  .bsm-scene .all-grid {
     pointer-events: auto;
   }
 
@@ -789,6 +823,156 @@ const first = passes[0];
     font-weight: 400;
     letter-spacing: 0.04em;
   }
+  /* the two tiles that are not packs: dark glass, a light icon */
+  .tile.special {
+    display: grid;
+    place-items: center;
+    background: rgb(8 18 32 / 0.6);
+    box-shadow: inset 0 0 0 1px var(--line), inset 0 1px 0 rgb(255 255 255 / 0.1);
+    color: #cfe9f3;
+  }
+  .tile.special svg {
+    width: 46%;
+    height: 46%;
+    fill: currentColor;
+    transition: rotate 600ms var(--ease), scale 300ms var(--ease);
+  }
+  .dice .face {
+    opacity: 0.92;
+  }
+  .dice .edge {
+    fill: none;
+    stroke: #0a1826;
+    stroke-width: 1.6;
+    stroke-linejoin: round;
+  }
+  .dice circle {
+    fill: #0a1826;
+  }
+  .tile.special:hover .dice,
+  .tile.special:focus-visible .dice {
+    rotate: 180deg;
+  }
+  .tile.special.rolling .dice {
+    rotate: 900deg;
+    transition-duration: 700ms;
+  }
+  .tile.special:hover .more,
+  .tile.special:focus-visible .more {
+    scale: 1.2;
+  }
+
+  /* every album at once */
+  .all {
+    display: none;
+    gap: calc(var(--u) * 12);
+    height: calc(var(--u) * 451);
+    grid-template-rows: auto minmax(0, 1fr);
+  }
+  .mid[data-all] .packs,
+  .mid[data-all] .dots {
+    display: none;
+  }
+  .mid[data-all] .all {
+    display: grid;
+  }
+  .all-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .all-head p {
+    margin: 0;
+    color: var(--ink);
+    font-size: calc(var(--u) * 26);
+    font-weight: 500;
+  }
+  .all-head p span {
+    margin-left: calc(var(--u) * 6);
+    color: var(--mute);
+    font-weight: 400;
+  }
+  .all-close {
+    display: grid;
+    place-items: center;
+    width: calc(var(--u) * 42);
+    height: calc(var(--u) * 42);
+    padding: 0;
+    border-radius: 50%;
+  }
+  .all-close svg {
+    width: calc(var(--u) * 20);
+    height: calc(var(--u) * 20);
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+  }
+  .all-grid {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    align-content: start;
+    gap: calc(var(--u) * 16) calc(var(--u) * 12);
+    padding: calc(var(--u) * 6) calc(var(--u) * 8) calc(var(--u) * 6) calc(var(--u) * 6);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    scrollbar-width: thin;
+    scrollbar-color: rgb(170 230 255 / 0.3) transparent;
+  }
+  .all-item {
+    --c: #8fdcff;
+    display: grid;
+    gap: calc(var(--u) * 6);
+    padding: 0;
+    background: none;
+    text-align: center;
+    animation: all-in 420ms var(--ease) calc(var(--k) * 18ms) backwards;
+  }
+  @keyframes all-in {
+    from { opacity: 0; translate: 0 calc(var(--u) * 12); }
+  }
+  .all-art {
+    display: grid;
+    place-items: center;
+    overflow: hidden;
+    aspect-ratio: 1;
+    border-radius: calc(var(--u) * 11);
+    background: color-mix(in srgb, var(--c) 13%, transparent);
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--c) 34%, transparent);
+    color: color-mix(in srgb, var(--c) 45%, white);
+    font-size: calc(var(--u) * 17);
+    line-height: 0.95;
+    text-transform: uppercase;
+    transition: box-shadow 220ms ease, scale 260ms cubic-bezier(0.3, 1.3, 0.5, 1);
+  }
+  .all-art img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: 50% 30%;
+  }
+  .all-name {
+    overflow: hidden;
+    color: var(--mute);
+    font-size: calc(var(--u) * 17);
+    line-height: 1;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    transition: color 200ms ease;
+  }
+  .all-item:hover .all-art,
+  .all-item:focus-visible .all-art {
+    scale: 1.06;
+    box-shadow: 0 0 0 calc(var(--u) * 1.5) rgb(255 255 255 / 0.9), 0 0 calc(var(--u) * 26) rgb(80 200 255 / 0.5);
+  }
+  .all-item:hover .all-name,
+  .all-item:focus-visible .all-name {
+    color: var(--ink);
+  }
+  .all-item:focus-visible {
+    outline: none;
+  }
+
   .dots {
     display: flex;
     justify-content: center;
@@ -2188,10 +2372,41 @@ const first = passes[0];
       $('[data-back]').focus({ preventScroll: true });
     };
     const tiles = [...menu.querySelectorAll<HTMLButtonElement>('[data-tile]')];
-    tiles.forEach((t) => t.addEventListener('click', () => openPack(Number(t.dataset.pack), t)));
+    // the three dots show every album at once; the dice opens one at random
+    const mid = $('.bsm-panel.mid.v-main');
+    const allBox = $('[data-all]');
+    const showAll = (on: boolean) => {
+      mid.toggleAttribute('data-all', on);
+      allBox.toggleAttribute('inert', !on);
+      if (on) $('[data-all-close]').focus({ preventScroll: true });
+    };
+    let rolling = false;
+    tiles.forEach((t) => t.addEventListener('click', () => {
+      if (t.dataset.special === 'all') { lastTile = t; showAll(true); return; }
+      if (t.dataset.special === 'random') {
+        if (rolling) return;
+        rolling = true;
+        t.classList.add('rolling');
+        const withArt = library.map((x, i) => (x.img ? i : -1)).filter((i) => i >= 0);
+        const i = withArt[Math.floor(Math.random() * withArt.length)];
+        setTimeout(() => { t.classList.remove('rolling'); rolling = false; openPack(i, t); }, reduce ? 0 : 650);
+        return;
+      }
+      openPack(Number(t.dataset.pack), t);
+    }));
+    $('[data-all-close]').addEventListener('click', () => { showAll(false); lastTile?.focus({ preventScroll: true }); });
+    menu.querySelectorAll<HTMLElement>('[data-all-item]').forEach((b) => b.addEventListener('click', () => {
+      const from = lastTile ?? b;
+      showAll(false);
+      openPack(Number(b.dataset.allItem), from);
+    }));
     const back = () => { setView('main'); lastTile?.focus({ preventScroll: true }); };
     $('[data-back]').addEventListener('click', back);
-    menu.addEventListener('keydown', (e) => { if (e.key === 'Escape' && menu.dataset.view === 'songs' && !list.classList.contains('open')) back(); });
+    menu.addEventListener('keydown', (e) => {
+      if (e.key !== 'Escape' || list.classList.contains('open')) return;
+      if (menu.dataset.view === 'songs') back();
+      else if (mid.hasAttribute('data-all')) { showAll(false); lastTile?.focus({ preventScroll: true }); }
+    });
     search.addEventListener('input', drawSongs);
     $('[data-fav]').addEventListener('click', (e) => { const b = e.currentTarget as HTMLElement; b.setAttribute('aria-pressed', String(b.getAttribute('aria-pressed') !== 'true')); });
     const radios = (sel: string, on: (i: number) => void) => {
