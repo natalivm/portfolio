@@ -4,7 +4,7 @@
  * the left, the music packs in the middle, Multiplayer on the right, and the bar below. It has no
  * backdrop of its own: every control is glass, a barely-there fill with a hairline edge and thin
  * type, and colour and light arrive on hover. The side panels curve toward the viewer like the
- * game's menu around the player; the whole menu floats, leans a little with the pointer, and a soft
+ * game's menu around the player; the whole menu leans a little with the pointer, and a soft
  * laser dot follows the pointer over it.
  *
  * Everything works: challenge timers count down, the pack pages turn, a pack can be picked, the
@@ -186,10 +186,6 @@ const difficulties = ['Easy', 'Normal', 'Hard', 'Expert', 'Expert+'];
   }
   .bsm-float {
     transform-style: preserve-3d;
-    animation: bsm-float 7s ease-in-out infinite;
-  }
-  @keyframes bsm-float {
-    50% { translate: 0 -8px; }
   }
   .bsm-scene {
     /* 22 + 306 + 72 + 564 + 72 + 306 + 22 = 1364 design pixels across */
@@ -895,7 +891,6 @@ const difficulties = ['Easy', 'Normal', 'Hard', 'Expert', 'Expert+'];
     }
   }
   @media (prefers-reduced-motion: reduce) {
-    .bsm-float,
     .join[data-state='busy'] {
       animation: none;
     }

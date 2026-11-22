@@ -80,10 +80,6 @@ const recent = ['sort-journey', 'river-race', 'balloon-sprint']
     perspective: 1100px;
     font-family: var(--font-ui);
     color: #eef3f7;
-    animation: qb-float 8s ease-in-out -2s infinite;
-  }
-  @keyframes qb-float {
-    50% { translate: 0 6px; }
   }
   .qb-bar {
     display: flex;
@@ -333,9 +329,6 @@ const recent = ['sort-journey', 'river-race', 'balloon-sprint']
     }
   }
   @media (prefers-reduced-motion: reduce) {
-    .qb {
-      animation: none;
-    }
     .qb-bar,
     .qb-grab,
     .qb-app {
