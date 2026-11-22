@@ -9,7 +9,7 @@
  *
  * Everything works: challenge timers count down, the pack pages turn, the multiplayer pack and
  * difficulty cycle, and Join looks for a lobby. Picking a pack swaps the panels for the song screen:
- * the pack's songs with a search and an A to Z rail, the chosen song with its modes, difficulty,
+ * the pack's numbered songs with a search and the setup buttons, the chosen song with its modes, difficulty,
  * modifiers and Play, and the high scores. Back (or Escape) returns to the packs. Under it runs the music pack
  * pass, a battle pass: a blue band with the level, the XP and a reward at each milestone. Its tab
  * opens the list of passes, one per music pack, each with its own progress; a reward that has been
@@ -277,7 +277,20 @@ const first = passes[0];
         </div>
         <p class="s-pack" data-s-pack></p>
         <div class="s-body">
-          <div class="s-index" data-index></div>
+          <div class="s-tools" role="group" aria-label="Setup">
+            <button type="button" class="s-tool glass" data-press data-tip="Gameplay setup" aria-label="Gameplay setup">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h9M17 7h3M4 12h3M11 12h9M4 17h10M18 17h2" /><circle cx="15" cy="7" r="2" /><circle cx="9" cy="12" r="2" /><circle cx="16" cy="17" r="2" /></svg>
+            </button>
+            <button type="button" class="s-tool glass" data-press data-tip="Colours" aria-label="Colours">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4a8 8 0 1 0 0 16c1.300 0 2-.900 2-1.900 0-1.300-1-1.600-1-2.600 0-.800.700-1.500 1.600-1.500H17a3 3 0 0 0 3-3.200C19.700 6.900 16.200 4 12 4z" /><circle class="dot" cx="8.300" cy="11" r="1.100" /><circle class="dot" cx="10.500" cy="7.800" r="1.100" /><circle class="dot" cx="14.300" cy="7.800" r="1.100" /></svg>
+            </button>
+            <button type="button" class="s-tool glass" data-press data-tip="Environment" aria-label="Environment">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 18.500l5.500-8 3.500 5 2.500-3.500 6.500 6.500" /><circle cx="16.500" cy="6.500" r="1.800" /></svg>
+            </button>
+            <button type="button" class="s-tool glass" data-press data-tip="Player settings" aria-label="Player settings">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10" cy="8" r="3.300" /><path d="M4 19c0-3.300 2.700-5.500 6-5.500 1 0 1.900.200 2.700.500" /><circle cx="17" cy="17" r="2.200" /><path d="M17 13.300v1.200M17 19.500v1.200M13.300 17h1.200M19.500 17h1.200M14.400 14.400l.900.900M18.700 18.700l.900.900M14.400 19.600l.900-.900M18.700 15.300l.900-.900" /></svg>
+            </button>
+          </div>
           <div class="s-list" data-songs role="listbox" aria-label="Songs"></div>
         </div>
       </section>
@@ -1296,7 +1309,7 @@ const first = passes[0];
     margin-top: auto;
   }
 
-  /* songs: back, search, an A to Z rail and the list */
+  /* songs: back, search, the setup buttons and the numbered list */
   .s-top {
     display: flex;
     align-items: center;
@@ -1369,31 +1382,70 @@ const first = passes[0];
   }
   .s-body {
     display: grid;
-    grid-template-columns: calc(var(--u) * 22) minmax(0, 1fr);
-    gap: calc(var(--u) * 10);
+    grid-template-columns: calc(var(--u) * 48) minmax(0, 1fr);
+    gap: calc(var(--u) * 14);
     height: calc(var(--u) * 400);
   }
-  .s-index {
+  /* the setup buttons beside the list: gameplay, colours, environment, player */
+  .s-tools {
     display: grid;
-    align-content: space-between;
-    justify-items: center;
+    align-content: center;
+    gap: calc(var(--u) * 14);
   }
-  .s-index button {
+  .s-tool {
+    display: grid;
+    place-items: center;
+    width: calc(var(--u) * 48);
+    height: calc(var(--u) * 48);
     padding: 0;
-    background: none;
-    color: var(--mute);
-    font-size: calc(var(--u) * 15);
-    line-height: 1;
-    opacity: 0.3;
-    transition: color 160ms ease, scale 160ms ease;
+    border-radius: 50%;
+    color: rgb(214 236 246 / 0.75);
   }
-  .s-index button[data-has] {
+  .s-tool svg {
+    width: calc(var(--u) * 26);
+    height: calc(var(--u) * 26);
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.5;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    transition: scale 260ms var(--ease);
+  }
+  .s-tool svg .dot {
+    fill: currentColor;
+    stroke: none;
+  }
+  .s-tool:hover,
+  .s-tool:focus-visible {
+    color: #fff;
+  }
+  .s-tool:hover svg,
+  .s-tool:focus-visible svg {
+    scale: 1.14;
+  }
+  .s-tool::before {
+    content: attr(data-tip);
+    position: absolute;
+    top: 50%;
+    left: calc(100% + var(--u) * 10);
+    z-index: 2;
+    padding: calc(var(--u) * 7) calc(var(--u) * 12) calc(var(--u) * 5);
+    border-radius: calc(var(--u) * 9);
+    background: rgb(8 26 46 / 0.94);
+    box-shadow: inset 0 0 0 1px var(--line);
     color: var(--ink);
-    opacity: 1;
+    font-size: calc(var(--u) * 18);
+    line-height: 1;
+    white-space: nowrap;
+    opacity: 0;
+    pointer-events: none;
+    translate: calc(var(--u) * -6) -50%;
+    transition: opacity 180ms ease, translate 240ms var(--ease);
   }
-  .s-index button[data-has]:hover {
-    color: var(--cyan);
-    scale: 1.5;
+  .s-tool:hover::before,
+  .s-tool:focus-visible::before {
+    opacity: 1;
+    translate: 0 -50%;
   }
   .s-list {
     display: grid;
@@ -1407,10 +1459,10 @@ const first = passes[0];
   }
   .song {
     display: grid;
-    grid-template-columns: calc(var(--u) * 46) minmax(0, 1fr) auto;
+    grid-template-columns: calc(var(--u) * 24) calc(var(--u) * 46) minmax(0, 1fr) auto;
     align-items: center;
     gap: calc(var(--u) * 12);
-    padding: calc(var(--u) * 6) calc(var(--u) * 10) calc(var(--u) * 6) calc(var(--u) * 6);
+    padding: calc(var(--u) * 6) calc(var(--u) * 10) calc(var(--u) * 6) calc(var(--u) * 8);
     border-radius: calc(var(--u) * 10);
     background: transparent;
     box-shadow: inset 0 0 0 1px transparent;
@@ -1433,6 +1485,15 @@ const first = passes[0];
     background: var(--glass-h);
     object-fit: cover;
     object-position: 50% 12%;
+  }
+  .song-no {
+    color: var(--mute);
+    font-size: calc(var(--u) * 20);
+    font-variant-numeric: tabular-nums;
+    text-align: right;
+  }
+  .song[aria-selected='true'] .song-no {
+    color: var(--ink);
   }
   .song-n {
     display: grid;
@@ -2295,7 +2356,6 @@ const first = passes[0];
     const albumsAt = menu.dataset.albums!;
     const $ = <T extends HTMLElement = HTMLElement>(sel: string) => menu.querySelector<T>(sel)!;
     const songList = $('[data-songs]');
-    const indexRail = $('[data-index]');
     const search = $<HTMLInputElement>('[data-search]');
     const hs = $('[data-hs]');
     const screens = { main: [...menu.querySelectorAll<HTMLElement>('.v-main')], songs: [...menu.querySelectorAll<HTMLElement>('.v-songs')] };
@@ -2358,6 +2418,7 @@ const first = passes[0];
         b.setAttribute('role', 'option');
         b.dataset.t = sg.t;
         b.setAttribute('aria-selected', String(sg === song));
+        const no = document.createElement('span'); no.className = 'song-no'; no.textContent = String(pack.songs.indexOf(sg) + 1);
         const th = pack.img ? Object.assign(document.createElement('img'), { src: albumsAt + pack.img, alt: '', className: 'song-th' }) : Object.assign(document.createElement('span'), { className: 'song-th' });
         const n = document.createElement('span'); n.className = 'song-n';
         const t = document.createElement('span'); t.className = 'song-t'; t.textContent = sg.t;
@@ -2367,30 +2428,13 @@ const first = passes[0];
         const len = document.createElement('span'); len.textContent = sg.len;
         const bpm = document.createElement('span'); bpm.className = 'song-bpm'; bpm.textContent = `${sg.bpm} bpm`;
         m.append(len, bpm);
-        b.append(th, n, m);
+        b.append(no, th, n, m);
         b.addEventListener('click', () => pickSong(sg));
         songList.append(b);
       }
       if (!shown.length) songList.innerHTML = '<p class="s-none">No songs match.</p>';
       scoped(songList);
-      // the rail lights the letters this list has
-      const letter = (x: Song) => { const c = x.t.replace(/^[^a-z0-9]+/i, '')[0]?.toUpperCase() ?? '#'; return /[A-Z]/.test(c) ? c : '#'; };
-      const has = new Set(shown.map(letter));
-      indexRail.querySelectorAll<HTMLElement>('button').forEach((b) => b.toggleAttribute('data-has', has.has(b.textContent!)));
     };
-    for (const c of '#ABCDEFGHIJKLMNOPRSTUVWY') {
-      const b = document.createElement('button');
-      b.type = 'button';
-      b.tabIndex = -1;
-      b.textContent = c;
-      b.addEventListener('click', () => {
-        const first = [...songList.querySelectorAll<HTMLElement>('.song')].find((x) => { const k = x.dataset.t!.replace(/^[^a-z0-9]+/i, '')[0]?.toUpperCase(); return c === '#' ? !/[A-Z]/.test(k ?? '') : k === c; });
-        first?.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
-        first?.focus({ preventScroll: true });
-      });
-      indexRail.append(b);
-    }
-    scoped(indexRail);
     const setView = (v: 'main' | 'songs') => {
       menu.dataset.view = v;
       screens.main.forEach((el) => el.toggleAttribute('inert', v !== 'main'));
