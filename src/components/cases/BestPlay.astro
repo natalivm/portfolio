@@ -1,34 +1,106 @@
 ---
 /**
  * BestPlay: visual development for a revamp of the app. The film at the top of the page
- * (HomeRevampFilm) replays the home screen redesign on the real screens; this is the text under it.
+ * (HomeRevampFilm) shows the home screen redesign; this is the story under it, why the revamp,
+ * from the research deck in the Art system revamp Figma file. The deck's words are set as text;
+ * the only images are the app's own screens and art, and the reference screens. The research
+ * panels borrow the deck's look: cream panels, a serif, a deep green.
  */
+import '@fontsource-variable/newsreader';
 import type { Project } from '../../data/projects';
 
 interface Props {
   project: Project;
 }
 const { project: p } = Astro.props;
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+const art = (name: string) => `${base}/cases/bestplay/${name}.webp`;
+
+const principles = [
+  { h: 'Professional and structured', t: 'A clear grid, honest numbers in dollars, one message per card.' },
+  { h: 'Fun and interactive', t: 'Play, motion and rewards stay. They just stop shouting.' },
+  { h: 'Room for every style', t: 'A light, calm frame that any art can sit on, in a light or a dark theme.' },
+  { h: 'For everyone', t: 'Players of every age and background, in everyday moments they recognise.' },
+];
+
+const review = [
+  { h: 'It tips over', t: 'A very heavy top and a very light bottom. Everything important piles up at the start.' },
+  { h: 'It’s cramped', t: 'Text doesn’t fit its boxes, the contrast is very low and the type is too small.' },
+  { h: 'Everything shouts', t: 'Very high saturation on every card, so each one competes with the next.' },
+];
+
+const stats = [
+  { n: '28%', t: 'of US video game players are 50 or older' },
+  { n: '47%', t: 'of US video game players are women' },
+  { n: '31%', t: 'of US adults earning under $30,000 a year go online only through a smartphone, against 6% of those earning $75,000 or more' },
+];
+
+const cues = [
+  { cue: 'Gold coin piles and treasure chests', where: 'Home, Events', read: 'Jackpot. Too good to be true.' },
+  { cue: 'Crowns, magenta and “Buy tickets”', where: 'Lucky Draw', read: 'A lottery.' },
+  { cue: 'A $4,000 prize above a $99.99 balance', where: 'Home, Events', read: 'That will never be me.' },
+  { cue: '“Shortcut to big money!” with a money-face emoji', where: 'Home', read: 'Get rich quick.' },
+  { cue: 'Bubble 3D lettering in many styles', where: 'Every screen', read: 'A game for kids.' },
+  { cue: 'The fox in a suit, holding a briefcase of cash', where: 'Home, Events, Cash out', read: 'Wall Street, not people like me.' },
+];
+
+const costs = [
+  { h: 'Store page', t: 'Gold and jackpot screenshots look like every other earn-money app, and like the scams.', m: 'store page conversion' },
+  { h: 'First session', t: 'Five loud promotions bury the simple loop: play, earn, cash out.', m: 'onboarding completion, day-1 retention' },
+  { h: 'First cash out', t: 'A $4,000 headline makes a $5 cash out feel like losing.', m: 'share of players who cash out, time to first cash out' },
+  { h: 'Word of mouth', t: 'People hesitate to recommend an app that looks like a scam.', m: 'invites sent, “scam” or “fake” in reviews' },
+];
+
+const benchmarks = [
+  { kind: 'Money apps', h: 'How money should look', apps: ['Cash App', 'Chime', 'Credit Karma'] },
+  { kind: 'Rewards and cash back', h: 'How earning should feel', apps: ['Ibotta', 'Fetch', 'Upside'] },
+  { kind: 'Store loyalty', h: 'How events and boosts should read', apps: ['Starbucks Rewards', 'Walgreens', 'Dollar General'] },
+  { kind: 'Calm games', h: 'How play stays fun without shouting', apps: ['Duolingo', 'Wordscapes', 'Microsoft Solitaire Collection'] },
+];
+
+const words = [
+  { today: 'Shortcut to big money! 🤑', next: 'Extra cash for everyday needs', why: 'Promises what we can deliver' },
+  { today: 'Big Win Alert: Play Now!', next: 'Play Games. Reach a new level. +$5.00', why: 'Says what to do and what it pays' },
+  { today: 'Double Your Coins! 200k / 400k', next: 'Complete tasks 7 days in a row and get +$5.00', why: 'Dollars, not coin totals' },
+  { today: '$4,000 Treasure Trove', next: '$4,000 shared by [__] winners', why: 'Shows how many people win' },
+  { today: 'Buy tickets', next: 'Get tickets for [500] coins', why: 'Clear about the price' },
+  { today: '+100$ and $99,99', next: '$100 and $99.99', why: 'The US money format' },
+];
+
+const themes = [
+  { h: 'A little extra goes a long way', items: ['Gas for the car', 'Weekend errands', 'Your daily coffee'], note: 'A relatable mix of essentials and small pleasures.' },
+  { h: 'More reasons to celebrate', items: ['Birthday surprises', 'Gifts for loved ones', 'Special occasions'], note: 'Emotionally warm, and easy to picture.' },
+  { h: 'Something extra for your best friend', items: ['Pet food', 'Favorite treats', 'Toys and essentials'], note: 'Pet care brings warmth, personality and strong visual storytelling.' },
+  { h: 'Make home a little sweeter', items: ['Household essentials', 'Little home upgrades', 'Everyday comforts'], note: 'Practical, without dwelling on financial hardship.' },
+  { h: 'Make room for more fun', items: ['Movie nights', 'Favorite takeout', 'Weekend treats'], note: 'Connects playing games with positive, attainable moments.' },
+  { h: 'Stay connected to what matters', items: ['Phone expenses', 'Internet at home', 'Entertainment subscriptions'], note: 'Everyday digital costs, close to home for mobile-first players.' },
+];
 
 const changes = [
   { h: 'Wallet on top', t: 'Coins, the time until they convert and Cash out move above the banner, on a calm grey bar.' },
   { h: 'Event banner', t: 'A white timer that counts to the second, no menu button, and carousel dots, so the banner reads as one of several.' },
   { h: 'Double coins', t: 'The daily streak row goes. One line of copy, one progress pill and a pile of coins stay.' },
   { h: 'Invite friends', t: 'The offer becomes the headline, with five avatar slots and an Invite button to show progress.' },
-  { h: 'Story card', t: 'A full-width card with its own timer and steps replaces the old promo.' },
+  { h: 'Story card', t: '“Make room for more fun”, the fox’s movie night from the new campaign, replaces “Shortcut to big money!”.' },
 ];
 ---
 
-<article class="wrap case">
+<article class="wrap case bp">
+  <!-- the thesis -->
   <section class="sec">
     <div class="sec-head">
-      <h2>The revamp</h2>
+      <h2>Why a revamp</h2>
       <div>
-        <p>
-          BestPlay is a games app where play earns coins that convert to cash. The work was visual development
-          for a revamp of the app, starting with Home: the same content, in a clearer order, on calmer surfaces.
+        <p class="lede">
+          BestPlay pays people to play games: coins add up and convert to cash. Over time its look drifted toward
+          a casino, all gold, jackpots and loud promises. The revamp has one message: we don’t want to look like
+          another casino app. We want to earn our players’ trust.
         </p>
-        <p>The film above replays the redesign on the real screens, one change at a time. Pick a step to jump to it.</p>
+        <p>
+          Trust doesn’t have to mean boring, though. BestPlay isn’t a bank either. The new look stays fun and
+          interactive and leaves room for a variety of styles, while looking professional and structured, and
+          appealing to a wide, diverse range of people.
+        </p>
         {p.link && (
           <p class="out">
             <a class="pill pill-light" href={p.link.href} target="_blank" rel="noopener">{p.link.label}</a>
@@ -39,9 +111,335 @@ const changes = [
   </section>
 
   <section class="sec">
+    <div class="scale" data-scale role="img" aria-label="A scale from casino to bank, with BestPlay in the middle: trusted, and still fun">
+      <div class="end">
+        <p class="eyebrow">Casino</p>
+        <p>Gold, jackpots, loud promises. Fun, but hard to trust.</p>
+      </div>
+      <div class="mid">
+        <p class="eyebrow">BestPlay</p>
+        <p class="serif">Trusted, and still fun</p>
+      </div>
+      <div class="end">
+        <p class="eyebrow">Bank</p>
+        <p>Calm and trusted, but no fun at all.</p>
+      </div>
+      <div class="line" aria-hidden="true"><i></i></div>
+    </div>
+    <ul class="principles" role="list">
+      {principles.map((x) => <li><h3>{x.h}</h3><p>{x.t}</p></li>)}
+    </ul>
+  </section>
+
+  <!-- chapter 1: an honest look -->
+  <section class="sec">
     <div class="sec-head">
-      <h2>Home, step by step</h2>
-      <div><p>Five changes, in the order the film makes them.</p></div>
+      <h2>What Home says today</h2>
+      <div><p>First, an honest look at two live versions of Home, and what a new player takes in during their first few seconds.</p></div>
+    </div>
+    <div class="review">
+      <div class="screens">
+        <figure class="phone">
+          <img src={art('home-1000')} width="524" height="1280" loading="lazy" decoding="async" alt="BestPlay Home with a $1,000 race banner, the coin balance, a Double your coins streak, the Mission Board and Special Offers" />
+          <span class="pin" style="--x:86%;--y:12%" aria-hidden="true">1</span>
+        </figure>
+        <figure class="phone">
+          <img src={art('home-4000')} width="488" height="1034" loading="lazy" decoding="async" alt="BestPlay Home with the $4,000 Treasure Trove banner, the coin balance, Invite Friends, Shortcut to big money and the Mission Board" />
+          <span class="pin" style="--x:22%;--y:15%" aria-hidden="true">2</span>
+          <span class="pin" style="--x:88%;--y:46%" aria-hidden="true">3</span>
+        </figure>
+      </div>
+      <ol class="notes" role="list">
+        {review.map((r, i) => (
+          <li>
+            <span class="pin static" aria-hidden="true">{i + 1}</span>
+            <h3>{r.h}</h3>
+            <p>{r.t}</p>
+          </li>
+        ))}
+      </ol>
+    </div>
+
+    <div class="pair">
+      <figure class="shot">
+        <img src={art('fox-everywhere')} width="1231" height="861" loading="lazy" decoding="async" alt="Three BestPlay screens with the fox circled on almost every card: the earning mode picker and two versions of Home" />
+      </figure>
+      <div class="note">
+        <span class="pin static" aria-hidden="true">4</span>
+        <h3>A fox everywhere</h3>
+        <p>
+          The same fox, in a suit, on almost every card feels like a lack of ideas. And nothing on screen shows the
+          everyday things our players relate to.
+        </p>
+      </div>
+    </div>
+    <div class="pair flip">
+      <div class="note">
+        <span class="pin static" aria-hidden="true">5</span>
+        <h3>Space, but no guidance</h3>
+        <p>
+          The Double coins streak takes a big part of Home and only opens a static popup. It could guide the day
+          instead: today’s tasks, how far along they are, and what each one pays.
+        </p>
+      </div>
+      <div class="duo">
+        <figure class="shot">
+          <img src={art('streak-today')} width="767" height="876" loading="lazy" decoding="async" alt="Today: the Double coins streak on Home, and the static Coin goal popup it opens" />
+          <figcaption>Today: a streak, and a static popup</figcaption>
+        </figure>
+        <figure class="shot">
+          <img src={art('streak-guided')} width="387" height="874" loading="lazy" decoding="async" alt="A sketch of a guided day: Day 4, finish 5 tasks, each with its progress, reward and a Play button, then open the Safe" />
+          <figcaption>A sketch: the day as tasks</figcaption>
+        </figure>
+      </div>
+    </div>
+  </section>
+
+  <!-- chapter 2: the drift -->
+  <section class="sec">
+    <div class="sec-head">
+      <h2>How the style drifted</h2>
+      <div><p class="quote">“We started light, casual and whimsical, and ended up dark, commercial and hardcore.”</p></div>
+    </div>
+    <div class="drift" aria-label="Then: light, casual, whimsical. Now: dark, commercial, hardcore.">
+      <div class="then">
+        <span class="label">Then</span>
+        <span class="chip">light</span><span class="chip">casual</span><span class="chip">whimsical</span>
+      </div>
+      <span class="arrow" aria-hidden="true">→</span>
+      <div class="now">
+        <span class="label">Now</span>
+        <span class="chip">dark</span><span class="chip">commercial</span><span class="chip">hardcore</span>
+      </div>
+    </div>
+    <div class="collage">
+      <img src={art('drift-popups')} width="1100" height="788" loading="lazy" decoding="async" alt="Two Weekly Tournament popups promising a $100K pool of real cash every week" />
+      <img src={art('drift-vault')} width="420" height="1026" loading="lazy" decoding="async" alt="A dark $2,000 Black Vault community challenge" />
+      <img src={art('drift-mall')} width="1000" height="750" loading="lazy" decoding="async" alt="The fox in sunglasses and a suit with a gold cash register and shopping bags in a shiny mall" />
+    </div>
+    <div class="notes2">
+      <div class="note">
+        <h3>A style anyone can pick up</h3>
+        <p>
+          If the style no longer serves the product, it can’t support production either. In a fast-paced team,
+          anyone should be able to pick it up and replicate it, with AI too.
+        </p>
+      </div>
+      <div class="note">
+        <h3>Light, and dark at night</h3>
+        <p>
+          A lighter UI lets any kind of graphics sit on it, and makes a dark theme easy: a must these days for
+          players who play late at night, since it’s easier on the eyes.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- chapter 3: the research, as a deck -->
+  <section class="sec">
+    <div class="sec-head">
+      <h2>What the research says</h2>
+      <div><p>Who the players are, what they fear, and what the current look costs. From the deck that started the revamp.</p></div>
+    </div>
+  </section>
+
+  <div class="deck">
+    <section class="panel">
+      <p class="eyebrow">Who we design for</p>
+      <h2 class="serif">Our players are older, lower-income and live on their phones</h2>
+      <ul class="stats" role="list">
+        {stats.map((s) => <li><span class="big serif">{s.n}</span><p>{s.t}</p></li>)}
+      </ul>
+    </section>
+
+    <section class="panel">
+      <p class="eyebrow">What they’ve learned</p>
+      <h2 class="serif">They have good reason to distrust apps that pay for tasks</h2>
+      <div class="ftc">
+        <figure class="bars" aria-label="Job scam losses reported to the FTC: $90M in 2020, $501M in 2024">
+          <figcaption>Job scam losses reported to the FTC</figcaption>
+          <div class="plot" aria-hidden="true">
+            <div class="bar" style="--h:18%"><b>$90M</b><span>2020</span></div>
+            <div class="bar dark" style="--h:100%"><b>$501M</b><span>2024</span></div>
+          </div>
+        </figure>
+        <div class="ftc-side">
+          <p class="big serif">$750.6M</p>
+          <p>lost to business and job opportunity scams in 2024, up nearly $250M in a year. The FTC links much of the rise to gamified “task scams”.</p>
+          <p class="rule">“Earn money doing simple tasks in an app” describes BestPlay. It also describes these scams. <strong>Our look has to show the difference.</strong></p>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel">
+      <p class="eyebrow">What they fear</p>
+      <h2 class="serif">Even real prizes can’t beat the fear</h2>
+      <div class="fear">
+        <div class="fear-text">
+          <p>
+            Temu gives away real prizes, smart watches, tablets, even sofas, yet most people are too scared of scams
+            to take part: scared their card details and private data will be stolen. Plenty of YouTubers and
+            TikTokers explain how it works, and the fear still wins. Older players often don’t know a virtual card
+            can keep a one-off purchase safe.
+          </p>
+          <blockquote class="serif">
+            Temu’s loud interface kept me away for a long time too. Then it dropped most of the screaming titles and
+            got calmer and more stylish.
+          </blockquote>
+        </div>
+        <figure class="shot">
+          <img src={art('temu')} width="735" height="676" loading="lazy" decoding="async" alt="Temu’s home screen before and after its redesign: from red sale banners and FREE badges to a calm white layout" />
+          <figcaption>Temu before and after: fewer screaming titles, a calmer look</figcaption>
+        </figure>
+      </div>
+    </section>
+
+    <section class="panel green">
+      <p class="eyebrow">Why the look matters</p>
+      <div class="credible">
+        <p class="huge serif">46%</p>
+        <p>of people’s comments on why a website seemed credible were about its design look, the most mentioned factor. For finance sites it was 55%.</p>
+      </div>
+      <p class="serif say">People judge whether to trust a service by how it looks. Before a player ever cashes out, the look is all the evidence they have.</p>
+    </section>
+
+    <section class="panel">
+      <p class="eyebrow">What a wary player reads</p>
+      <h2 class="serif">Six cues that read as casino or kids’ game</h2>
+      <ul class="cues" role="list">
+        {cues.map((c) => (
+          <li>
+            <p class="cue">{c.cue}</p>
+            <p class="where">{c.where}</p>
+            <p class="bubble serif">“{c.read}”</p>
+          </li>
+        ))}
+      </ul>
+    </section>
+
+    <section class="panel">
+      <p class="eyebrow">What it costs</p>
+      <h2 class="serif">Where the current look likely costs us</h2>
+      <ol class="steps" role="list">
+        {costs.map((c, i) => (
+          <li>
+            <p class="eyebrow">Step {i + 1}</p>
+            <h3>{c.h}</h3>
+            <p>{c.t}</p>
+            <p class="measure"><strong>Measure:</strong> {c.m}</p>
+          </li>
+        ))}
+      </ol>
+    </section>
+
+    <section class="panel">
+      <p class="eyebrow">Benchmarks</p>
+      <h2 class="serif">We benchmark against four kinds of apps</h2>
+      <ul class="bench" role="list">
+        {benchmarks.map((b) => (
+          <li>
+            <p class="eyebrow">{b.kind}</p>
+            <h3>{b.h}</h3>
+            <ul role="list">{b.apps.map((a) => <li>{a}</li>)}</ul>
+          </li>
+        ))}
+      </ul>
+      <div class="bench-notes">
+        <p><strong>Not on the list: other earn-money apps.</strong> Many share our current look, so copying them won’t help us stand out.</p>
+        <p><strong>Principles, not screens.</strong> We study why these apps feel trustworthy and calm, then draw our own.</p>
+      </div>
+    </section>
+
+    <section class="panel">
+      <p class="eyebrow">Research</p>
+      <h2 class="serif">Which car-wash card gets finished more often?</h2>
+      <div class="wash" data-wash>
+        <div class="card">
+          <span class="tag">19% finished</span>
+          <p class="eyebrow">Card A</p>
+          <div class="stamp-card">
+            <p class="serif">Buy 8 washes, get 1 free</p>
+            <div class="dots" aria-hidden="true">{Array.from({ length: 8 }, () => <i />)}</div>
+            <p class="small">8 washes to go</p>
+          </div>
+        </div>
+        <div class="card">
+          <span class="tag win">34% finished</span>
+          <p class="eyebrow">Card B</p>
+          <div class="stamp-card">
+            <p class="serif">Buy 10 washes, get 1 free</p>
+            <div class="dots" aria-hidden="true">{Array.from({ length: 10 }, (_, i) => <i class:list={[i < 2 && 'on']} style={`--k:${i}`} />)}</div>
+            <p class="small">2 stamps free, so also 8 washes to go</p>
+          </div>
+        </div>
+      </div>
+      <p class="serif say dark">A head start nearly doubled completion. <span>Start weekly goals and streaks with progress already counted.</span></p>
+    </section>
+
+    <section class="panel">
+      <p class="eyebrow">Words</p>
+      <h2 class="serif">The words change with the pictures</h2>
+      <ul class="words" role="list">
+        {words.map((w) => (
+          <li>
+            <p class="was"><span class="visually-hidden">Today: </span><s>{w.today}</s></p>
+            <p class="becomes serif"><span class="visually-hidden">Proposed: </span>{w.next}</p>
+            <p class="why">{w.why}</p>
+          </li>
+        ))}
+      </ul>
+    </section>
+  </div>
+
+  <!-- chapter 4: the campaign -->
+  <section class="sec">
+    <div class="campaign">
+      <div class="campaign-text">
+        <p class="eyebrow">The campaign</p>
+        <p class="headline serif">“A little extra goes a long way.”</p>
+        <p>
+          The message behind the new look. It feels American, relatable and optimistic, without exaggerating how
+          much players can earn. It celebrates small financial wins that make everyday life easier, and moments of
+          happiness: family, pets, personal treats and everyday freedom.
+        </p>
+        <p class="aside serif">We want players to think, “That would be nice to have a little extra money for.” So it feels like a real app.</p>
+      </div>
+      <figure class="shot">
+        <img src={art('campaign')} width="861" height="459" loading="lazy" decoding="async" alt="Campaign card: More for what matters most, with a grocery bag and a bill, and ticks for groceries, bills and everyday expenses" />
+      </figure>
+    </div>
+    <ol class="themes" role="list">
+      {themes.map((t, i) => (
+        <li>
+          <div class="theme-top">
+            <img src={art(`theme-${i + 1}`)} width="146" height="146" loading="lazy" decoding="async" alt="" />
+            <span class="num serif" aria-hidden="true">{String(i + 1).padStart(2, '0')}</span>
+          </div>
+          <h3>{t.h}</h3>
+          <ul class="chips" role="list">{t.items.map((x) => <li>{x}</li>)}</ul>
+          <p class="small">{t.note}</p>
+        </li>
+      ))}
+    </ol>
+    <div class="foxes">
+      <figure class="shot">
+        <img src={art('fox-market')} width="760" height="955" loading="lazy" decoding="async" alt="The fox in a sweater, walking home from an autumn market with a bag of groceries" />
+      </figure>
+      <figure class="shot">
+        <img src={art('fox-movie')} width="1300" height="644" loading="lazy" decoding="async" alt="The fox in a hoodie on the sofa with a bowl of popcorn, a movie night at home" />
+      </figure>
+    </div>
+    <p class="fox">
+      <strong>And the fox?</strong> It stays, but leaves the suit and the briefcase of cash for everyday life: a market
+      stroll, a movie night at home. The movie night now leads the “Make room for more fun” card on Home.
+    </p>
+  </section>
+
+  <!-- chapter 5: the result -->
+  <section class="sec">
+    <div class="sec-head">
+      <h2>What changed on Home</h2>
+      <div><p>Five changes, in the order the film above makes them.</p></div>
     </div>
     <ol class="changes" role="list">
       {changes.map((c, i) => (
@@ -55,12 +453,38 @@ const changes = [
   </section>
 </article>
 
+<script>
+  // the scale's marker settles in the middle, the pins drop in, and the head-start stamps land, each as it comes into view
+  const io = new IntersectionObserver((es) => es.forEach((e) => {
+    if (!e.isIntersecting) return;
+    e.target.classList.add('seen');
+    io.unobserve(e.target);
+  }), { threshold: 0.35 });
+  document.querySelectorAll('[data-wash], [data-scale], .review').forEach((el) => {
+    el.classList.add('armed');
+    io.observe(el);
+  });
+</script>
+
 <style>
-  .case {
+  .bp {
+    --cream: #f4f2ec;
+    --cream-2: #faf9f5;
+    --line-2: #d8d5cc;
+    --ink-soft: #55544f;
+    --green: #2f6b4f;
+    --green-deep: #2e6a50;
+    --red: #d1432b;
+    --serif: 'Newsreader Variable', Georgia, serif;
     display: grid;
     grid-template-columns: minmax(0, 1fr);
     gap: clamp(64px, 8vw, 112px);
     margin-top: clamp(56px, 7vw, 96px);
+  }
+  .serif {
+    font-family: var(--serif);
+    font-weight: 500;
+    letter-spacing: -0.015em;
   }
   .sec {
     display: grid;
@@ -84,13 +508,727 @@ const changes = [
   .out {
     margin-top: 20px;
   }
+  .quote {
+    font-family: var(--serif);
+    font-size: clamp(1.5rem, 2.6vw, 2.25rem) !important;
+    line-height: 1.2;
+    letter-spacing: -0.015em;
+  }
+  h3 {
+    font-size: clamp(1.0625rem, 1.4vw, 1.25rem);
+    letter-spacing: -0.02em;
+    line-height: 1.2;
+  }
+  .small {
+    color: var(--ink-2);
+    font-size: 0.9375rem;
+  }
+  .eyebrow {
+    color: var(--green);
+    font: 600 0.75rem/1.2 var(--font-ui);
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+  }
+  ol,
+  ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  /* app screens and art */
+  .shot {
+    display: grid;
+    gap: 10px;
+    margin: 0;
+  }
+  .shot img,
+  .collage img {
+    width: 100%;
+    height: auto;
+    border-radius: var(--radius-md);
+    background: #fff;
+    box-shadow: var(--shadow-tile);
+  }
+  .shot figcaption {
+    color: var(--ink-2);
+    font-size: 0.9375rem;
+  }
+  .pair {
+    display: grid;
+    grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr);
+    align-items: center;
+    gap: clamp(24px, 4vw, 64px);
+  }
+  .pair.flip {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.6fr);
+  }
+  .duo {
+    display: grid;
+    grid-template-columns: 0.876fr 0.443fr;
+    gap: clamp(12px, 1.6vw, 20px);
+    align-items: start;
+  }
+  .note {
+    display: grid;
+    align-content: start;
+    justify-items: start;
+    gap: 10px;
+  }
+  .note p {
+    max-width: 56ch;
+    color: var(--ink-2);
+    font-size: 1.0625rem;
+  }
+
+  /* ---------- the thesis: between a casino and a bank ---------- */
+  .scale {
+    position: relative;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr) minmax(0, 1fr);
+    gap: clamp(16px, 3vw, 40px);
+    padding-top: 34px;
+  }
+  .scale .end,
+  .scale .mid {
+    display: grid;
+    align-content: start;
+    gap: 8px;
+  }
+  .scale .end p:not(.eyebrow) {
+    max-width: 30ch;
+    color: var(--ink-2);
+  }
+  .scale .end:last-of-type {
+    justify-items: end;
+    text-align: right;
+  }
+  .scale .end .eyebrow {
+    color: var(--ink-2);
+  }
+  .scale .mid {
+    justify-items: center;
+    text-align: center;
+  }
+  .scale .mid .serif {
+    font-size: clamp(1.5rem, 2.8vw, 2.25rem);
+    line-height: 1.1;
+  }
+  .scale .line {
+    position: absolute;
+    top: 10px;
+    left: 0;
+    right: 0;
+    height: 4px;
+    border-radius: 2px;
+    background: linear-gradient(90deg, #d4a017, #c2185b 22%, var(--line) 40%, var(--line) 60%, #2c4a7a 78%, #1f2f4d);
+  }
+  .scale .line i {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 22px;
+    height: 22px;
+    border: 4px solid #fff;
+    border-radius: 50%;
+    background: var(--green);
+    box-shadow: 0 2px 8px rgb(0 0 0 / 0.2);
+    transform: translate(-50%, -50%);
+    transition: left 1.1s cubic-bezier(0.34, 1.4, 0.5, 1) 0.15s;
+  }
+  .scale.armed:not(.seen) .line i {
+    left: 6%;
+  }
+  .principles {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 24px clamp(16px, 2vw, 28px);
+  }
+  .principles li {
+    display: grid;
+    align-content: start;
+    gap: 8px;
+    padding-top: 16px;
+    border-top: 2px solid var(--green);
+  }
+  .principles p {
+    color: var(--ink-2);
+  }
+
+  /* ---------- review: two screens with pins, notes beside ---------- */
+  .review {
+    display: grid;
+    grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr);
+    align-items: center;
+    gap: clamp(24px, 4vw, 64px);
+  }
+  .screens {
+    display: grid;
+    grid-template-columns: 0.409fr 0.472fr;
+    align-items: start;
+    gap: clamp(12px, 2vw, 28px);
+  }
+  .phone {
+    position: relative;
+    margin: 0;
+  }
+  .phone img {
+    width: 100%;
+    height: auto;
+    border-radius: 18px;
+    box-shadow: var(--shadow-tile), 0 0 0 6px #1d1d1b;
+  }
+  .pin {
+    display: grid;
+    place-items: center;
+    flex: none;
+    width: 32px;
+    height: 32px;
+    border-radius: 50% 50% 50% 4px;
+    background: var(--red);
+    color: #fff;
+    font: 700 0.875rem/1 var(--font-ui);
+    box-shadow: 0 0 0 3px #fff, 0 6px 14px rgb(0 0 0 / 0.25);
+  }
+  .phone .pin {
+    position: absolute;
+    left: var(--x);
+    top: var(--y);
+    transform: translate(-50%, -100%);
+    transition: transform 500ms cubic-bezier(0.34, 1.6, 0.5, 1), opacity 200ms ease;
+  }
+  .phone .pin:nth-of-type(2) {
+    transition-delay: 160ms;
+  }
+  .review.armed:not(.seen) .phone .pin {
+    opacity: 0;
+    transform: translate(-50%, -160%);
+  }
+  .notes {
+    display: grid;
+    gap: 22px;
+  }
+  .notes li {
+    display: grid;
+    grid-template-columns: 32px minmax(0, 1fr);
+    gap: 6px 16px;
+  }
+  .notes .pin,
+  .note .pin {
+    box-shadow: none;
+  }
+  .notes h3 {
+    align-self: center;
+  }
+  .notes p {
+    grid-column: 2;
+    max-width: 46ch;
+    color: var(--ink-2);
+  }
+
+  /* ---------- the drift ---------- */
+  .drift {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 14px clamp(16px, 3vw, 36px);
+    padding: clamp(20px, 3vw, 32px);
+    border-radius: var(--radius-lg);
+    background: linear-gradient(90deg, #fff7e3 0%, #fff7e3 42%, #1b1a24 58%, #1b1a24 100%);
+  }
+  .then,
+  .now {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+  }
+  .drift .label {
+    margin-right: 6px;
+    font: 600 0.75rem/1 var(--font-ui);
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+  }
+  .then .label {
+    color: #a26a00;
+  }
+  .now .label {
+    color: #f6c453;
+  }
+  .chip {
+    padding: 8px 16px;
+    border-radius: var(--pill);
+    font-family: var(--serif);
+    font-size: clamp(1.125rem, 1.8vw, 1.5rem);
+  }
+  .then .chip {
+    background: #fff;
+    color: #5b4a20;
+    box-shadow: 0 1px 0 #f0dfb5;
+  }
+  .now .chip {
+    background: linear-gradient(#ffd75e, #e9a400);
+    color: #1b1a24;
+    font-weight: 700;
+    box-shadow: 0 0 18px rgb(255 196 0 / 0.45);
+  }
+  .arrow {
+    margin-inline: auto;
+    color: #b9b3a3;
+    font-size: 2rem;
+    line-height: 1;
+  }
+  .collage {
+    display: grid;
+    grid-template-columns: 1.396fr 0.409fr 1.333fr;
+    gap: clamp(10px, 1.4vw, 18px);
+    align-items: start;
+  }
+  .notes2 {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: clamp(24px, 4vw, 64px);
+  }
+
+  /* ---------- research panels, after the deck ---------- */
+  .deck {
+    display: grid;
+    gap: clamp(16px, 2vw, 24px);
+    margin-top: calc(-1 * clamp(24px, 4vw, 72px));
+  }
+  .panel {
+    display: grid;
+    gap: 14px;
+    padding: clamp(24px, 4vw, 56px);
+    border-radius: var(--radius-lg);
+    background: var(--cream);
+    color: #1d1d1b;
+  }
+  .panel h2 {
+    max-width: 24ch;
+    margin-bottom: clamp(12px, 2vw, 24px);
+    font-size: clamp(1.75rem, 3.4vw, 2.75rem);
+    line-height: 1.1;
+  }
+  .stats {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 24px clamp(20px, 3vw, 40px);
+  }
+  .stats li {
+    display: grid;
+    align-content: start;
+    gap: 10px;
+    padding-top: 16px;
+    border-top: 1.5px solid #1d1d1b;
+  }
+  .big {
+    font-size: clamp(2.75rem, 6vw, 4.75rem);
+    line-height: 1;
+  }
+  .stats p,
+  .ftc-side p,
+  .fear-text > p {
+    max-width: 44ch;
+    color: var(--ink-soft);
+  }
+
+  .ftc {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr);
+    gap: clamp(24px, 4vw, 64px);
+  }
+  .bars {
+    display: grid;
+    gap: 14px;
+    margin: 0;
+    padding-bottom: 28px;
+  }
+  .bars figcaption {
+    font-weight: 600;
+    font-size: 0.875rem;
+  }
+  .plot {
+    display: flex;
+    align-items: end;
+    gap: 16px;
+    height: clamp(180px, 22vw, 260px);
+    margin-top: 28px;
+    border-bottom: 1.5px solid #1d1d1b;
+  }
+  .bar {
+    position: relative;
+    flex: 0 0 38%;
+    height: var(--h);
+    border-radius: 4px 4px 0 0;
+    background: #9b978d;
+  }
+  .bar.dark {
+    background: #1d1d1b;
+  }
+  .bar b {
+    position: absolute;
+    left: 0;
+    bottom: calc(100% + 6px);
+    font-size: 0.9375rem;
+  }
+  .bar span {
+    position: absolute;
+    left: 0;
+    top: calc(100% + 8px);
+    color: var(--ink-soft);
+    font-size: 0.8125rem;
+  }
+  .ftc-side {
+    display: grid;
+    align-content: start;
+    gap: 14px;
+  }
+  .rule {
+    padding-top: 16px;
+    border-top: 1.5px solid #1d1d1b;
+    color: #1d1d1b !important;
+  }
+
+  .fear {
+    display: grid;
+    grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
+    align-items: start;
+    gap: clamp(24px, 4vw, 64px);
+  }
+  .fear-text {
+    display: grid;
+    gap: 24px;
+  }
+  .fear blockquote {
+    margin: 0;
+    padding: 4px 0 4px 24px;
+    border-left: 3px solid var(--green);
+    font-size: clamp(1.25rem, 2.2vw, 1.625rem);
+    line-height: 1.3;
+  }
+
+  .panel.green {
+    background: var(--green-deep);
+    color: #f4f2ec;
+  }
+  .panel.green .eyebrow {
+    color: #cfe3d6;
+  }
+  .credible {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: center;
+    gap: clamp(20px, 4vw, 56px);
+    padding-bottom: clamp(20px, 3vw, 32px);
+    border-bottom: 1px solid rgb(244 242 236 / 0.35);
+  }
+  .huge {
+    font-size: clamp(5rem, 14vw, 10rem);
+    line-height: 0.9;
+  }
+  .credible p:last-child {
+    max-width: 40ch;
+    font-size: 1.125rem;
+  }
+  .say {
+    max-width: 34ch;
+    font-size: clamp(1.375rem, 2.4vw, 2rem);
+    line-height: 1.25;
+  }
+  .say.dark {
+    max-width: none;
+    padding-top: 18px;
+    border-top: 1.5px solid #1d1d1b;
+  }
+  .say.dark span {
+    color: var(--green);
+    font-weight: 600;
+  }
+
+  /* six cues: what the screen shows, and what a wary player hears */
+  .cues {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: clamp(12px, 1.6vw, 20px);
+  }
+  .cues li {
+    display: grid;
+    grid-template-rows: auto auto 1fr;
+    gap: 6px;
+    padding: 20px;
+    border: 1px solid #e2dfd6;
+    border-radius: var(--radius-sm);
+    background: var(--cream-2);
+  }
+  .cue {
+    font-weight: 600;
+  }
+  .where {
+    color: var(--ink-soft);
+    font-size: 0.875rem;
+  }
+  .bubble {
+    align-self: end;
+    justify-self: start;
+    margin-top: 14px;
+    padding: 10px 16px;
+    border-radius: 16px 16px 16px 4px;
+    background: #1d1d1b;
+    color: #faf9f5;
+    font-size: 1.125rem;
+    line-height: 1.25;
+  }
+
+  .steps {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: clamp(12px, 1.6vw, 20px);
+  }
+  .steps li,
+  .bench > li {
+    position: relative;
+    display: grid;
+    align-content: start;
+    gap: 8px;
+    padding: 20px;
+    border: 1px solid #e2dfd6;
+    border-radius: var(--radius-sm);
+    background: var(--cream-2);
+  }
+  .steps li + li::before {
+    content: '→';
+    position: absolute;
+    top: 50%;
+    left: calc(-1 * clamp(12px, 1.6vw, 20px));
+    width: clamp(12px, 1.6vw, 20px);
+    color: #9b978d;
+    text-align: center;
+    transform: translateY(-50%);
+  }
+  .steps li > p:not(.eyebrow) {
+    color: var(--ink-soft);
+    font-size: 0.9375rem;
+  }
+  .measure {
+    margin-top: 8px;
+    padding-top: 10px;
+    border-top: 1px solid var(--line-2);
+  }
+  .measure strong {
+    color: #1d1d1b;
+  }
+  .bench {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: clamp(12px, 1.6vw, 20px);
+  }
+  .bench h3 {
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--line-2);
+    font-size: 1.0625rem;
+  }
+  .bench ul {
+    display: grid;
+    gap: 4px;
+  }
+  .bench-notes {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: clamp(20px, 4vw, 56px);
+    margin-top: clamp(12px, 2vw, 24px);
+    padding-top: 18px;
+    border-top: 1.5px solid #1d1d1b;
+    color: var(--ink-soft);
+  }
+  .bench-notes strong {
+    color: #1d1d1b;
+  }
+
+  .wash {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: clamp(16px, 2.4vw, 32px);
+    margin-top: 14px;
+  }
+  .card {
+    position: relative;
+    display: grid;
+    gap: 14px;
+    padding: 28px 24px 24px;
+    border: 1px solid #e2dfd6;
+    border-radius: var(--radius-sm);
+    background: var(--cream-2);
+  }
+  .tag {
+    position: absolute;
+    top: -14px;
+    right: 16px;
+    padding: 6px 16px;
+    border-radius: var(--pill);
+    background: #5f6166;
+    color: #fff;
+    font-size: 0.875rem;
+    font-weight: 600;
+  }
+  .tag.win {
+    background: var(--green);
+  }
+  .stamp-card {
+    display: grid;
+    gap: 14px;
+    padding: 20px;
+    border: 1px solid #e2dfd6;
+    border-radius: 12px;
+    background: #fff;
+  }
+  .stamp-card .serif {
+    font-size: clamp(1.25rem, 2.2vw, 1.75rem);
+  }
+  .dots {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .dots i {
+    width: clamp(18px, 2.4vw, 28px);
+    aspect-ratio: 1;
+    border: 1.5px dashed #b8b5ad;
+    border-radius: 50%;
+  }
+  .dots i.on {
+    border: 0;
+    background: var(--green);
+    transition: transform 420ms var(--ease-out) calc(var(--k) * 160ms + 250ms), opacity 300ms ease calc(var(--k) * 160ms + 250ms);
+  }
+  .wash.armed:not(.seen) .dots i.on {
+    opacity: 0;
+    transform: scale(0.3);
+  }
+
+  /* the words: today's line struck out, the new line beside it */
+  .words {
+    display: grid;
+    border-top: 1.5px solid #1d1d1b;
+  }
+  .words li {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.25fr) minmax(0, 0.8fr);
+    align-items: baseline;
+    gap: 6px clamp(16px, 3vw, 40px);
+    padding: 16px 0;
+    border-bottom: 1px solid var(--line-2);
+  }
+  .was {
+    color: #8a877e;
+  }
+  .was s {
+    text-decoration-color: var(--red);
+    text-decoration-thickness: 2px;
+  }
+  .becomes {
+    color: var(--green);
+    font-size: clamp(1.125rem, 1.8vw, 1.375rem);
+    font-weight: 600;
+    line-height: 1.25;
+  }
+  .becomes::before {
+    content: '→ ';
+    color: #9b978d;
+    font-weight: 400;
+  }
+  .why {
+    color: var(--ink-soft);
+    font-size: 0.9375rem;
+  }
+
+  /* ---------- the campaign ---------- */
+  .campaign {
+    display: grid;
+    grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
+    align-items: center;
+    gap: clamp(24px, 4vw, 64px);
+  }
+  .campaign-text {
+    display: grid;
+    gap: 16px;
+  }
+  .headline {
+    font-size: clamp(2.25rem, 5vw, 4rem);
+    line-height: 1.02;
+    letter-spacing: -0.03em;
+  }
+  .campaign-text > p:not(.eyebrow):not(.headline) {
+    max-width: 58ch;
+    font-size: 1.125rem;
+  }
+  .campaign .aside {
+    color: var(--green);
+    font-size: clamp(1.25rem, 2vw, 1.5rem) !important;
+    line-height: 1.3;
+  }
+  .themes {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: clamp(12px, 1.6vw, 20px);
+  }
+  .themes > li {
+    display: grid;
+    align-content: start;
+    gap: 10px;
+    padding: 20px 22px 22px;
+    border-radius: var(--radius-md);
+    background: var(--surface);
+    box-shadow: var(--shadow-tile);
+  }
+  .theme-top {
+    display: flex;
+    align-items: start;
+    justify-content: space-between;
+  }
+  .theme-top img {
+    width: 64px;
+    height: 64px;
+    object-fit: cover;
+    border-radius: 14px;
+  }
+  .num {
+    color: var(--green);
+    font-size: 2rem;
+    line-height: 1;
+  }
+  .chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  .chips li {
+    padding: 5px 11px;
+    border-radius: var(--pill);
+    background: var(--cream);
+    color: #3d3c37;
+    font-size: 0.875rem;
+  }
+  .foxes {
+    display: grid;
+    grid-template-columns: 0.796fr 2.019fr;
+    gap: clamp(12px, 1.6vw, 20px);
+    align-items: start;
+  }
+  .fox {
+    max-width: 64ch;
+    padding: 18px 22px;
+    border-left: 3px solid #e8692c;
+    border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+    background: #fff4ec;
+    font-size: 1.0625rem;
+  }
+
+  /* ---------- the result ---------- */
   .changes {
     display: grid;
     grid-template-columns: repeat(5, minmax(0, 1fr));
     gap: 24px clamp(16px, 2vw, 28px);
-    margin: 0;
-    padding: 0;
-    list-style: none;
   }
   .changes li {
     display: grid;
@@ -104,23 +1242,78 @@ const changes = [
     font: 600 0.8125rem/1 var(--font-ui);
     letter-spacing: 0.06em;
   }
-  h3 {
-    font-size: clamp(1.0625rem, 1.4vw, 1.2rem);
-    letter-spacing: -0.02em;
-    line-height: 1.2;
-  }
   .changes p {
     color: var(--ink-2);
   }
+
   @media (max-width: 1000px) {
-    .changes {
+    .steps,
+    .bench,
+    .changes,
+    .principles,
+    .cues,
+    .themes {
       grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+    .steps li + li::before {
+      display: none;
+    }
+    .review,
+    .campaign {
+      grid-template-columns: minmax(0, 1fr);
+    }
+    .screens {
+      max-width: 560px;
     }
   }
   @media (max-width: 720px) {
     .sec-head,
-    .changes {
+    .pair,
+    .pair.flip,
+    .notes2,
+    .stats,
+    .ftc,
+    .fear,
+    .credible,
+    .bench-notes,
+    .wash,
+    .themes,
+    .changes,
+    .principles,
+    .cues,
+    .steps,
+    .bench,
+    .foxes {
       grid-template-columns: minmax(0, 1fr);
+    }
+    .scale {
+      grid-template-columns: 1fr 1fr;
+    }
+    .scale .mid {
+      grid-column: 1 / -1;
+      grid-row: 1;
+    }
+    .drift {
+      background: linear-gradient(180deg, #fff7e3 0%, #fff7e3 45%, #1b1a24 55%, #1b1a24 100%);
+    }
+    .arrow {
+      transform: rotate(90deg);
+    }
+    .collage {
+      grid-template-columns: 1fr 1fr;
+    }
+    .collage img:first-child {
+      grid-column: 1 / -1;
+    }
+    .words li {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .dots i.on,
+    .scale .line i,
+    .phone .pin {
+      transition: none;
     }
   }
 </style>
