@@ -990,6 +990,7 @@ const first = passes[0];
   .bar {
     grid-area: bar;
     display: flex;
+    align-items: center;
     justify-content: center;
     gap: calc(var(--u) * 12);
     transition: translate 1s var(--ease), opacity 700ms ease;
@@ -1013,8 +1014,11 @@ const first = passes[0];
   }
   .ico {
     display: grid;
+    flex: none;
     place-items: center;
+    align-self: center; /* a circle: it keeps its own height instead of stretching to the bar's */
     width: calc(var(--u) * 58);
+    height: calc(var(--u) * 58);
     padding: 0;
   }
   .ico svg {
