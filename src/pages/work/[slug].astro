@@ -12,6 +12,7 @@ import HomeRevampFilm from '../../components/cases/HomeRevampFilm.astro';
 import BeatSaberLogo from '../../components/BeatSaberLogo.astro';
 import SpaceField from '../../components/SpaceField.astro';
 import BeatSaberMenu from '../../components/BeatSaberMenu.astro';
+import QuestBar from '../../components/QuestBar.astro';
 import { caseStudies, related, slugify, type Project } from '../../data/projects';
 
 export function getStaticPaths() {
@@ -54,6 +55,7 @@ const space = p.theme === 'space';
       </div>
       <div class="wrap menu-stage">
         <BeatSaberMenu />
+        <QuestBar />
       </div>
       <canvas class="reveal-fx" aria-hidden="true"></canvas>
     </>
@@ -393,10 +395,14 @@ const space = p.theme === 'space';
   }
 
   /* Beat Saber: the logo hangs over the page, and switches on as it opens, BEAT then SABER */
+  /* The logo is smaller than the space it once filled: it keeps to the top of that space, so the
+     menu below stays where it was and the two have air between them. */
   .stage {
+    --was: min(100vw - 2 * var(--gutter), 700px);
     position: relative;
     display: grid;
-    place-items: center;
+    place-items: start center;
+    min-height: calc(clamp(32px, 6vw, 72px) + var(--was) * 0.54);
     padding-block: clamp(32px, 6vw, 72px) 0;
   }
   /* Reveal: a glowing ring button under the logo, there only while the page is veiled */
@@ -442,6 +448,8 @@ const space = p.theme === 'space';
   }
   /* the game's main menu, hanging in the space under the logo */
   .menu-stage {
+    display: grid;
+    gap: clamp(36px, 5vw, 72px);
     margin-top: clamp(28px, 5vw, 64px);
   }
   /* the plasma the button sets off, drawn over the whole window while the page comes in under it */
@@ -455,7 +463,7 @@ const space = p.theme === 'space';
   }
   .stage :global(.stage-logo) {
     display: block;
-    width: min(100%, 700px);
+    width: min(72%, 420px);
     height: auto;
     overflow: visible;
   }

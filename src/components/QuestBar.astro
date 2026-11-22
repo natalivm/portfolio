@@ -1,0 +1,376 @@
+---
+/**
+ * The headset's own menu bar, floating under the game's menu the way it does in VR: a dark pill,
+ * tilted back, with the status on the left (profile, alerts, wifi, battery, a live clock), the
+ * system apps in the middle and the recent apps on the right, and the grab handle below it.
+ *
+ * It is drawn, not copied: generic icons, and the "recent apps" are this portfolio's own projects.
+ * Beat Saber is the running one (the dot under it); the others are links to their case studies.
+ * Every item lifts on hover and names itself.
+ */
+import '@fontsource-variable/teko';
+import { caseStudies } from '../data/projects';
+
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+const recent = ['sort-journey', 'river-race', 'balloon-sprint']
+  .map((slug) => caseStudies.find((c) => c.slug === slug))
+  .filter((c) => c?.cover);
+---
+
+<div class="qb" data-quest-bar>
+  <nav class="qb-bar" aria-label="Headset menu">
+    <div class="qb-status">
+      <button type="button" class="qb-s qb-me" data-tip="Profile" aria-label="Profile"><span aria-hidden="true">NP</span></button>
+      <button type="button" class="qb-s" data-tip="Notifications" aria-label="Notifications, 1 new">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path class="fill" d="M12 3.2a5.6 5.6 0 0 0-5.6 5.6v3.5l-1.6 3a.8.8 0 0 0 .7 1.2h13a.8.8 0 0 0 .7-1.2l-1.6-3V8.800A5.6 5.6 0 0 0 12 3.200zM9.800 18.200a2.300 2.300 0 0 0 4.400 0z" /></svg>
+        <i class="qb-dot" aria-hidden="true"></i>
+      </button>
+      <span class="qb-s" title="Wi-Fi">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 9.500a12.500 12.500 0 0 1 17 0M6.500 12.800a8.200 8.200 0 0 1 11 0M9.400 16a4 4 0 0 1 5.200 0" /><circle class="fill" cx="12" cy="18.800" r="1.200" /></svg>
+      </span>
+      <span class="qb-s" title="Battery">
+        <svg viewBox="0 0 26 24" aria-hidden="true"><rect x="2.500" y="7.500" width="18" height="9.500" rx="2.400" /><rect class="fill" x="4.700" y="9.700" width="10.500" height="5.100" rx="1" /><path d="M22.800 10.800v3" /></svg>
+      </span>
+      <time class="qb-time" data-clock>8:27</time>
+    </div>
+
+    <div class="qb-apps">
+      <button type="button" class="qb-app" style="--a:#5aa9f2;--b:#2f77d6" data-tip="Explore" aria-label="Explore">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path class="fill" d="M12 3.500l2.600 5.900 5.900 2.600-5.900 2.600-2.600 5.900-2.600-5.900-5.900-2.600 5.900-2.600z" /></svg>
+      </button>
+      <button type="button" class="qb-app" style="--a:#f5a43c;--b:#de7a1c" data-tip="Store" aria-label="Store">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path class="fill" d="M5.500 8.500h13l1 10.300a1.500 1.500 0 0 1-1.500 1.700H6a1.500 1.500 0 0 1-1.500-1.700z" /><path d="M9 10V7.500a3 3 0 0 1 6 0V10" /></svg>
+      </button>
+      <button type="button" class="qb-app" style="--a:#b57af0;--b:#8a4fd8" data-tip="People" aria-label="People">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle class="fill" cx="8.800" cy="9" r="2.800" /><circle class="fill" cx="15.800" cy="9.600" r="2.300" /><path class="fill" d="M3.500 18.500c0-3 2.400-4.800 5.300-4.800s5.300 1.800 5.300 4.800zM15.300 18.500c0-1.900-.6-3.300-1.600-4.300.6-.3 1.300-.4 2.100-.4 2.600 0 4.700 1.700 4.700 4.700z" /></svg>
+      </button>
+      <button type="button" class="qb-app" style="--a:#f06b8f;--b:#d8436e" data-tip="Camera" aria-label="Camera">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path class="fill" d="M8.600 6.200L9.700 4.500h4.600l1.100 1.700h2.800a2 2 0 0 1 2 2v8.300a2 2 0 0 1-2 2H5.800a2 2 0 0 1-2-2V8.200a2 2 0 0 1 2-2z" /><circle class="hole" cx="12" cy="12.300" r="3.300" /></svg>
+      </button>
+    </div>
+
+    <i class="qb-rule" aria-hidden="true"></i>
+
+    <div class="qb-apps">
+      <button type="button" class="qb-app qb-bs on" data-tip="Beat Saber" aria-label="Beat Saber, running">
+        <span class="qb-neon" aria-hidden="true"><b>Beat</b><b>Saber</b></span>
+      </button>
+      {recent.map((c) => (
+        <a class="qb-app qb-shot" href={`${base}/work/${c!.slug}/`} data-tip={c!.title} aria-label={`${c!.title}: open the case study`}>
+          <img src={`${base}${c!.cover}`} alt="" loading="lazy" decoding="async" />
+        </a>
+      ))}
+      <button type="button" class="qb-app qb-grid" data-tip="All apps" aria-label="All apps">
+        <svg viewBox="0 0 24 24" aria-hidden="true">{[6, 12, 18].flatMap((y) => [6, 12, 18].map((x) => <rect class="fill" x={x - 1.900} y={y - 1.900} width="3.800" height="3.800" rx="1" />))}</svg>
+      </button>
+    </div>
+  </nav>
+  <i class="qb-grab" aria-hidden="true"></i>
+</div>
+
+<style>
+  /* sizes are in design pixels at an 880 px wide bar (--q) */
+  .qb {
+    --q: calc(100cqw / 880);
+    display: grid;
+    justify-items: center;
+    width: min(100%, 820px);
+    margin-inline: auto;
+    container-type: inline-size;
+    perspective: 1100px;
+    font-family: var(--font-ui);
+    color: #eef3f7;
+    animation: qb-float 8s ease-in-out -2s infinite;
+  }
+  @keyframes qb-float {
+    50% { translate: 0 6px; }
+  }
+  .qb-bar {
+    display: flex;
+    align-items: center;
+    gap: calc(var(--q) * 14);
+    width: 100%;
+    height: calc(var(--q) * 78);
+    padding-inline: calc(var(--q) * 22) calc(var(--q) * 16);
+    border-radius: calc(var(--q) * 39);
+    background: rgb(40 45 52 / 0.82);
+    -webkit-backdrop-filter: blur(14px);
+    backdrop-filter: blur(14px);
+    box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.1), 0 calc(var(--q) * 24) calc(var(--q) * 50) rgb(0 0 0 / 0.45);
+    /* it hangs lower than the game's menu and tips back toward the viewer */
+    transform: rotateX(26deg);
+    transform-origin: 50% 0;
+    transition: opacity 700ms ease, translate 900ms cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+  .qb:not(.on) .qb-bar,
+  .qb:not(.on) .qb-grab {
+    opacity: 0;
+    translate: 0 calc(var(--q) * 40);
+  }
+  button {
+    padding: 0;
+    border: 0;
+    background: none;
+    color: inherit;
+    font: inherit;
+    cursor: pointer;
+  }
+
+  /* status */
+  .qb-status {
+    display: flex;
+    align-items: center;
+    gap: calc(var(--q) * 20);
+    margin-right: auto;
+  }
+  .qb-s {
+    position: relative;
+    display: grid;
+    place-items: center;
+    width: calc(var(--q) * 30);
+    height: calc(var(--q) * 30);
+    transition: scale 220ms ease;
+  }
+  .qb-s svg {
+    width: 100%;
+    height: 100%;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2;
+    stroke-linecap: round;
+  }
+  .qb svg .fill {
+    fill: currentColor;
+    stroke: none;
+  }
+  .qb-me {
+    width: calc(var(--q) * 36);
+    height: calc(var(--q) * 36);
+    border-radius: 50%;
+    background: linear-gradient(160deg, #f3a9b4, #c9647e);
+    font-size: calc(var(--q) * 13);
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    box-shadow: 0 0 0 calc(var(--q) * 2) rgb(255 255 255 / 0.14);
+  }
+  .qb-dot {
+    position: absolute;
+    top: calc(var(--q) * 1);
+    right: calc(var(--q) * 1);
+    width: calc(var(--q) * 11);
+    height: calc(var(--q) * 11);
+    border-radius: 50%;
+    background: #2f8dff;
+    box-shadow: 0 0 0 calc(var(--q) * 2) #2b3037;
+  }
+  .qb-time {
+    font-size: calc(var(--q) * 19);
+    font-style: italic;
+    font-weight: 500;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* apps */
+  .qb-apps {
+    display: flex;
+    align-items: center;
+    gap: calc(var(--q) * 13);
+  }
+  .qb-app {
+    position: relative;
+    display: grid;
+    place-items: center;
+    flex: none;
+    width: calc(var(--q) * 54);
+    height: calc(var(--q) * 54);
+    border-radius: calc(var(--q) * 15);
+    background: linear-gradient(160deg, var(--a, #4a515b), var(--b, #3a4048));
+    box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.22);
+    color: #fff;
+    text-decoration: none;
+    transition: scale 240ms cubic-bezier(0.3, 1.5, 0.5, 1), box-shadow 220ms ease, filter 220ms ease;
+  }
+  .qb-app svg {
+    width: 58%;
+    height: 58%;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+  .qb-app svg .hole {
+    fill: var(--b);
+    stroke: none;
+  }
+  .qb-shot {
+    background: #1c2026;
+  }
+  .qb-shot img {
+    width: 100%;
+    height: 100%;
+    border-radius: inherit;
+    object-fit: cover;
+  }
+  .qb-grid {
+    --a: #4b525c;
+    --b: #3c424b;
+    width: calc(var(--q) * 50);
+    height: calc(var(--q) * 50);
+    border-radius: calc(var(--q) * 14);
+  }
+  /* Beat Saber, the app that is running: its neon on black, and a dot under it */
+  .qb-bs {
+    --a: #17070c;
+    --b: #06101f;
+  }
+  .qb-neon {
+    display: grid;
+    font-family: 'Teko Variable', 'Teko', sans-serif;
+    font-size: calc(var(--q) * 17);
+    font-style: italic;
+    font-weight: 500;
+    line-height: 0.82;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+  }
+  .qb-neon b {
+    font-weight: inherit;
+    color: #ff6a78;
+    text-shadow: 0 0 calc(var(--q) * 6) #ff2a44;
+  }
+  .qb-neon b + b {
+    color: #8fd0ff;
+    text-shadow: 0 0 calc(var(--q) * 6) #1d8fff;
+  }
+  .qb-bs::before {
+    content: '';
+    position: absolute;
+    top: calc(100% + var(--q) * 5);
+    left: 50%;
+    width: calc(var(--q) * 10);
+    height: calc(var(--q) * 3.500);
+    border-radius: 2px;
+    background: rgb(255 255 255 / 0.75);
+    translate: -50% 0;
+  }
+  .qb-rule {
+    flex: none;
+    width: 1px;
+    height: calc(var(--q) * 44);
+    background: rgb(255 255 255 / 0.16);
+  }
+
+  /* hover: the item comes up, glows, and names itself */
+  .qb-app:hover,
+  .qb-app:focus-visible {
+    scale: 1.16;
+    filter: brightness(1.12);
+    box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.3), 0 calc(var(--q) * 8) calc(var(--q) * 20) rgb(0 0 0 / 0.45), 0 0 0 calc(var(--q) * 2) rgb(255 255 255 / 0.5);
+  }
+  button.qb-s:hover,
+  button.qb-s:focus-visible {
+    scale: 1.14;
+  }
+  [data-tip]::after {
+    content: attr(data-tip);
+    position: absolute;
+    bottom: calc(100% + var(--q) * 14);
+    left: 50%;
+    padding: calc(var(--q) * 6) calc(var(--q) * 11);
+    border-radius: calc(var(--q) * 9);
+    background: rgb(20 23 28 / 0.94);
+    box-shadow: 0 calc(var(--q) * 6) calc(var(--q) * 16) rgb(0 0 0 / 0.4);
+    color: #eef3f7;
+    font: 500 max(11px, calc(var(--q) * 13)) / 1 var(--font-ui);
+    white-space: nowrap;
+    opacity: 0;
+    pointer-events: none;
+    translate: -50% calc(var(--q) * 6);
+    transition: opacity 180ms ease, translate 260ms cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+  [data-tip]:hover::after,
+  [data-tip]:focus-visible::after {
+    opacity: 1;
+    translate: -50% 0;
+  }
+  .qb :focus-visible {
+    outline: calc(var(--q) * 2) solid #9be9ff;
+    outline-offset: calc(var(--q) * 3);
+  }
+  .pressed {
+    scale: 0.94 !important;
+  }
+
+  /* the grab handle under the bar */
+  .qb-grab {
+    width: calc(var(--q) * 150);
+    height: calc(var(--q) * 8);
+    margin-top: calc(var(--q) * 4);
+    border-radius: 99px;
+    background: rgb(255 255 255 / 0.55);
+    transition: opacity 700ms ease 150ms, translate 900ms cubic-bezier(0.2, 0.8, 0.2, 1) 150ms, background-color 200ms ease, width 300ms ease;
+  }
+  .qb:hover .qb-grab {
+    width: calc(var(--q) * 180);
+    background: rgb(255 255 255 / 0.85);
+  }
+
+  /* narrow screens: the apps only, larger */
+  @container (max-width: 560px) {
+    .qb-bar {
+      --q: calc(100cqw / 650); /* the nine apps, their gaps and the padding */
+      justify-content: center;
+      transform: none; /* flat on a phone: tipped back, its near edge would run past the screen */
+    }
+    .qb-status {
+      display: none;
+    }
+  }
+  @media (hover: none) {
+    [data-tip]::after {
+      display: none;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .qb {
+      animation: none;
+    }
+    .qb-bar,
+    .qb-grab,
+    .qb-app {
+      transition: none;
+    }
+  }
+</style>
+
+<script>
+  document.querySelectorAll<HTMLElement>('[data-quest-bar]').forEach((bar) => {
+    new IntersectionObserver((es, io) => {
+      if (!es.some((e) => e.isIntersecting)) return;
+      io.disconnect();
+      bar.classList.add('on');
+    }, { threshold: 0.3 }).observe(bar);
+
+    // the clock tells the real time
+    const clock = bar.querySelector<HTMLElement>('[data-clock]')!;
+    const tick = () => {
+      const d = new Date();
+      clock.textContent = `${d.getHours() % 12 || 12}:${String(d.getMinutes()).padStart(2, '0')}`;
+      clock.setAttribute('datetime', d.toTimeString().slice(0, 5));
+    };
+    tick();
+    setInterval(tick, 20000);
+
+    bar.querySelectorAll<HTMLElement>('button').forEach((b) => {
+      b.addEventListener('pointerdown', () => b.classList.add('pressed'));
+      const up = () => b.classList.remove('pressed');
+      b.addEventListener('pointerup', up);
+      b.addEventListener('pointerleave', up);
+    });
+    // Beat Saber is already running: its icon takes you back up to the game's menu
+    bar.querySelector('.qb-bs')?.addEventListener('click', () => {
+      document.querySelector('[data-bsm]')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    });
+  });
+</script>

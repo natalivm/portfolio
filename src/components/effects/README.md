@@ -53,6 +53,7 @@ These live with the page they were made for. Lift them out here when a second pa
 | Plasma reveal: an energy ring, a burst, then violet smoke that clears to show the page (WebGL) | `pages/work/[slug].astro`, Beat Saber |
 | Neon sign: tube lettering that switches on with a stutter, with a flickering letter | `BeatSaberLogo.astro`, `pages/index.astro` |
 | Floating game menu: the Beat Saber main menu hanging in the space, side panels curved toward the viewer, leaning with the pointer, with a laser dot; every control works | `BeatSaberMenu.astro`, Beat Saber |
+| Headset bar: a VR system bar floating under the game menu, tipped back, with a live clock, apps that lift and name themselves on hover, and recent apps that link to other projects | `QuestBar.astro`, Beat Saber |
 | Space field: drifting specks and cubes on the ground, with a pointer parallax | `SpaceField.astro` |
 | Spell: a wand stroke that calls items into place with sparks | `cases/SortJourney.astro`, the albums |
 | Spring wobble and ripple on hover | `cases/SortJourney.astro`, the albums |
