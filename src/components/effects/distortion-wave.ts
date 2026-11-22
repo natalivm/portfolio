@@ -2,15 +2,17 @@
  * Distortion wave: a screen transition that carries one view of an element into the next.
  *
  * The element is drawn into a picture before and after the change, and a WebGL shader blends one
- * into the other. A glow gathers at the source, then a wave leaves it, bending the old picture like
- * a lens as it passes, splitting its colours at the front, ringed by a rainbow rim and a white
- * hairline, throwing off sparks, and leaving colour on the element's edges. 'out' sends the wave
- * from the source and brings the new view in; 'in' collapses it back into the source.
+ * into the other. First the old view is drawn toward the source, its colours splitting, while a
+ * glow gathers there. Then a soft dome leaves the source: ahead of it the old view blurs and
+ * splits as it comes near and bends like a lens as it passes; behind it lies a dark, dusty band
+ * under a wide rainbow rim, and the new view arrives blurred and comes into focus. Colour lingers
+ * on the edges for a moment, with a hairline. 'out' sends the wave from the source and brings the
+ * new view in; 'in' collapses it back into the source.
  *
  * Made for popups: start it from the button that was pressed.
  *
  *   import { createDistortionWave } from '../effects/distortion-wave';
- *   const wave = createDistortionWave(popup, { source: () => pressedButton });
+ *   const wave = createDistortionWave(popup, { source: () => button, overlay: () => [button] });
  *   await wave.play('out', () => { showNextStep(); });   // change the DOM inside the callback
  *
  * The callback runs while the old picture covers the element, so the change is never seen
@@ -21,7 +23,7 @@
  * While a picture is taken the container carries `data-wave-snapping`, so a page can stop its
  * own transitions for that moment.
  *
- * Status: a first version, to be polished.
+ * Status: tuned to the reference recording of a payment popup; not applied to a page yet.
  */
 
 export type WaveSource = { x: number; y: number } | Element;
@@ -36,7 +38,9 @@ export interface DistortionWaveOptions {
   paint?: (el: HTMLElement, g: CanvasRenderingContext2D, box: Box, cs: CSSStyleDeclaration) => boolean;
   /** Leave an element out of the picture. */
   skip?: (el: HTMLElement) => boolean;
-  /** Milliseconds the wave takes to cross, outward. Default 1050. */
+  /** Elements that stay crisp, as they were, while the wave rises (the pressed button, say); they join it as it passes. */
+  overlay?: Element[] | (() => Element[]);
+  /** Milliseconds the wave takes to cross, outward. Default 600. */
   travel?: number;
   /** Stacking order of the wave's canvas inside the element. Default 50. */
   zIndex?: number;
@@ -56,60 +60,90 @@ const FRAG = `
   uniform vec2 uRes;
   uniform vec2 uS;         // source, in uv (y down)
   uniform float uR;        // front radius, in element heights
-  uniform float uA;        // anticipation: the picture drawn toward the source, a glow gathering
-  uniform float uRim;      // colour on the front and edges, 0..1
+  uniform float uA;        // anticipation: everything drawn toward the source, colours splitting
+  uniform float uRim;      // the front's colour, blur and dust, 0..1
+  uniform float uSettle;   // the new view still out of focus, 0..1
+  uniform float uEdge;     // colour lingering on the edges, 0..1
   uniform float uT;
-  const float L = 0.16;    // lens width
-  vec3 pal(float t) { return 0.58 + 0.42 * cos(6.28318 * (t + vec3(0.0, 0.33, 0.67))); }
-  float hash(float n) { return fract(sin(n * 91.3458) * 47453.5453); }
+  const float W = 0.14;    // lens width
+  const float EX = 0.6;    // sideways distance counts for this much: the front is a wide dome
+  vec2 K;
+  vec3 pal(float t) { return 0.55 + 0.45 * cos(6.28318 * (t + vec3(0.0, 0.33, 0.67))); }
+  float hash(vec2 q) { return fract(sin(dot(q, vec2(127.1, 311.7))) * 43758.5453); }
+  vec3 sharp(sampler2D tex, vec2 uv, vec2 ab) {
+    return vec3(texture2D(tex, uv + ab).r, texture2D(tex, uv).g, texture2D(tex, uv - ab).b);
+  }
+  // ten taps on a golden spiral, each with its colours split along the wave
+  vec3 soft(sampler2D tex, vec2 uv, float rad, vec2 ab) {
+    vec3 c = vec3(0.0);
+    for (int i = 0; i < 10; i++) {
+      float fi = float(i);
+      float a = fi * 2.39996;
+      vec2 o = vec2(cos(a), sin(a)) * sqrt((fi + 0.5) / 10.0) * rad / K;
+      c += sharp(tex, uv + o, ab);
+    }
+    return c / 10.0;
+  }
+  vec3 look(sampler2D tex, vec2 uv, float rad, vec2 ab) {
+    if (rad < 0.0015) return sharp(tex, uv, ab);
+    return soft(tex, uv, rad, ab);
+  }
   void main() {
     vec2 uv = vec2(gl_FragCoord.x / uRes.x, 1.0 - gl_FragCoord.y / uRes.y);
     float asp = uRes.x / uRes.y;
-    vec2 k = vec2(asp, 1.0);
-    vec2 p = (uv - uS) * k;
-    float d = length(p);
-    vec2 dir = p / max(d, 1e-4);
-    vec2 dirUV = dir / k;
+    K = vec2(asp, 1.0);
+    vec2 p = (uv - uS) * K;
+    vec2 pe = p * vec2(EX, 1.0);
+    float d = length(pe);
+    vec2 dir = pe / max(d, 1e-4);
+    vec2 dirUV = dir / K;
 
-    // anticipation: the old picture is drawn in toward the source
-    vec2 uvA = uv - (uv - uS) * uA * 0.07 * exp(-d * 1.4);
+    // anticipation: the old view is drawn down toward the source
+    vec2 uvA = uv + (uS - uv) * uA * 0.05 * (0.4 + 0.6 * smoothstep(1.2, 0.0, d));
 
-    // the lens: content near the front bends along the wave, colours split
+    // the lens: content near the front bends along the wave
     float sgn = d - uR;
-    float s = sgn / L;
-    float bend = 0.05 * s * exp(-s * s * 1.5);
-    float ab = 0.012 * exp(-s * s * 2.0) * uRim;
-    vec2 q = uvA - dirUV * bend;
-    float inside = smoothstep(0.006, -0.006, sgn);
-    vec3 cIn = vec3(texture2D(uIn, q + dirUV * ab).r, texture2D(uIn, q).g, texture2D(uIn, q - dirUV * ab).b);
-    vec3 cOut = vec3(texture2D(uOut, q + dirUV * ab).r, texture2D(uOut, q).g, texture2D(uOut, q - dirUV * ab).b);
-    vec3 col = mix(cOut, cIn, inside);
-
-    // rainbow rim just behind the front, a white hairline on it
-    float ang = atan(p.x, -p.y);
-    vec3 rc = pal(ang * 0.35 + d * 1.2 - uT * 0.6);
     float back = max(-sgn, 0.0);
-    float rim = exp(-pow(back / 0.06, 2.0)) * inside + exp(-pow(max(sgn, 0.0) / 0.014, 2.0)) * 0.5 * (1.0 - inside);
-    col = mix(col, rc, rim * 0.7 * uRim) + rc * rim * 0.18 * uRim;
-    col += vec3(1.0) * exp(-pow(sgn / 0.0035, 2.0)) * 0.85 * uRim;
+    float ahead = max(sgn, 0.0);
+    float s = sgn / W;
+    vec2 q = uvA - dirUV * 0.035 * s * exp(-s * s * 1.2) * uRim;
+    float inside = smoothstep(0.01, -0.01, sgn);
 
-    // colour left on the element's edges, behind the front, fading as the wave goes on
+    // the old view blurs and splits as the front comes near; the new one arrives blurred and settles
+    float near = exp(-ahead / 0.12) * uRim;
+    float radOut = 0.018 * near + 0.003 * uA;
+    vec2 abOut = dirUV * (0.010 * near + 0.006 * uA);
+    float radIn = 0.03 * exp(-back / 0.22) * uRim + 0.014 * uSettle;
+    vec2 abIn = dirUV * (0.012 * exp(-back / 0.2) * uRim + 0.006 * uSettle);
+    vec3 col;
+    if (inside > 0.99) col = look(uIn, q, radIn, abIn);
+    else if (inside < 0.01) col = look(uOut, q, radOut, abOut);
+    else col = mix(look(uOut, q, radOut, abOut), look(uIn, q, radIn, abIn), inside);
+
+    // deep, dusty space just behind the front
+    float deep = exp(-back / 0.32) * inside * uRim;
+    col = mix(col, vec3(0.05, 0.05, 0.14), deep * 0.68);
+    vec2 cell = floor(gl_FragCoord.xy / 9.0);
+    vec2 sp = (cell + 0.5 + (vec2(hash(cell + 1.3), hash(cell + 7.7)) - 0.5) * 0.8) * 9.0;
+    vec2 dd = gl_FragCoord.xy - sp;
+    col += vec3(0.9, 0.92, 1.0) * step(0.968, hash(cell)) * exp(-dot(dd, dd) / 0.9) * deep * 0.75;
+
+    // the rim: a wide soft rainbow just behind the front, white at its leading edge
+    float ang = atan(p.x, -p.y);
+    vec3 rc = pal(ang * 0.45 + d * 0.9 - uT * 0.5);
+    vec3 rp = mix(rc, vec3(1.0, 0.84, 1.0), 0.36);  // pastel: pinks, pale blues, a little gold
+    float grow = smoothstep(0.03, 0.35, uR);          // the band gains its colour as the dome opens
+    col += rp * exp(-pow((sgn + 0.06) / 0.11, 2.0)) * 0.6 * uRim * grow;
+    col += vec3(1.0) * exp(-pow((sgn + 0.01) / 0.022, 2.0)) * 0.28 * uRim * (0.4 + 0.6 * grow);
+
+    // colour left round the edges, lingering after the wave, and a hairline
     float e = min(min(uv.x, 1.0 - uv.x) * asp, min(uv.y, 1.0 - uv.y));
-    col += pal(ang * 0.35 + uv.y - uT * 0.4) * exp(-e / 0.016) * inside * exp(-back / 0.55) * smoothstep(0.06, 0.3, d) * 0.6 * uRim;
+    vec3 ec = pal(atan(uv.y - 0.5, (uv.x - 0.5) * asp) * 0.16 + uT * 0.15);
+    col += ec * exp(-e / 0.04) * 0.42 * uEdge * inside;
+    col += vec3(1.0) * exp(-e / 0.004) * 0.35 * uEdge * inside;
 
-    // a glow gathering at the source before it leaves
-    col += (vec3(1.0, 0.96, 0.9) * 0.7 + rc * 0.3) * uA * exp(-d / 0.09);
-
-    // sparks thrown off the front
-    for (int i = 0; i < 34; i++) {
-      float fi = float(i);
-      float a = (hash(fi) - 0.5) * 3.0;
-      float r = uR * (0.9 + 0.18 * hash(fi + 7.1)) + 0.03 * sin(uT * 2.0 + fi);
-      vec2 sp = vec2(sin(a), -cos(a)) * r;
-      float sz = 0.0025 + 0.004 * hash(fi + 3.3);
-      float g = exp(-dot(p - sp, p - sp) / (sz * sz));
-      col += mix(vec3(1.0), pal(hash(fi + 1.7)), 0.45) * g * uRim * step(0.02, uR);
-    }
+    // a glow gathering at the source before the wave leaves
+    col += (vec3(1.0, 0.93, 0.97) * 0.85 + rc * 0.15) * uA * exp(-d / 0.12) * 0.7;
     gl_FragColor = vec4(clamp(col, 0.0, 1.0), 1.0);
   }`;
 
@@ -172,6 +206,8 @@ export function createDistortionWave(container: HTMLElement, options: Distortion
   if (getComputedStyle(container).position === 'static') container.style.position = 'relative';
   container.appendChild(cv);
 
+  let held: HTMLElement[] = []; // the crisp copies, never part of a picture
+
   // ---------- the element as a picture ----------
   const snap = () => {
     const B = container.getBoundingClientRect();
@@ -195,7 +231,7 @@ export function createDistortionWave(container: HTMLElement, options: Distortion
       return a;
     };
     for (const el of container.querySelectorAll<HTMLElement>('*')) {
-      if (el === cv || el.closest('[hidden]') || options.skip?.(el)) continue;
+      if (el === cv || el.closest('[hidden]') || options.skip?.(el) || held.some((c) => c.contains(el))) continue;
       const cs = getComputedStyle(el);
       if (cs.display === 'none' || cs.visibility === 'hidden') continue;
       const b = box(el.getBoundingClientRect());
@@ -248,12 +284,14 @@ export function createDistortionWave(container: HTMLElement, options: Distortion
     return [s.x, s.y];
   };
 
-  const ease = (t: number) => (t < 0.5 ? 4 * t * t * t : 1 - (-2 * t + 2) ** 3 / 2);
+  const ease = (t: number) => t * t * (3 - 2 * t);
   const clamp01 = (t: number) => Math.min(1, Math.max(0, t));
-  const frame = (r: number, a: number, rim: number, t: number) => {
+  const frame = (r: number, a: number, rim: number, t: number, settle = 0, edge = 0) => {
     g3.uniform1f(U('uR'), r);
     g3.uniform1f(U('uA'), a);
     g3.uniform1f(U('uRim'), rim);
+    g3.uniform1f(U('uSettle'), settle);
+    g3.uniform1f(U('uEdge'), edge);
     g3.uniform1f(U('uT'), t);
     g3.drawArrays(g3.TRIANGLE_STRIP, 0, 4);
   };
@@ -261,6 +299,23 @@ export function createDistortionWave(container: HTMLElement, options: Distortion
   const run = async (dirn: 'out' | 'in', change: () => void | Promise<void>) => {
     const B = container.getBoundingClientRect();
     const S = sourcePoint(B); // read before the change: the button may go
+    // crisp copies of the overlay elements as they are now, laid exactly over them, above the wave
+    const keep = (typeof options.overlay === 'function' ? options.overlay() : options.overlay) ?? [];
+    held = keep.map((o) => {
+      const r = o.getBoundingClientRect();
+      const c = o.cloneNode(true) as HTMLElement;
+      c.removeAttribute('id');
+      c.querySelectorAll('[id]').forEach((n) => n.removeAttribute('id'));
+      c.setAttribute('aria-hidden', 'true');
+      c.inert = true;
+      Object.assign(c.style, {
+        position: 'absolute', margin: '0', boxSizing: 'border-box', transform: 'none', pointerEvents: 'none',
+        left: `${r.left - B.left - container.clientLeft}px`, top: `${r.top - B.top - container.clientTop}px`,
+        width: `${r.width}px`, height: `${r.height}px`, zIndex: String((options.zIndex ?? 50) + 2),
+        transition: 'opacity 220ms ease-out',
+      });
+      return c;
+    });
     container.setAttribute('data-wave-snapping', '');
     const before = snap();
     cv.width = before.width;
@@ -268,12 +323,14 @@ export function createDistortionWave(container: HTMLElement, options: Distortion
     g3.viewport(0, 0, cv.width, cv.height);
     g3.uniform2f(U('uRes'), cv.width, cv.height);
     g3.uniform2f(U('uS'), S[0], S[1]);
-    const far = Math.max(...[[0, 0], [1, 0], [0, 1], [1, 1]].map(([x, y]) => Math.hypot((x - S[0]) * (B.width / B.height), y - S[1])));
+    const far = Math.max(...[[0, 0], [1, 0], [0, 1], [1, 1]].map(([x, y]) => Math.hypot((x - S[0]) * (B.width / B.height) * 0.6, y - S[1])));
     // hold the old picture on screen while the element changes underneath
     upload(0, tIn, before);
     upload(1, tOut, before);
     frame(0, 0, 0, 0);
     cv.style.display = 'block';
+    held.forEach((c) => container.appendChild(c));
+    let lifted: { el: HTMLElement; position: string; zIndex: string }[] = [];
     try {
       await change();
       void container.offsetWidth;
@@ -281,11 +338,13 @@ export function createDistortionWave(container: HTMLElement, options: Distortion
       container.removeAttribute('data-wave-snapping');
       if (dirn === 'out') { upload(0, tIn, after); upload(1, tOut, before); }
       else { upload(0, tIn, before); upload(1, tOut, after); }
-      const travel = options.travel ?? 1050;
-      const ANT = dirn === 'out' ? 300 : 120;
-      const TRAVEL = dirn === 'out' ? travel : travel * 0.8;
-      const END = ANT + TRAVEL + 260;
-      const max = far + 0.2;
+      const travel = options.travel ?? 600;
+      const out = dirn === 'out';
+      const ANT = out ? 190 : 100;
+      const TRAVEL = out ? travel : travel * 0.8;
+      const PASS = ANT + TRAVEL; // the front is past the far corner
+      const END = PASS + 800;
+      const max = far + 0.25;
       await new Promise<void>((done) => {
         let t0 = 0;
         const tick = (now: number) => {
@@ -293,9 +352,25 @@ export function createDistortionWave(container: HTMLElement, options: Distortion
           const t = now - t0;
           const pr = ease(clamp01((t - ANT) / TRAVEL));
           const r = dirn === 'out' ? pr * max : (1 - pr) * max;
-          const a = dirn === 'out' ? clamp01(t / ANT) * (1 - clamp01((t - ANT) / 300)) : 0;
-          const rim = clamp01((t - ANT * 0.5) / 120) * (1 - clamp01((t - ANT - TRAVEL) / 260));
-          frame(r, a, rim, t / 1000);
+          const a = out ? clamp01(t / ANT) * (1 - clamp01((t - ANT) / 160)) : 0;
+          const rim = clamp01((t - ANT * 0.6) / 100) * (1 - clamp01((t - PASS) / 200));
+          // the new view comes into focus once the wave has gone over it
+          const settle = out ? clamp01((t - ANT - TRAVEL * 0.5) / 120) * (1 - clamp01((t - PASS) / 420)) : 0;
+          // colour stays on the edges for a moment after the wave
+          const edge = clamp01((t - ANT - TRAVEL * 0.5) / 200) * (1 - clamp01((t - PASS - 100) / 700));
+          frame(r, a, rim, t / 1000, settle, edge);
+          // once the front has gone over the top, the copies fade off the real elements, lifted crisp above the wave
+          if (held.length && !lifted.length && t > ANT + TRAVEL * 0.72) {
+            const now = (typeof options.overlay === 'function' ? options.overlay() : options.overlay) ?? [];
+            lifted = now.filter((o) => container.contains(o)).map((o) => {
+              const el = o as HTMLElement;
+              const prev = { el, position: el.style.position, zIndex: el.style.zIndex };
+              if (getComputedStyle(el).position === 'static') el.style.position = 'relative';
+              el.style.zIndex = String((options.zIndex ?? 50) + 1);
+              return prev;
+            });
+            held.forEach((c) => { c.style.opacity = '0'; });
+          }
           if (t < END) requestAnimationFrame(tick);
           else done();
         };
@@ -304,6 +379,12 @@ export function createDistortionWave(container: HTMLElement, options: Distortion
     } finally {
       container.removeAttribute('data-wave-snapping');
       cv.style.display = 'none';
+      held.forEach((c) => c.remove());
+      held = [];
+      for (const { el, position, zIndex } of lifted) {
+        el.style.position = position;
+        el.style.zIndex = zIndex;
+      }
     }
   };
 

@@ -5,7 +5,7 @@ Reusable visual effects. Each one stands on its own; drop it in where it is want
 | Effect | File | Used on |
 | --- | --- | --- |
 | Border beam: light on the inside edge of a card, button or input. `orbit` (default): two soft beams running round the edge. `sweep`, for long thin shapes like a search field: one flare passing along the bottom edge, then resting. Variants `colorful`, `mono`, `ocean`, `sunset`, and `saber` (red and blue, for Beat Saber). | `BorderBeam.astro` | Not yet; kept for Beat Saber |
-| Distortion wave: a screen transition that bends one view of an element into the next, with a rainbow rim, colour split, sparks and colour left on the edges (WebGL). A first version, still to be polished. | `distortion-wave.ts` | Not yet; kept for a popup |
+| Distortion wave: a screen transition for a popup. The view is drawn toward the pressed button, then a soft dome rises from it with a wide pastel band and a dark, dusty inside; the new view arrives blurred, comes into focus, and colour lingers on the edges (WebGL). Tuned to the payment popup recording. | `distortion-wave.ts` | Not yet; kept for a popup |
 
 ```astro
 ---
@@ -31,16 +31,18 @@ holds it still.
 ```ts
 import { createDistortionWave } from '../components/effects/distortion-wave';
 
-const wave = createDistortionWave(popup, { source: () => pressedButton });
+const wave = createDistortionWave(popup, { source: () => button, overlay: () => [button] });
 await wave.play('out', () => showNextStep()); // change the popup inside the callback
 await wave.play('in', () => showFirstStep());  // collapse back into the source
 ```
 
 The callback runs while a picture of the old view covers the element, so the change is never seen
 directly. Options: `source` (a point in 0–1 of the element, or an element such as the pressed
-button; default bottom centre), `background`, `paint` (draw gradients, badges and other things the
-picture can't), `skip`, `travel` (ms), `zIndex`. Without WebGL or with reduced motion, `play()`
-just runs the change.
+button; default bottom centre), `overlay` (elements that stay crisp above the wave, like the pressed
+button: it keeps its old look until the wave has passed, then shows its new one), `background`,
+`paint` (draw gradients, badges and other things the picture can't), `skip`, `travel` (ms, default
+600), `zIndex`. The whole run takes about 1.6 s, sharp again about 1.2 s after the press. Without
+WebGL or with reduced motion, `play()` just runs the change.
 
 ## Built into pages
 
