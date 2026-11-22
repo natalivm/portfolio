@@ -4,7 +4,7 @@ Reusable visual effects. Each one stands on its own; drop it in where it is want
 
 | Effect | File | Used on |
 | --- | --- | --- |
-| Border beam: a glowing streak running round a card, button or input. Variants `colorful`, `mono`, `ocean`, `sunset`, and `saber` (a red beam and a blue one, for Beat Saber). | `BorderBeam.astro` | Not yet; kept for Beat Saber |
+| Border beam: two soft beams of colour running round the inside edge of a card, button or input, lighting the border as they go. Variants `colorful`, `mono`, `ocean`, `sunset`, and `saber` (a red beam and a blue one, for Beat Saber). | `BorderBeam.astro` | Not yet; kept for Beat Saber |
 | Distortion wave: a screen transition that bends one view of an element into the next, with a rainbow rim, colour split, sparks and colour left on the edges (WebGL). A first version, still to be polished. | `distortion-wave.ts` | Not yet; kept for a popup |
 
 ```astro
@@ -16,9 +16,11 @@ import BorderBeam from '../components/effects/BorderBeam.astro';
 </BorderBeam>
 ```
 
-Props: `variant`, `size` (`md` | `sm` | `line`), `strength` (glow, 0–1), `duration` (seconds per lap),
-`active` (false pauses it), `radius` (match the wrapped element). Give the wrapped element its own
-background so the glow shows only outside it. Reduced motion shows a still, faint ring.
+Props: `variant`, `size` (`md` | `sm` | `line`, which is just the lit border), `strength` (0–1),
+`duration` (seconds per lap, default 2.5), `active` (false pauses it), `radius` (match the wrapped
+element), `fill` (stretch with the wrapped element; by default the beam hugs what it wraps). The
+light traces the real rounded outline at an even pace and stays inside the edge. Reduced motion
+holds it still.
 
 ### Distortion wave
 
