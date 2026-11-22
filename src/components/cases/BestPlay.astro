@@ -30,9 +30,19 @@ const review = [
 ];
 
 const stats = [
-  { n: '28%', t: 'of US video game players are 50 or older' },
-  { n: '47%', t: 'of US video game players are women' },
-  { n: '31%', t: 'of US adults earning under $30,000 a year go online only through a smartphone, against 6% of those earning $75,000 or more' },
+  { n: '28%', t: 'of US video game players are 50 or older', src: 1 },
+  { n: '47%', t: 'of US video game players are women', src: 1 },
+  { n: '29%', t: 'of US adults in households earning under $30,000 a year go online only through a smartphone, against 7% of those earning $100,000 or more', src: 2 },
+];
+
+// numbered in the order they first appear on the page
+const sources = [
+  { t: 'Entertainment Software Association, Essential Facts About the U.S. Video Game Industry, 2025.', href: 'https://www.theesa.com/resources/essential-facts-about-the-us-video-game-industry/2025-data' },
+  { t: 'Pew Research Center, Mobile Fact Sheet: smartphone dependency by income. Survey of U.S. adults, January 30 to June 18, 2026.', href: 'https://www.pewresearch.org/internet/fact-sheet/mobile/' },
+  { t: 'Federal Trade Commission, “New FTC Data Show a Big Jump in Reported Losses to Fraud to $12.5 Billion in 2024”, March 2025.', href: 'https://www.ftc.gov/news-events/news/press-releases/2025/03/new-ftc-data-show-big-jump-reported-losses-fraud-125-billion-2024' },
+  { t: 'Federal Trade Commission, Data Spotlight: “Paying to get paid: gamified job scams drive record losses”, December 2024.', href: 'https://www.ftc.gov/news-events/data-visualizations/data-spotlight/2024/12/paying-get-paid-gamified-job-scams-drive-record-losses' },
+  { t: 'B.J. Fogg and others, Stanford Web Credibility Project, “How Do People Evaluate a Web Site’s Credibility?”, Consumer WebWatch, 2002. 46.1% of comments overall; 54.6% for finance sites.', href: 'https://advocacy.consumerreports.org/research/how-do-people-evaluate-a-web-sites-credibility' },
+  { t: 'Joseph C. Nunes and Xavier Drèze, “The Endowed Progress Effect: How Artificial Advancement Increases Effort”, Journal of Consumer Research, 2006.', href: 'https://msbfile03.usc.edu/digitalmeasures/jnunes/intellcont/Endowed%20Progress%20Effect-1.pdf' },
 ];
 
 const cues = [
@@ -248,7 +258,7 @@ const changes = [
       <p class="eyebrow">Who we design for</p>
       <h2 class="serif">Our players are older, lower-income and live on their phones</h2>
       <ul class="stats" role="list">
-        {stats.map((s) => <li><span class="big serif">{s.n}</span><p>{s.t}</p></li>)}
+        {stats.map((s) => <li><span class="big serif">{s.n}</span><p>{s.t}<sup><a href={`#src-${s.src}`} aria-label={`Source ${s.src}`}>{s.src}</a></sup></p></li>)}
       </ul>
     </section>
 
@@ -257,7 +267,7 @@ const changes = [
       <h2 class="serif">They have good reason to distrust apps that pay for tasks</h2>
       <div class="ftc">
         <figure class="bars" aria-label="Job scam losses reported to the FTC: $90M in 2020, $501M in 2024">
-          <figcaption>Job scam losses reported to the FTC</figcaption>
+          <figcaption>Job scam losses reported to the FTC<sup><a href="#src-3" aria-label="Source 3">3</a></sup></figcaption>
           <div class="plot" aria-hidden="true">
             <div class="bar" style="--h:18%"><b>$90M</b><span>2020</span></div>
             <div class="bar dark" style="--h:100%"><b>$501M</b><span>2024</span></div>
@@ -265,7 +275,7 @@ const changes = [
         </figure>
         <div class="ftc-side">
           <p class="big serif">$750.6M</p>
-          <p>lost to business and job opportunity scams in 2024, up nearly $250M in a year. The FTC links much of the rise to gamified “task scams”.</p>
+          <p>lost to business and job opportunity scams in 2024, up nearly $250M in a year.<sup><a href="#src-3" aria-label="Source 3">3</a></sup> The FTC links much of the rise to gamified “task scams”.<sup><a href="#src-4" aria-label="Source 4">4</a></sup></p>
           <p class="rule">“Earn money doing simple tasks in an app” describes BestPlay. It also describes these scams. <strong>Our look has to show the difference.</strong></p>
         </div>
       </div>
@@ -298,7 +308,7 @@ const changes = [
       <p class="eyebrow">Why the look matters</p>
       <div class="credible">
         <p class="huge serif">46%</p>
-        <p>of people’s comments on why a website seemed credible were about its design look, the most mentioned factor. For finance sites it was 55%.</p>
+        <p>of people’s comments on why a website seemed credible were about its design look, the most mentioned factor. For finance sites it was 55%.<sup><a href="#src-5" aria-label="Source 5">5</a></sup></p>
       </div>
       <p class="serif say">People judge whether to trust a service by how it looks. Before a player ever cashes out, the look is all the evidence they have.</p>
     </section>
@@ -373,7 +383,7 @@ const changes = [
           </div>
         </div>
       </div>
-      <p class="serif say dark">A head start nearly doubled completion. <span>Start weekly goals and streaks with progress already counted.</span></p>
+      <p class="serif say dark">A head start nearly doubled completion.<sup><a href="#src-6" aria-label="Source 6">6</a></sup> <span>Start weekly goals and streaks with progress already counted.</span></p>
     </section>
 
     <section class="panel">
@@ -389,9 +399,37 @@ const changes = [
         ))}
       </ul>
     </section>
+
+    <section class="panel sources" aria-labelledby="bp-sources">
+      <h2 id="bp-sources" class="eyebrow">Sources</h2>
+      <ol role="list">
+        {sources.map((x, i) => (
+          <li id={`src-${i + 1}`}>
+            <span class="sn">{i + 1}</span>
+            <p>{x.t} <a href={x.href} target="_blank" rel="noopener">Link</a></p>
+          </li>
+        ))}
+      </ol>
+    </section>
   </div>
 
-  <!-- chapter 4: the campaign -->
+  <!-- chapter 4: where the look is going -->
+  <section class="sec">
+    <div class="sec-head">
+      <h2>Where the look is going</h2>
+      <div>
+        <p>
+          The fun stays: spins, daily rewards, bright 3D objects, game art and little moments of surprise. What
+          changes is the frame around them, calmer and more structured, so they read as play, not as a jackpot.
+        </p>
+      </div>
+    </div>
+    <figure class="shot mood">
+      <img src={art('moodboard')} width="1600" height="905" loading="lazy" decoding="async" alt="Moodboard: a prize wheel, a shop feed, icons for play games, complete tasks, daily rewards and invite and earn, a 3D Happy Diwali, sports objects in 3D, a $60 ticket, a claw machine, a daily reward gift box and a grid of game icons" />
+      <figcaption>The moodboard: references for the playful side of the new look.</figcaption>
+    </figure>
+  </section>
+
   <section class="sec">
     <div class="campaign">
       <div class="campaign-text">
@@ -1140,6 +1178,58 @@ const changes = [
   .why {
     color: var(--ink-soft);
     font-size: 0.9375rem;
+  }
+
+  /* ---------- sources ---------- */
+  sup {
+    margin-left: 2px;
+    font: 600 0.6875rem/1 var(--font-ui);
+    vertical-align: super;
+  }
+  sup a {
+    color: var(--green);
+    text-decoration: none;
+  }
+  .panel.green sup a {
+    color: #cfe3d6;
+  }
+  sup a:hover {
+    text-decoration: underline;
+  }
+  .sources {
+    gap: 16px;
+  }
+  .panel h2.eyebrow {
+    max-width: none;
+    margin: 0;
+    font: 600 0.75rem/1.2 var(--font-ui);
+    letter-spacing: 0.14em;
+  }
+  .sources ol {
+    display: grid;
+    gap: 10px;
+  }
+  .sources li {
+    display: grid;
+    grid-template-columns: 1.5rem minmax(0, 1fr);
+    gap: 8px;
+    scroll-margin-top: 120px;
+  }
+  .sources li:target {
+    border-radius: 6px;
+    background: #fff4c2;
+  }
+  .sn {
+    color: var(--green);
+    font: 600 0.8125rem/1.6 var(--font-ui);
+  }
+  .sources p {
+    max-width: 90ch;
+    color: var(--ink-soft);
+    font-size: 0.875rem;
+  }
+  .sources p a {
+    color: var(--green);
   }
 
   /* ---------- the campaign ---------- */
