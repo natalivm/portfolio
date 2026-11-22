@@ -4,7 +4,7 @@ Reusable visual effects. Each one stands on its own; drop it in where it is want
 
 | Effect | File | Used on |
 | --- | --- | --- |
-| Border beam: light on the inside edge of a card, button or input. `orbit` (default): two soft beams running round the edge. `sweep`, for long thin shapes like a search field: one flare passing along the bottom edge, then resting. Variants `colorful`, `mono`, `ocean`, `sunset`, and `saber` (red and blue, for Beat Saber). | `BorderBeam.astro` | Not yet; kept for Beat Saber |
+| Border beam: light on the inside edge of a card, button or input. `orbit` (default): two soft beams running round the edge. `sweep`, for long thin shapes like a search field: one flare passing along the bottom edge, then resting. Variants `colorful`, `mono`, `ocean`, `sunset`, and `saber` (red and blue, for Beat Saber). | `BorderBeam.astro` | The Join button in the Beat Saber menu |
 | Distortion wave: a screen transition for a popup. The view is drawn toward the pressed button, then a soft dome rises from it with a wide pastel band and a dark, dusty inside; the new view arrives blurred, comes into focus, and colour lingers on the edges (WebGL). Tuned to the payment popup recording. | `distortion-wave.ts` | Not yet; kept for a popup |
 
 ```astro
