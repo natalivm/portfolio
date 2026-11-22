@@ -7,6 +7,8 @@ import NextGames from '../../components/cases/NextGames.astro';
 import SortJourney from '../../components/cases/SortJourney.astro';
 import RiverRace from '../../components/cases/RiverRace.astro';
 import BalloonSprint from '../../components/cases/BalloonSprint.astro';
+import BestPlay from '../../components/cases/BestPlay.astro';
+import HomeRevampFilm from '../../components/cases/HomeRevampFilm.astro';
 import BeatSaberLogo from '../../components/BeatSaberLogo.astro';
 import SpaceField from '../../components/SpaceField.astro';
 import { caseStudies, related, slugify, type Project } from '../../data/projects';
@@ -95,7 +97,11 @@ const space = p.theme === 'space';
         <a href={`${base}${p.prototype}`}>Open full screen</a>
       </figcaption>
     </figure>
-  ) : space ? null : (
+  ) : space ? null : p.slug === 'bestplay' ? (
+    <figure class="wrap hero">
+      <HomeRevampFilm />
+    </figure>
+  ) : (
     <div class:list={['hero-row', p.theme === 'sky' && 'clip']}>
     <figure class="wrap hero">
       {p.theme === 'sky' && (
@@ -119,6 +125,8 @@ const space = p.theme === 'space';
     <RiverRace project={p} />
   ) : p.slug === 'balloon-sprint' ? (
     <BalloonSprint project={p} />
+  ) : p.slug === 'bestplay' ? (
+    <BestPlay project={p} />
   ) : (
   <article class="wrap story">
     <p class="sample">Sample case study. Replace this text with your own write-up.</p>

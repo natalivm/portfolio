@@ -1,0 +1,282 @@
+---
+/**
+ * The BestPlay home screen revamp as a film: the old home screen edited, step by step, into the new
+ * one, with a cursor, selections, a colour picker and a zoomed properties panel.
+ *
+ * It is scripted, not a video: home-revamp-film.js draws every frame from the time, so the type stays
+ * sharp at any size and the page loads about 0.8 MB of WebP stills instead of a 15 MB video. It is
+ * built only when the page scrolls near it, plays only while on screen, and holds on the before and
+ * after with reduced motion.
+ */
+import '@fontsource-variable/plus-jakarta-sans';
+import '@fontsource-variable/baloo-2';
+import { CHAPTERS, DURATION } from './home-revamp-film.js';
+
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+const chapters = CHAPTERS.map((c, i) => ({ ...c, end: CHAPTERS[i + 1]?.t ?? DURATION }));
+---
+
+<div class="hrf" data-home-revamp data-base={base}>
+  <div class="hrf-frame">
+    <img class="hrf-poster" src={`${base}/cases/home-revamp/poster.webp`} width="1600" height="900" alt="" decoding="async" />
+    <div class="hrf-host" aria-hidden="true"></div>
+  </div>
+  <div class="hrf-bar">
+    <button class="hrf-play" type="button" data-play aria-label="Pause">
+      <svg class="i-pause" viewBox="0 0 20 20" width="20" height="20" aria-hidden="true"><rect x="5" y="4" width="3.4" height="12" rx="1.2" /><rect x="11.6" y="4" width="3.4" height="12" rx="1.2" /></svg>
+      <svg class="i-play" viewBox="0 0 20 20" width="20" height="20" aria-hidden="true"><path d="M6.5 4.3v11.4c0 .8.9 1.3 1.6.8l8.4-5.7c.6-.4.6-1.2 0-1.6L8.1 3.5c-.7-.5-1.6 0-1.6.8z" /></svg>
+    </button>
+    <ol class="hrf-steps" role="list">
+      {chapters.map((c) => (
+        <li style={`flex:${(c.end - c.t).toFixed(2)}`}>
+          <button type="button" data-ch data-a={c.t} data-b={c.end} aria-label={`Jump to ${c.label}`}>
+            <span class="hrf-track"><i></i></span>
+            <span class="hrf-label">{c.label}</span>
+          </button>
+        </li>
+      ))}
+    </ol>
+    <button class="hrf-full" type="button" data-full aria-label="Full screen" hidden>
+      <svg viewBox="0 0 20 20" width="20" height="20" aria-hidden="true"><path d="M3.5 7.5v-4h4M12.5 3.5h4v4M16.5 12.5v4h-4M7.5 16.5h-4v-4" /></svg>
+    </button>
+  </div>
+  <p class="visually-hidden">
+    A film of the redesign: the old BestPlay home screen edited into the new one. The wallet bar moves to the
+    top and turns grey; the event banner loses its menu button and gets a white timer and carousel dots; the
+    double coins card loses its daily streak and becomes one line with a progress pill; the invite card puts
+    the offer first, with avatar slots and an Invite button; and a new story card replaces the old upsell.
+  </p>
+</div>
+
+<style is:global>
+  .hrf { display: grid; gap: 12px; }
+  .hrf-frame {
+    position: relative;
+    isolation: isolate;
+    aspect-ratio: 16 / 9;
+    overflow: hidden;
+    border-radius: var(--radius-lg);
+    background: #ececef;
+    box-shadow: var(--shadow-tile);
+  }
+  .hrf-poster {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: opacity 400ms ease;
+  }
+  .hrf[data-ready] .hrf-poster { opacity: 0; }
+  .hrf-host { position: absolute; inset: 0; pointer-events: none; }
+  .hrf-host .hrf-stage { position: absolute; left: 0; top: 0; transform-origin: 0 0; }
+
+  .hrf-bar { display: flex; align-items: center; gap: 14px; }
+  .hrf-play {
+    flex: none;
+    display: grid;
+    place-items: center;
+    width: 40px;
+    height: 40px;
+    border: 0;
+    border-radius: 50%;
+    background: var(--ink);
+    color: var(--bg);
+    cursor: pointer;
+  }
+  .hrf-play svg { fill: currentColor; }
+  .hrf-full {
+    flex: none;
+    display: grid;
+    place-items: center;
+    width: 40px;
+    height: 40px;
+    border: 1px solid var(--line);
+    border-radius: 50%;
+    background: none;
+    cursor: pointer;
+  }
+  .hrf-full svg { fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+  .hrf-full[hidden] { display: none; }
+  .hrf-frame:fullscreen { border-radius: 0; box-shadow: none; }
+  .hrf-play[data-state='playing'] .i-play,
+  .hrf-play:not([data-state='playing']) .i-pause { display: none; }
+  .hrf-steps { flex: 1; display: flex; gap: 4px; min-width: 0; margin: 0; padding: 0; list-style: none; }
+  .hrf-steps li { min-width: 0; }
+  .hrf-steps button {
+    display: grid;
+    gap: 8px;
+    width: 100%;
+    padding: 8px 0;
+    border: 0;
+    background: none;
+    text-align: left;
+    cursor: pointer;
+  }
+  .hrf-track { display: block; height: 4px; overflow: hidden; border-radius: 2px; background: var(--line); }
+  .hrf-track i { display: block; width: calc(var(--p, 0) * 100%); height: 100%; background: var(--accent); }
+  .hrf-label {
+    overflow: hidden;
+    color: var(--ink-2);
+    font: 600 0.75rem/1.2 var(--font-ui);
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+  .hrf-steps button[aria-current] .hrf-label { color: var(--ink); }
+  @media (max-width: 720px) {
+    .hrf-label { display: none; }
+  }
+
+  /* the stage is built by home-revamp-film.js at 1920 × 1080 and scaled to fit; keep the page's resets out */
+  .hrf-stage, .hrf-stage *, .hrf-stage *::before, .hrf-stage *::after { box-sizing: content-box; }
+  .hrf-stage { color: #17171c; line-height: normal; letter-spacing: normal; font-variant-numeric: normal; text-rendering: auto; }
+  .hrf-stage img, .hrf-stage svg { max-width: none; }
+  .hrf-stage { position: relative; width: 1920px; height: 1080px; overflow: hidden; background: #ececef; font-family: 'Inter Variable', sans-serif; }
+  .hrf-stage .hr-grid { position: absolute; inset: 0; background-image: radial-gradient(#d3d3d8 1.3px, transparent 1.4px); background-size: 26px 26px; }
+  .hrf-stage .a { position: absolute; }
+  .hrf-stage .hr-world { position: absolute; left: 0; top: 0; transform-origin: 0 0; }
+  .hrf-stage .hr-phone { position: absolute; left: -25px; top: -25px; width: 1074px; height: 2394px; border: 25px solid #3b3838; border-radius: 128px; background: #3b3838; box-shadow: 0 60px 140px rgba(20, 20, 40, .22); }
+  .hrf-stage .hr-screen { position: absolute; left: 0; top: 0; width: 1074px; height: 2394px; overflow: hidden; border-radius: 104px; background: #fff; font-family: 'Plus Jakarta Sans Variable', sans-serif; }
+  .hrf-stage .t { position: absolute; white-space: nowrap; line-height: normal; }
+  .hrf-stage .c { transform: translateX(-50%); }
+  .hrf-stage .r { transform: translateX(-100%); }
+  .hrf-stage .caret { display: inline-block; width: 0; height: 1em; vertical-align: -0.12em; border-left: 0.07em solid currentColor; margin-left: 0.03em; }
+  .hrf-stage .hl { background: rgba(47, 123, 255, .32); border-radius: 4px; }
+  .hrf-stage img { display: block; }
+  .hrf-stage .sel { position: absolute; border: 2px solid #2f7bff; box-sizing: border-box; pointer-events: none; }
+  .hrf-stage .sel i { position: absolute; width: 11px; height: 11px; background: #fff; border: 2px solid #2f7bff; box-sizing: border-box; border-radius: 2px; }
+  .hrf-stage .sel i:nth-child(1) { left: -7px; top: -7px; }
+  .hrf-stage .sel i:nth-child(2) { right: -7px; top: -7px; }
+  .hrf-stage .sel i:nth-child(3) { left: -7px; bottom: -7px; }
+  .hrf-stage .sel i:nth-child(4) { right: -7px; bottom: -7px; }
+  .hrf-stage .sel b { position: absolute; left: 50%; transform: translateX(-50%); bottom: -34px; background: #2f7bff; color: #fff; font: 600 12px/1 'Inter Variable'; padding: 6px 8px; border-radius: 6px; white-space: nowrap; }
+  .hrf-stage .hr-marq { position: absolute; border: 1.5px solid #2f7bff; background: rgba(47, 123, 255, .08); }
+  .hrf-stage .hr-draw { position: absolute; border: 2px solid #2f7bff; }
+  .hrf-stage .hr-draw b { position: absolute; left: 50%; transform: translateX(-50%); bottom: -32px; background: #2f7bff; color: #fff; font: 600 12px/1 'Inter Variable'; padding: 6px 8px; border-radius: 6px; white-space: nowrap; }
+  .hrf-stage .hr-cursor { position: absolute; left: 0; top: 0; width: 34px; height: 34px; z-index: 30; }
+  .hrf-stage .hr-ripple { position: absolute; width: 44px; height: 44px; margin: -22px 0 0 -22px; border-radius: 50%; border: 2px solid #2f7bff; z-index: 29; }
+  .hrf-stage .hr-chip { position: absolute; z-index: 31; background: #1d1d22; color: #fff; font: 600 14px/1 'Inter Variable'; padding: 8px 11px; border-radius: 8px; box-shadow: 0 6px 18px rgba(0,0,0,.25); white-space: nowrap; }
+  .hrf-stage .hr-panel { position: absolute; left: 1512px; top: 150px; width: 368px; background: #fff; border-radius: 16px; box-shadow: 0 24px 60px rgba(20, 20, 40, .16), 0 0 0 1px rgba(0, 0, 0, .06); font: 500 15px/1.2 'Inter Variable'; color: #1e1e22; z-index: 20; }
+  .hrf-stage .hr-panel .hd { display: flex; align-items: center; gap: 10px; padding: 18px 20px 16px; font-weight: 600; font-size: 16px; border-bottom: 1px solid #efeff2; }
+  .hrf-stage .hr-panel .ic { width: 30px; height: 30px; border-radius: 8px; background: #eef3ff; color: #2f7bff; display: grid; place-items: center; font: 700 15px/1 'Inter Variable'; }
+  .hrf-stage .hr-panel .sec { padding: 14px 20px 16px; border-bottom: 1px solid #efeff2; }
+  .hrf-stage .hr-panel .sec:last-child { border-bottom: 0; }
+  .hrf-stage .hr-panel .lb { font-size: 12px; color: #8b8b94; font-weight: 600; letter-spacing: .02em; margin-bottom: 8px; text-transform: uppercase; }
+  .hrf-stage .hr-panel .row { display: flex; gap: 8px; margin-top: 8px; }
+  .hrf-stage .hr-panel .row:first-of-type { margin-top: 0; }
+  .hrf-stage .hr-panel .f { flex: 1; height: 38px; border-radius: 9px; background: #f4f4f6; display: flex; align-items: center; padding: 0 12px; gap: 9px; box-sizing: border-box; white-space: nowrap; overflow: hidden; }
+  .hrf-stage .hr-panel .f small { color: #9a9aa3; font-size: 12px; font-weight: 600; }
+  .hrf-stage .hr-panel .f.on { box-shadow: 0 0 0 2px #2f7bff; background: #fff; }
+  .hrf-stage .hr-panel .f.tall { height: auto; min-height: 38px; padding: 9px 12px; white-space: normal; line-height: 1.35; }
+  .hrf-stage .hr-panel .sw { width: 20px; height: 20px; border-radius: 5px; box-shadow: inset 0 0 0 1px rgba(0,0,0,.12); flex: none; }
+  .hrf-stage .hr-panel .al { display: flex; gap: 4px; }
+  .hrf-stage .hr-panel .al span { width: 40px; height: 34px; border-radius: 7px; background: #f4f4f6; display: grid; place-items: center; }
+  .hrf-stage .hr-panel .al span.on { background: #e5edff; box-shadow: 0 0 0 2px #2f7bff; }
+  .hrf-stage .hr-panel .al span i { display: block; width: 14px; height: 2px; background: #555; box-shadow: 0 -5px 0 #555, 0 5px 0 #555; }
+  .hrf-stage .hr-panel .btn { height: 38px; border-radius: 8px; background: #1e1e22; color: #fff; font-weight: 600; display: grid; place-items: center; padding: 0 12px; }
+  .hrf-stage .hr-panel .btn.on { box-shadow: 0 0 0 3px #9dbdff; }
+  .hrf-stage .hr-panel .thumb { width: 66px; height: 46px; border-radius: 7px; background-size: cover; background-position: center; flex: none; }
+  .hrf-stage .hr-picker { position: absolute; width: 284px; background: #fff; border-radius: 14px; box-shadow: 0 24px 60px rgba(20, 20, 40, .2), 0 0 0 1px rgba(0, 0, 0, .06); padding: 14px; box-sizing: border-box; z-index: 25; font: 600 14px/1 'Inter Variable'; color: #1e1e22; }
+  .hrf-stage .hr-picker .tabs { display: flex; gap: 4px; margin-bottom: 10px; }
+  .hrf-stage .hr-picker .tabs span { padding: 7px 10px; border-radius: 7px; color: #77777f; }
+  .hrf-stage .hr-picker .tabs span.on { background: #f0f0f3; color: #1e1e22; }
+  .hrf-stage .hr-picker .sv { position: relative; width: 256px; height: 170px; border-radius: 8px; overflow: hidden; }
+  .hrf-stage .hr-picker .sv::before { content: ''; position: absolute; inset: 0; background: linear-gradient(90deg, #fff, rgba(255,255,255,0)); }
+  .hrf-stage .hr-picker .sv::after { content: ''; position: absolute; inset: 0; background: linear-gradient(0deg, #000, rgba(0,0,0,0)); }
+  .hrf-stage .hr-picker .knob { position: absolute; width: 16px; height: 16px; margin: -8px 0 0 -8px; border-radius: 50%; border: 3px solid #fff; box-shadow: 0 0 0 1px rgba(0,0,0,.25), 0 2px 6px rgba(0,0,0,.3); z-index: 2; box-sizing: border-box; }
+  .hrf-stage .hr-picker .hue { position: relative; margin-top: 14px; width: 256px; height: 12px; border-radius: 6px; background: linear-gradient(90deg, #f00, #ff0, #0f0, #0ff, #00f, #f0f, #f00); }
+  .hrf-stage .hr-picker .hue .knob { top: 6px; background: transparent; }
+  .hrf-stage .hr-picker .hx { display: flex; gap: 6px; margin-top: 12px; }
+  .hrf-stage .hr-picker .hx span { height: 34px; border-radius: 7px; background: #f4f4f6; display: flex; align-items: center; padding: 0 10px; }
+  .hrf-stage .hr-picker .hx span:first-child { flex: 1; gap: 8px; }
+  .hrf-stage .hr-cap { position: absolute; left: 56px; top: 50px; z-index: 40; font-family: 'Plus Jakarta Sans Variable', sans-serif; padding: 18px 22px 20px; border-radius: 16px; background: rgba(236,236,239,.86); backdrop-filter: blur(8px); }
+  .hrf-stage .hr-cap .n { font: 700 15px/1 'Plus Jakarta Sans Variable'; color: #2f7bff; letter-spacing: .08em; }
+  .hrf-stage .hr-cap .h { margin-top: 10px; font: 700 30px/1.15 'Plus Jakarta Sans Variable'; color: #17171c; letter-spacing: -.01em; }
+  .hrf-stage .hr-cap .s { margin-top: 8px; font: 500 16px/1.4 'Plus Jakarta Sans Variable'; color: #6b6b75; max-width: 320px; }
+  .hrf-stage .hr-flabel { position: absolute; font: 600 15px/1 'Inter Variable'; color: #7c7c86; white-space: nowrap; }
+  .hrf-stage .tag { position: absolute; font: 700 22px/1 'Plus Jakarta Sans Variable'; color: #17171c; white-space: nowrap; transform: translateX(-50%); }
+  .hrf-stage .tag small { display: block; margin-top: 6px; font: 500 14px/1 'Plus Jakarta Sans Variable'; color: #7c7c86; text-align: center; }
+</style>
+
+<script>
+  import { mountFilm, DURATION } from './home-revamp-film.js';
+
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  document.querySelectorAll<HTMLElement>('[data-home-revamp]').forEach((fig) => {
+    const frame = fig.querySelector<HTMLElement>('.hrf-frame')!;
+    const host = fig.querySelector<HTMLElement>('.hrf-host')!;
+    const play = fig.querySelector<HTMLButtonElement>('[data-play]')!;
+    const steps = [...fig.querySelectorAll<HTMLButtonElement>('[data-ch]')];
+    let film: { stage: HTMLElement; render: (t: number) => void; ready: () => Promise<void> } | null = null;
+    let t = 0;
+    let playing = !reduce;
+    let inView = false;
+    let raf = 0;
+    let last = 0;
+
+    const full = fig.querySelector<HTMLButtonElement>('[data-full]')!;
+    // fit 1920 × 1080 into the frame, centred (the frame is 16:9 except in full screen)
+    const fit = () => {
+      if (!film) return;
+      const w = frame.clientWidth, h = frame.clientHeight, k = Math.min(w / 1920, h / 1080);
+      film.stage.style.transform = `translate(${(w - 1920 * k) / 2}px, ${(h - 1080 * k) / 2}px) scale(${k})`;
+    };
+    new ResizeObserver(fit).observe(frame);
+
+    const draw = () => {
+      film?.render(t);
+      for (const s of steps) {
+        const a = Number(s.dataset.a), b = Number(s.dataset.b);
+        s.style.setProperty('--p', String(Math.min(1, Math.max(0, (t - a) / (b - a)))));
+        s.toggleAttribute('aria-current', t >= a && t < b);
+      }
+    };
+    const tick = (now: number) => {
+      if (last) t += Math.min(0.1, (now - last) / 1000);
+      last = now;
+      if (t >= DURATION) t = 0;
+      draw();
+      raf = requestAnimationFrame(tick);
+    };
+    // runs only while built, playing, on screen and in a visible tab
+    const sync = () => {
+      const run = !!film && playing && inView && !document.hidden;
+      if (run && !raf) { last = 0; raf = requestAnimationFrame(tick); }
+      if (!run && raf) { cancelAnimationFrame(raf); raf = 0; }
+      play.dataset.state = playing ? 'playing' : 'paused';
+      play.setAttribute('aria-label', playing ? 'Pause the film' : 'Play the film');
+    };
+
+    // built once the page scrolls near it: fonts and stills load only then
+    new IntersectionObserver((es, io) => {
+      if (!es.some((e) => e.isIntersecting)) return;
+      io.disconnect();
+      const f = mountFilm(host, { base: fig.dataset.base ?? '' });
+      f.ready().then(() => {
+        film = f;
+        fit();
+        // start where the poster is, so the swap is seamless; with reduced motion, hold the before and after
+        t = reduce ? DURATION - 0.05 : 1.1;
+        draw();
+        fig.toggleAttribute('data-ready', true);
+        sync();
+      });
+    }, { rootMargin: '400px 0px' }).observe(fig);
+    new IntersectionObserver((es) => { inView = es[0].isIntersecting; sync(); }, { threshold: 0.2 }).observe(frame);
+    document.addEventListener('visibilitychange', sync);
+
+    play.addEventListener('click', () => {
+      playing = !playing;
+      if (playing && t >= DURATION - 0.1) t = 0;
+      sync();
+    });
+    for (const s of steps) s.addEventListener('click', () => { t = Number(s.dataset.a) + 0.001; draw(); });
+    if (document.fullscreenEnabled) {
+      full.hidden = false;
+      full.addEventListener('click', () => (document.fullscreenElement ? document.exitFullscreen() : frame.requestFullscreen()));
+      document.addEventListener('fullscreenchange', () => full.setAttribute('aria-label', document.fullscreenElement === frame ? 'Exit full screen' : 'Full screen'));
+    }
+    sync();
+  });
+</script>
