@@ -1,173 +1,265 @@
 ---
 /**
- * Border beam: a glowing streak of colour that runs round the border of whatever it wraps
- * (a card, a button, an input). Pure CSS: a conic gradient turned by an animated angle, cut down
- * to a ring with a mask, and a blurred copy behind it for the glow outside the edge.
+ * Border beam: light on the inside edge of whatever it wraps (a card, an input, a button).
+ * Two modes:
  *
- *   <BorderBeam variant="saber" radius="24px"><div class="card">…</div></BorderBeam>
+ * orbit (default), for cards and boxes: two beams on opposite sides, each a run of colours that
+ *   blend into one another, travel clockwise at an even pace, hugging the rounded corners. Each
+ *   lights the border as a thin line and spills a soft glow inward. It traces the real outline: an
+ *   SVG rounded rectangle, measured in 100 equal steps, with dashes of colour sliding along it.
  *
- * variant   colorful | mono | ocean | sunset | saber (a red beam and a blue one, opposite each other)
- * size      md (2px border, wide glow) | sm (1.5px, small glow) | line (1px, no glow)
- * strength  glow intensity, 0–1
- * duration  seconds per lap
- * active    false pauses the beam where it is
+ * sweep, for long thin shapes such as a search field: one flare passes along the bottom edge,
+ *   left to right, then rests before the next pass. A thin rainbow line, white-hot in the middle,
+ *   lights the border, and a soft prismatic bloom rises a little into the field above it, its
+ *   colours shimmering round a bright centre.
+ *
+ * Everything is clipped to the shape, so nothing shows outside the edge.
+ *
+ *   <BorderBeam radius="28px"><div class="prompt">…</div></BorderBeam>
+ *   <BorderBeam mode="sweep" radius="999px"><label class="search">…</label></BorderBeam>
+ *
+ * mode      orbit | sweep
+ *
+ * variant   colorful | mono | ocean | sunset | saber (a red beam and a blue one)
+ * size      md | sm | line (just the lit border, no glow)
+ * strength  how bright, 0–1
+ * duration  seconds per lap (orbit, default 2.5) or per pass and rest (sweep, default 3.4)
+ * active    false pauses the light where it is
  * radius    corner radius; match the wrapped element's
+ * fill      stretch to fill the space, wrapped element too (by default it hugs what it wraps)
  *
- * The wrapped element should have its own background, so the glow only shows outside it.
- * With reduced motion the beam stands still as a faint full ring.
+ * With reduced motion the light stands still where it is.
  */
 interface Props {
+  mode?: 'orbit' | 'sweep';
   variant?: 'colorful' | 'mono' | 'ocean' | 'sunset' | 'saber';
   size?: 'md' | 'sm' | 'line';
   strength?: number;
   duration?: number;
   active?: boolean;
   radius?: string;
+  fill?: boolean;
   class?: string;
 }
 const {
+  mode = 'orbit',
   variant = 'colorful',
   size = 'md',
-  strength = 0.7,
-  duration = 4,
+  strength = 0.8,
+  duration = mode === 'sweep' ? 3.4 : 2.5,
   active = true,
   radius = '16px',
+  fill = false,
   class: cls,
 } = Astro.props;
+
+// each beam, from its tail to its leading edge
+const SETS: Record<string, [string[], string[]]> = {
+  colorful: [['#ffcf3a', '#ff8a3d', '#ff4fb0'], ['#3ee08a', '#2ec4ff', '#8b5cff']],
+  mono: [['#8d96a3', '#c9d1dc', '#ffffff'], ['#8d96a3', '#c9d1dc', '#ffffff']],
+  ocean: [['#1fd1a5', '#2ec4ff', '#3d7bff'], ['#7cf0ff', '#2e8bff', '#5b5cff']],
+  sunset: [['#ffc23c', '#ff7a3c', '#ff3d6e'], ['#ffd84a', '#ff9a3c', '#ff5fa2']],
+  saber: [['#ff8a95', '#ff4a5a', '#ff1f35'], ['#9fd4ff', '#4fb2ff', '#168dff']],
+};
+// Each colour is a few nested dashes on one centre, from long and faint to short: together they
+// are brightest in the middle and fade out at both ends, and neighbouring colours blend.
+const LEN = 11; // the longest dash of a colour, in hundredths of the outline
+const TAPER = 3;
+const blobs = (SETS[variant] ?? SETS.colorful).flatMap((beam, b) =>
+  beam.flatMap((color, i) =>
+    Array.from({ length: TAPER }, (_, k) => {
+      const len = (LEN * (TAPER - k)) / TAPER;
+      return { color, len, at: b * 50 + i * 5.5 + (LEN - len) / 2 };
+    }),
+  ),
+);
+const rx = parseFloat(radius) || 0;
+
+// sweep: the line's colours from end to end (the middle one is white-hot), and the bloom's halos
+const SWEEP: Record<string, { line: string[]; halo: string[] }> = {
+  colorful: { line: ['#5a6cff', '#3ee08a', '#ff6fb0', '#ffffff', '#ff5fa2', '#4fb2ff', '#9b6bff'], halo: ['#ff6fb0', '#3ee08a', '#ffd84a', '#a77bff', '#2ec4ff'] },
+  mono: { line: ['#8d96a3', '#c9d1dc', '#e8edf3', '#ffffff', '#e8edf3', '#c9d1dc', '#8d96a3'], halo: ['#ffffff', '#c9d1dc', '#e8edf3', '#aab3c0', '#d6dce5'] },
+  ocean: { line: ['#3d7bff', '#1fd1a5', '#2ec4ff', '#ffffff', '#7cf0ff', '#2e8bff', '#5b5cff'], halo: ['#2ec4ff', '#1fd1a5', '#7cf0ff', '#5b5cff', '#3d7bff'] },
+  sunset: { line: ['#ff3d6e', '#ff9a3c', '#ffd84a', '#ffffff', '#ffc23c', '#ff7a3c', '#ff5fa2'], halo: ['#ff7a3c', '#ffd84a', '#ff3d6e', '#ff5fa2', '#ffc23c'] },
+  saber: { line: ['#ff1f35', '#ff4a5a', '#ff8a95', '#ffffff', '#9fd4ff', '#4fb2ff', '#168dff'], halo: ['#ffffff', '#ff1f35', '#ff8a95', '#4fb2ff', '#168dff'] },
+};
+const sw = SWEEP[variant] ?? SWEEP.colorful;
+const sweepLine = `linear-gradient(90deg, transparent, ${sw.line.map((c, i) => `${c} ${12 + i * 12.67}%`).join(', ')}, transparent)`;
 ---
 
 <div
   class:list={['beam', cls]}
-  data-variant={variant}
   data-size={size}
+  data-mode={mode}
   data-paused={active ? undefined : ''}
+  data-fill={fill ? '' : undefined}
   style={`--beam-strength:${strength};--beam-duration:${duration}s;--beam-radius:${radius}`}
 >
   <slot />
+  {mode === 'sweep' ? (
+  <span class="beam-fx" aria-hidden="true">
+    <span class="flare">
+      {size !== 'line' && (
+        <span class="bloom">
+          <i class="h-core" style={`--c:${sw.halo[0]}`} />
+          <i class="h1" style={`--c:${sw.halo[1]}`} />
+          <i class="h2" style={`--c:${sw.halo[2]}`} />
+          <i class="h3" style={`--c:${sw.halo[3]}`} />
+          <i class="h4" style={`--c:${sw.halo[4]}`} />
+        </span>
+      )}
+      <i class="sweep-line" style={`background:${sweepLine}`} />
+    </span>
+  </span>
+  ) : (
+  <span class="beam-fx" aria-hidden="true">
+    {size !== 'line' && (
+      <svg class="glow">
+        {blobs.map((d) => (
+          <rect width="100%" height="100%" rx={rx} pathLength="100" stroke={d.color} stroke-opacity={1 / TAPER} stroke-dasharray={`${d.len} ${100 - d.len}`} style={`--at:${d.at}`} />
+        ))}
+      </svg>
+    )}
+    <svg class="line">
+      {blobs.map((d) => (
+        <rect width="100%" height="100%" rx={rx} pathLength="100" stroke={d.color} stroke-opacity={1.6 / TAPER} stroke-dasharray={`${d.len} ${100 - d.len}`} style={`--at:${d.at}`} />
+      ))}
+    </svg>
+  </span>
+  )}
 </div>
 
 <style>
-  @property --beam-angle {
-    syntax: '<angle>';
-    inherits: false;
-    initial-value: 0deg;
-  }
-
   .beam {
-    --bw: 2px;
-    --glow: 14px;
-    --c1: #ff5fa2;
-    --c2: #ffb23c;
-    --c3: #5ed26b;
-    --c4: #4fb2ff;
+    --glow-w: 64px;
+    --glow-blur: 16px;
+    --line-w: 3px; /* half of it shows: the stroke sits on the edge and the outer half is clipped */
+    /* hugs what it wraps; with `fill` it stretches, and the wrapped element with it */
+    display: grid;
+    width: fit-content;
     position: relative;
-    isolation: isolate;
     border-radius: var(--beam-radius);
   }
+  .beam[data-fill] {
+    width: auto;
+    align-self: stretch;
+  }
   .beam[data-size='sm'] {
-    --bw: 1.5px;
-    --glow: 8px;
+    --glow-w: 34px;
+    --glow-blur: 9px;
+    --line-w: 2px;
   }
-  .beam[data-size='line'] {
-    --bw: 1px;
-  }
-  .beam[data-variant='mono'] {
-    --c1: #9aa3b2;
-    --c2: #d6dce5;
-    --c3: #ffffff;
-    --c4: #d6dce5;
-  }
-  .beam[data-variant='ocean'] {
-    --c1: #1f6bff;
-    --c2: #2fb3ff;
-    --c3: #39e0d0;
-    --c4: #b6fff4;
-  }
-  .beam[data-variant='sunset'] {
-    --c1: #ff3d6e;
-    --c2: #ff7a3c;
-    --c3: #ffb23c;
-    --c4: #ffe27a;
-  }
-
-  /* the ring: the streak, masked to the border */
-  .beam::before,
-  .beam::after {
-    content: '';
+  .beam-fx {
     position: absolute;
-    pointer-events: none;
-    background: conic-gradient(
-      from var(--beam-angle),
-      transparent 0 64%,
-      var(--c1) 76%,
-      var(--c2) 84%,
-      var(--c3) 91%,
-      var(--c4) 96%,
-      #fff 99%,
-      transparent 100%
-    );
-    -webkit-mask:
-      linear-gradient(#000 0 0) content-box,
-      linear-gradient(#000 0 0);
-    -webkit-mask-composite: xor;
-    mask:
-      linear-gradient(#000 0 0) content-box exclude,
-      linear-gradient(#000 0 0);
-    animation: beam-turn var(--beam-duration) linear infinite;
-  }
-  .beam::before {
     inset: 0;
     z-index: 2;
-    padding: var(--bw);
+    overflow: hidden;
     border-radius: inherit;
-  }
-  /* the glow: the same streak, blurred, shown only outside the edge */
-  .beam::after {
-    inset: calc(-1 * var(--glow));
-    z-index: -1;
-    padding: var(--glow);
-    border-radius: calc(var(--beam-radius) + var(--glow));
-    filter: blur(calc(var(--glow) * 0.55));
+    pointer-events: none;
+    mix-blend-mode: screen;
     opacity: var(--beam-strength);
   }
-  .beam[data-size='line']::after {
-    display: none;
+  .beam-fx svg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    overflow: visible;
   }
-
-  /* Beat Saber: a red blade and a blue one, chasing each other round */
-  .beam[data-variant='saber']::before,
-  .beam[data-variant='saber']::after {
-    background: conic-gradient(
-      from var(--beam-angle),
-      transparent 0 28%,
-      #ff1f35 40%,
-      #ffd0d6 48%,
-      transparent 50% 78%,
-      #168dff 90%,
-      #d6ecff 98%,
-      transparent 100%
-    );
+  .beam-fx .glow {
+    filter: blur(var(--glow-blur));
+    opacity: 0.5;
   }
-
-  .beam[data-paused]::before,
-  .beam[data-paused]::after {
+  .beam-fx rect {
+    fill: none;
+    stroke-linecap: butt;
+    animation: beam-run var(--beam-duration) linear infinite;
+    /* a negative delay starts each dash further along the outline */
+    animation-delay: calc(var(--beam-duration) * var(--at) / -100);
+  }
+  .glow rect {
+    stroke-width: var(--glow-w);
+  }
+  .line rect {
+    stroke-width: var(--line-w);
+  }
+  .beam[data-paused] rect {
+    animation-play-state: paused;
+  }
+  /* ---------- sweep ---------- */
+  .beam[data-mode='sweep'] .beam-fx {
+    container-type: size;
+  }
+  /* the flare: a box riding the bottom edge, its centre carried from 12% to 86% of the width */
+  .flare {
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    width: 46cqw;
+    height: 100%;
+    opacity: 0;
+    animation: beam-sweep var(--beam-duration) linear infinite;
+  }
+  .sweep-line {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: var(--sweep-h, 1.5px);
+  }
+  .beam[data-size='md'] .sweep-line {
+    --sweep-h: 2px;
+  }
+  /* the bloom: wide, low washes of colour sitting on the line and blending into each other,
+     brightest over the white-hot middle */
+  .bloom {
+    position: absolute;
+    inset: 0;
+    filter: blur(var(--glow-blur));
+  }
+  .bloom i {
+    position: absolute;
+    border-radius: 50%;
+    background: radial-gradient(closest-side, var(--c), transparent);
+    animation: shimmer 1.6s ease-in-out infinite alternate;
+  }
+  .bloom .h-core { left: 33%; width: 34%; height: 80%; bottom: -42%; background: radial-gradient(closest-side, #fff, var(--c) 40%, transparent); --o: 0.85; }
+  .bloom .h1 { left: 14%; width: 34%; height: 100%; bottom: -48%; --o: 0.4; animation-duration: 1.3s; }
+  .bloom .h2 { left: 46%; width: 30%; height: 110%; bottom: -44%; --o: 0.35; animation-duration: 1.9s; animation-delay: -0.4s; }
+  .bloom .h3 { left: 60%; width: 34%; height: 95%; bottom: -52%; --o: 0.4; animation-duration: 1.5s; animation-delay: -0.9s; }
+  .bloom .h4 { left: 0%; width: 30%; height: 80%; bottom: -52%; --o: 0.35; animation-duration: 2.1s; animation-delay: -0.2s; }
+  @keyframes shimmer {
+    from { transform: translateX(-8%) scaleX(0.94); opacity: calc(var(--o) * 0.7); }
+    to { transform: translateX(8%) scaleX(1.06); opacity: var(--o); }
+  }
+  @keyframes beam-sweep {
+    0% { transform: translateX(-11cqw); opacity: 0; animation-timing-function: cubic-bezier(0.35, 0, 0.6, 1); }
+    10% { opacity: 1; }
+    52% { opacity: 1; }
+    64% { transform: translateX(63cqw); opacity: 0; }
+    100% { transform: translateX(63cqw); opacity: 0; }
+  }
+  .beam[data-paused] .flare,
+  .beam[data-paused] .bloom i {
     animation-play-state: paused;
   }
 
-  @keyframes beam-turn {
-    to { --beam-angle: 360deg; }
+  @keyframes beam-run {
+    from { stroke-dashoffset: 0; }
+    to { stroke-dashoffset: -100; }
   }
-
   @media (prefers-reduced-motion: reduce) {
-    .beam::before,
-    .beam::after {
-      animation: none;
-      background: linear-gradient(135deg, var(--c1), var(--c2), var(--c3), var(--c4));
-      opacity: 0.45;
+    .beam-fx rect {
+      animation-play-state: paused;
     }
-    .beam[data-variant='saber']::before,
-    .beam[data-variant='saber']::after {
-      background: linear-gradient(135deg, #ff1f35, #168dff);
+    /* the flare rests in the middle */
+    .flare {
+      animation: none;
+      opacity: 0.8;
+      transform: translateX(27cqw);
+    }
+    .bloom i {
+      animation: none;
     }
   }
 </style>
