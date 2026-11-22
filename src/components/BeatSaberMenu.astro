@@ -1263,10 +1263,12 @@ const first = passes[0];
     transition: translate 500ms var(--ease), opacity 300ms ease, visibility 0s 500ms;
   }
 
-  /* The song screen's three sections are the same size: 392 wide (the sides reach 86 into the
-     middle column, which gives it up) and one height, each with its last row on the bottom line. */
+  /* The song screen's three sections are the same size: about 419 wide (the sides reach 40 outward
+     past the menu's edge and 73 into the middle column, which gives that up) and one height, each
+     with its last row on the bottom line. */
   .v-songs {
-    --grow: calc(var(--u) * 86);
+    --out: calc(var(--u) * 40);
+    --grow: calc(var(--u) * 72.670);
     display: flex;
     flex-direction: column;
     gap: calc(var(--u) * 20);
@@ -1274,6 +1276,7 @@ const first = passes[0];
     height: calc(var(--u) * 512);
   }
   .v-songs.left {
+    margin-left: calc(var(--out) * -1);
     margin-right: calc(var(--grow) * -1);
   }
   .v-songs.mid {
@@ -1281,6 +1284,7 @@ const first = passes[0];
   }
   .v-songs.right {
     margin-left: calc(var(--grow) * -1);
+    margin-right: calc(var(--out) * -1);
   }
   .v-songs .s-body {
     flex: 1;
