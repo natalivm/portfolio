@@ -96,11 +96,19 @@ const space = p.theme === 'space';
       </figcaption>
     </figure>
   ) : space ? null : (
+    <div class:list={['hero-row', p.theme === 'sky' && 'clip']}>
     <figure class="wrap hero">
+      {p.theme === 'sky' && (
+        <div class="hero-clouds" aria-hidden="true">
+          <img class="c1" src={`${base}/cases/balloon-sprint/cloud.webp`} width="760" height="409" alt="" decoding="async" />
+          <img class="c2" src={`${base}/cases/balloon-sprint/cloud.webp`} width="760" height="409" alt="" decoding="async" />
+        </div>
+      )}
       <div class="hero-frame" style="view-transition-name: hero-still">
         <Cover project={p} ratio="16/9" eager />
       </div>
     </figure>
+    </div>
   )}
 
   {p.slug === 'next-games' ? (
@@ -484,7 +492,38 @@ const space = p.theme === 'space';
     margin: 0;
   }
   .hero {
+    position: relative;
     margin-block: 0;
+  }
+  /* Balloon Sprint: huge clouds behind the cover, each centred on a side of the frame so half shows */
+  .hero-clouds {
+    position: absolute;
+    inset: 0 var(--gutter);
+    pointer-events: none;
+  }
+  .hero-clouds img {
+    position: absolute;
+    height: auto;
+  }
+  .hero-clouds .c1 {
+    left: 0;
+    top: 46%;
+    width: 52%;
+    translate: -50% -50%;
+  }
+  .hero-clouds .c2 {
+    right: 0;
+    top: 12%;
+    width: 46%;
+    translate: 50% -50%;
+    scale: -1 1;
+  }
+  .hero-clouds ~ .hero-frame {
+    position: relative;
+  }
+  /* the clouds reach past the window's edges: clip them there, sideways only */
+  .hero-row.clip {
+    overflow-x: clip;
   }
   .proto-frame {
     display: grid;

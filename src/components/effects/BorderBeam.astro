@@ -1,0 +1,173 @@
+---
+/**
+ * Border beam: a glowing streak of colour that runs round the border of whatever it wraps
+ * (a card, a button, an input). Pure CSS: a conic gradient turned by an animated angle, cut down
+ * to a ring with a mask, and a blurred copy behind it for the glow outside the edge.
+ *
+ *   <BorderBeam variant="saber" radius="24px"><div class="card">…</div></BorderBeam>
+ *
+ * variant   colorful | mono | ocean | sunset | saber (a red beam and a blue one, opposite each other)
+ * size      md (2px border, wide glow) | sm (1.5px, small glow) | line (1px, no glow)
+ * strength  glow intensity, 0–1
+ * duration  seconds per lap
+ * active    false pauses the beam where it is
+ * radius    corner radius; match the wrapped element's
+ *
+ * The wrapped element should have its own background, so the glow only shows outside it.
+ * With reduced motion the beam stands still as a faint full ring.
+ */
+interface Props {
+  variant?: 'colorful' | 'mono' | 'ocean' | 'sunset' | 'saber';
+  size?: 'md' | 'sm' | 'line';
+  strength?: number;
+  duration?: number;
+  active?: boolean;
+  radius?: string;
+  class?: string;
+}
+const {
+  variant = 'colorful',
+  size = 'md',
+  strength = 0.7,
+  duration = 4,
+  active = true,
+  radius = '16px',
+  class: cls,
+} = Astro.props;
+---
+
+<div
+  class:list={['beam', cls]}
+  data-variant={variant}
+  data-size={size}
+  data-paused={active ? undefined : ''}
+  style={`--beam-strength:${strength};--beam-duration:${duration}s;--beam-radius:${radius}`}
+>
+  <slot />
+</div>
+
+<style>
+  @property --beam-angle {
+    syntax: '<angle>';
+    inherits: false;
+    initial-value: 0deg;
+  }
+
+  .beam {
+    --bw: 2px;
+    --glow: 14px;
+    --c1: #ff5fa2;
+    --c2: #ffb23c;
+    --c3: #5ed26b;
+    --c4: #4fb2ff;
+    position: relative;
+    isolation: isolate;
+    border-radius: var(--beam-radius);
+  }
+  .beam[data-size='sm'] {
+    --bw: 1.5px;
+    --glow: 8px;
+  }
+  .beam[data-size='line'] {
+    --bw: 1px;
+  }
+  .beam[data-variant='mono'] {
+    --c1: #9aa3b2;
+    --c2: #d6dce5;
+    --c3: #ffffff;
+    --c4: #d6dce5;
+  }
+  .beam[data-variant='ocean'] {
+    --c1: #1f6bff;
+    --c2: #2fb3ff;
+    --c3: #39e0d0;
+    --c4: #b6fff4;
+  }
+  .beam[data-variant='sunset'] {
+    --c1: #ff3d6e;
+    --c2: #ff7a3c;
+    --c3: #ffb23c;
+    --c4: #ffe27a;
+  }
+
+  /* the ring: the streak, masked to the border */
+  .beam::before,
+  .beam::after {
+    content: '';
+    position: absolute;
+    pointer-events: none;
+    background: conic-gradient(
+      from var(--beam-angle),
+      transparent 0 64%,
+      var(--c1) 76%,
+      var(--c2) 84%,
+      var(--c3) 91%,
+      var(--c4) 96%,
+      #fff 99%,
+      transparent 100%
+    );
+    -webkit-mask:
+      linear-gradient(#000 0 0) content-box,
+      linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+    mask:
+      linear-gradient(#000 0 0) content-box exclude,
+      linear-gradient(#000 0 0);
+    animation: beam-turn var(--beam-duration) linear infinite;
+  }
+  .beam::before {
+    inset: 0;
+    z-index: 2;
+    padding: var(--bw);
+    border-radius: inherit;
+  }
+  /* the glow: the same streak, blurred, shown only outside the edge */
+  .beam::after {
+    inset: calc(-1 * var(--glow));
+    z-index: -1;
+    padding: var(--glow);
+    border-radius: calc(var(--beam-radius) + var(--glow));
+    filter: blur(calc(var(--glow) * 0.55));
+    opacity: var(--beam-strength);
+  }
+  .beam[data-size='line']::after {
+    display: none;
+  }
+
+  /* Beat Saber: a red blade and a blue one, chasing each other round */
+  .beam[data-variant='saber']::before,
+  .beam[data-variant='saber']::after {
+    background: conic-gradient(
+      from var(--beam-angle),
+      transparent 0 28%,
+      #ff1f35 40%,
+      #ffd0d6 48%,
+      transparent 50% 78%,
+      #168dff 90%,
+      #d6ecff 98%,
+      transparent 100%
+    );
+  }
+
+  .beam[data-paused]::before,
+  .beam[data-paused]::after {
+    animation-play-state: paused;
+  }
+
+  @keyframes beam-turn {
+    to { --beam-angle: 360deg; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .beam::before,
+    .beam::after {
+      animation: none;
+      background: linear-gradient(135deg, var(--c1), var(--c2), var(--c3), var(--c4));
+      opacity: 0.45;
+    }
+    .beam[data-variant='saber']::before,
+    .beam[data-variant='saber']::after {
+      background: linear-gradient(135deg, #ff1f35, #168dff);
+    }
+  }
+</style>
