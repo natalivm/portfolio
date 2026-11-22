@@ -1,20 +1,29 @@
 ---
 /**
- * Border beam: light that runs round the inside edge of whatever it wraps (a card, an input,
- * a button). Two beams on opposite sides, each a run of colours that blend into one another,
- * travel clockwise at an even pace, hugging the rounded corners. Each beam lights the border
- * itself as a thin line and spills a soft glow inward.
+ * Border beam: light on the inside edge of whatever it wraps (a card, an input, a button).
+ * Two modes:
  *
- * It traces the real outline: an SVG rounded rectangle, measured in 100 equal steps, with short
- * dashes of colour that slide along it. A blurred copy makes the inner glow; both are clipped to
- * the shape, so nothing shows outside the edge.
+ * orbit (default), for cards and boxes: two beams on opposite sides, each a run of colours that
+ *   blend into one another, travel clockwise at an even pace, hugging the rounded corners. Each
+ *   lights the border as a thin line and spills a soft glow inward. It traces the real outline: an
+ *   SVG rounded rectangle, measured in 100 equal steps, with dashes of colour sliding along it.
+ *
+ * sweep, for long thin shapes such as a search field: one flare passes along the bottom edge,
+ *   left to right, then rests before the next pass. A thin rainbow line, white-hot in the middle,
+ *   lights the border, and a soft prismatic bloom rises a little into the field above it, its
+ *   colours shimmering round a bright centre.
+ *
+ * Everything is clipped to the shape, so nothing shows outside the edge.
  *
  *   <BorderBeam radius="28px"><div class="prompt">…</div></BorderBeam>
+ *   <BorderBeam mode="sweep" radius="999px"><label class="search">…</label></BorderBeam>
+ *
+ * mode      orbit | sweep
  *
  * variant   colorful | mono | ocean | sunset | saber (a red beam and a blue one)
  * size      md | sm | line (just the lit border, no glow)
  * strength  how bright, 0–1
- * duration  seconds per lap
+ * duration  seconds per lap (orbit, default 2.5) or per pass and rest (sweep, default 3.4)
  * active    false pauses the light where it is
  * radius    corner radius; match the wrapped element's
  * fill      stretch to fill the space, wrapped element too (by default it hugs what it wraps)
@@ -22,6 +31,7 @@
  * With reduced motion the light stands still where it is.
  */
 interface Props {
+  mode?: 'orbit' | 'sweep';
   variant?: 'colorful' | 'mono' | 'ocean' | 'sunset' | 'saber';
   size?: 'md' | 'sm' | 'line';
   strength?: number;
@@ -32,10 +42,11 @@ interface Props {
   class?: string;
 }
 const {
+  mode = 'orbit',
   variant = 'colorful',
   size = 'md',
   strength = 0.8,
-  duration = 2.5,
+  duration = mode === 'sweep' ? 3.4 : 2.5,
   active = true,
   radius = '16px',
   fill = false,
@@ -63,16 +74,44 @@ const blobs = (SETS[variant] ?? SETS.colorful).flatMap((beam, b) =>
   ),
 );
 const rx = parseFloat(radius) || 0;
+
+// sweep: the line's colours from end to end (the middle one is white-hot), and the bloom's halos
+const SWEEP: Record<string, { line: string[]; halo: string[] }> = {
+  colorful: { line: ['#5a6cff', '#3ee08a', '#ff6fb0', '#ffffff', '#ff5fa2', '#4fb2ff', '#9b6bff'], halo: ['#ff6fb0', '#3ee08a', '#ffd84a', '#a77bff', '#2ec4ff'] },
+  mono: { line: ['#8d96a3', '#c9d1dc', '#e8edf3', '#ffffff', '#e8edf3', '#c9d1dc', '#8d96a3'], halo: ['#ffffff', '#c9d1dc', '#e8edf3', '#aab3c0', '#d6dce5'] },
+  ocean: { line: ['#3d7bff', '#1fd1a5', '#2ec4ff', '#ffffff', '#7cf0ff', '#2e8bff', '#5b5cff'], halo: ['#2ec4ff', '#1fd1a5', '#7cf0ff', '#5b5cff', '#3d7bff'] },
+  sunset: { line: ['#ff3d6e', '#ff9a3c', '#ffd84a', '#ffffff', '#ffc23c', '#ff7a3c', '#ff5fa2'], halo: ['#ff7a3c', '#ffd84a', '#ff3d6e', '#ff5fa2', '#ffc23c'] },
+  saber: { line: ['#ff1f35', '#ff4a5a', '#ff8a95', '#ffffff', '#9fd4ff', '#4fb2ff', '#168dff'], halo: ['#ffffff', '#ff1f35', '#ff8a95', '#4fb2ff', '#168dff'] },
+};
+const sw = SWEEP[variant] ?? SWEEP.colorful;
+const sweepLine = `linear-gradient(90deg, transparent, ${sw.line.map((c, i) => `${c} ${12 + i * 12.67}%`).join(', ')}, transparent)`;
 ---
 
 <div
   class:list={['beam', cls]}
   data-size={size}
+  data-mode={mode}
   data-paused={active ? undefined : ''}
   data-fill={fill ? '' : undefined}
   style={`--beam-strength:${strength};--beam-duration:${duration}s;--beam-radius:${radius}`}
 >
   <slot />
+  {mode === 'sweep' ? (
+  <span class="beam-fx" aria-hidden="true">
+    <span class="flare">
+      {size !== 'line' && (
+        <span class="bloom">
+          <i class="h-core" style={`--c:${sw.halo[0]}`} />
+          <i class="h1" style={`--c:${sw.halo[1]}`} />
+          <i class="h2" style={`--c:${sw.halo[2]}`} />
+          <i class="h3" style={`--c:${sw.halo[3]}`} />
+          <i class="h4" style={`--c:${sw.halo[4]}`} />
+        </span>
+      )}
+      <i class="sweep-line" style={`background:${sweepLine}`} />
+    </span>
+  </span>
+  ) : (
   <span class="beam-fx" aria-hidden="true">
     {size !== 'line' && (
       <svg class="glow">
@@ -87,6 +126,7 @@ const rx = parseFloat(radius) || 0;
       ))}
     </svg>
   </span>
+  )}
 </div>
 
 <style>
@@ -146,6 +186,64 @@ const rx = parseFloat(radius) || 0;
   .beam[data-paused] rect {
     animation-play-state: paused;
   }
+  /* ---------- sweep ---------- */
+  .beam[data-mode='sweep'] .beam-fx {
+    container-type: size;
+  }
+  /* the flare: a box riding the bottom edge, its centre carried from 12% to 86% of the width */
+  .flare {
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    width: 46cqw;
+    height: 100%;
+    opacity: 0;
+    animation: beam-sweep var(--beam-duration) linear infinite;
+  }
+  .sweep-line {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: var(--sweep-h, 1.5px);
+  }
+  .beam[data-size='md'] .sweep-line {
+    --sweep-h: 2px;
+  }
+  /* the bloom: wide, low washes of colour sitting on the line and blending into each other,
+     brightest over the white-hot middle */
+  .bloom {
+    position: absolute;
+    inset: 0;
+    filter: blur(var(--glow-blur));
+  }
+  .bloom i {
+    position: absolute;
+    border-radius: 50%;
+    background: radial-gradient(closest-side, var(--c), transparent);
+    animation: shimmer 1.6s ease-in-out infinite alternate;
+  }
+  .bloom .h-core { left: 33%; width: 34%; height: 80%; bottom: -42%; background: radial-gradient(closest-side, #fff, var(--c) 40%, transparent); --o: 0.85; }
+  .bloom .h1 { left: 14%; width: 34%; height: 100%; bottom: -48%; --o: 0.4; animation-duration: 1.3s; }
+  .bloom .h2 { left: 46%; width: 30%; height: 110%; bottom: -44%; --o: 0.35; animation-duration: 1.9s; animation-delay: -0.4s; }
+  .bloom .h3 { left: 60%; width: 34%; height: 95%; bottom: -52%; --o: 0.4; animation-duration: 1.5s; animation-delay: -0.9s; }
+  .bloom .h4 { left: 0%; width: 30%; height: 80%; bottom: -52%; --o: 0.35; animation-duration: 2.1s; animation-delay: -0.2s; }
+  @keyframes shimmer {
+    from { transform: translateX(-8%) scaleX(0.94); opacity: calc(var(--o) * 0.7); }
+    to { transform: translateX(8%) scaleX(1.06); opacity: var(--o); }
+  }
+  @keyframes beam-sweep {
+    0% { transform: translateX(-11cqw); opacity: 0; animation-timing-function: cubic-bezier(0.35, 0, 0.6, 1); }
+    10% { opacity: 1; }
+    52% { opacity: 1; }
+    64% { transform: translateX(63cqw); opacity: 0; }
+    100% { transform: translateX(63cqw); opacity: 0; }
+  }
+  .beam[data-paused] .flare,
+  .beam[data-paused] .bloom i {
+    animation-play-state: paused;
+  }
+
   @keyframes beam-run {
     from { stroke-dashoffset: 0; }
     to { stroke-dashoffset: -100; }
@@ -153,6 +251,15 @@ const rx = parseFloat(radius) || 0;
   @media (prefers-reduced-motion: reduce) {
     .beam-fx rect {
       animation-play-state: paused;
+    }
+    /* the flare rests in the middle */
+    .flare {
+      animation: none;
+      opacity: 0.8;
+      transform: translateX(27cqw);
+    }
+    .bloom i {
+      animation: none;
     }
   }
 </style>
