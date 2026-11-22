@@ -56,3 +56,4 @@ These live with the page they were made for. Lift them out here when a second pa
 | Spell: a wand stroke that calls items into place with sparks | `cases/SortJourney.astro`, the albums |
 | Spring wobble and ripple on hover | `cases/SortJourney.astro`, the albums |
 | Paw pattern shader | `cases/SortJourney.astro`, the background |
+| Design-session film: a screen edited into its redesign with a cursor, selection boxes, a colour picker, a zoomed properties panel and live typing. Drawn from a timeline (`render(t)`), so it can pause, seek by chapter and go full screen; plays only while on screen | `cases/HomeRevampFilm.astro`, `cases/home-revamp-film.js`, BestPlay |
