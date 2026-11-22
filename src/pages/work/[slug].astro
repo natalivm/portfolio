@@ -452,6 +452,10 @@ const space = p.theme === 'space';
     gap: clamp(36px, 5vw, 72px);
     margin-top: clamp(28px, 5vw, 64px);
   }
+  /* the headset's bar hangs a little lower than the game's menu */
+  .menu-stage :global(.qb) {
+    margin-top: clamp(24px, 4vw, 64px);
+  }
   /* the plasma the button sets off, drawn over the whole window while the page comes in under it */
   .reveal-fx {
     position: fixed;

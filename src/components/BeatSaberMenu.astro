@@ -4,11 +4,16 @@
  * the left, the music packs in the middle, Multiplayer on the right, and the bar below. It has no
  * backdrop of its own: every control is glass, a barely-there fill with a hairline edge and thin
  * type, and colour and light arrive on hover. The side panels curve toward the viewer like the
- * game's menu around the player; the whole menu floats, leans a little with the pointer, and a soft
+ * game's menu around the player; the whole menu leans a little with the pointer, and a soft
  * laser dot follows the pointer over it.
  *
- * Everything works: challenge timers count down, the pack pages turn, a pack can be picked, the
- * multiplayer pack and difficulty cycle, and Join looks for a lobby.
+ * Everything works: challenge timers count down, the pack pages turn, the multiplayer pack and
+ * difficulty cycle, and Join looks for a lobby. Picking a pack swaps the panels for the song screen:
+ * the pack's songs with a search and an A to Z rail, the chosen song with its modes, difficulty,
+ * modifiers and Play, and the high scores. Back (or Escape) returns to the packs. Under it runs the music pack
+ * pass, a battle pass: a blue band with the level, the XP and a reward at each milestone. Its tab
+ * opens the list of passes, one per music pack, each with its own progress; a reward that has been
+ * reached can be claimed.
  *
  * Album art goes in public/cases/beat-saber/albums/, named as `img` on each pack below: square covers
  * for albums, tall ones for banners, cut to the slot's shape (129 : 274) with no transparent edge. A tile whose file is missing shows a placeholder in
@@ -53,6 +58,57 @@ const pages: Album[][] = [
   Array.from({ length: 12 }, (_, i) => blank(34 + i)),
 ];
 
+// The song screen: what each pack holds. Song titles are the packs' own; lengths, tempos and note
+// counts are made up from the title, so they are stable but not the game's real figures.
+const SONGS: Record<string, string[]> = {
+  'Daft Punk': ['Around the World', 'Da Funk', 'Get Lucky', 'Harder, Better, Faster, Stronger', 'Instant Crush', 'Lose Yourself to Dance', 'One More Time', 'Technologic', 'The Prime Time of Your Life', 'Veridis Quo'],
+  'Lady Gaga': ['Alejandro', 'Bad Romance', 'Born This Way', 'Just Dance', 'Paparazzi', 'Poker Face', 'Rain on Me', 'Stupid Love', 'Telephone', 'The Edge of Glory'],
+  'Imagine Dragons': ['Bad Liar', 'Believer', 'Digital', 'It’s Time', 'Machine', 'Natural', 'Radioactive', 'Thunder', 'Warriors', 'Whatever It Takes'],
+  'Britney Spears': ['…Baby One More Time', 'Circus', 'Gimme More', 'I’m a Slave 4 U', 'Oops!… I Did It Again', 'Stronger', 'Till the World Ends', 'Toxic', 'Womanizer', '(You Drive Me) Crazy'],
+  TinyTAN: ['Blood Sweat & Tears', 'Boy With Luv', 'Burning Up (Fire)', 'Dionysus', 'DNA', 'Dope', 'Dynamite', 'Fake Love', 'Idol', 'Mic Drop', 'Not Today', 'Ugh!'],
+  Skrillex: ['Bangarang', 'Butterflies', 'Don’t Go', 'First of the Year (Equinox)', 'Ragga Bomb', 'Rock ’n’ Roll', 'Scary Monsters and Nice Sprites', 'The Devil’s Den'],
+  'Linkin Park': ['Bleed It Out', 'Breaking the Habit', 'Faint', 'Given Up', 'In the End', 'New Divide', 'Numb', 'One Step Closer', 'Papercut', 'Somewhere I Belong', 'What I’ve Done'],
+  Monstercat: ['Boundless', 'Emoji VIP', 'Epic', 'Feeling Stronger', 'Overkill', 'Rattlesnake', 'Stronger', 'This Time', 'Till It’s Over', 'We Won’t Be Alone'],
+  'Rocket League': ['Glide', 'Luv U Need U', 'Play', 'Rock It', 'Shiawase', 'Test Me'],
+};
+const ARTIST: Record<string, string> = { TinyTAN: 'BTS', Monstercat: 'Monstercat', 'Rocket League': 'Monstercat' };
+const seed = (str: string) => {
+  let h = 2166136261;
+  for (const c of str) h = Math.imul(h ^ c.charCodeAt(0), 16777619);
+  return h >>> 0;
+};
+const library = pages.flat().map((a) => {
+  const titles = SONGS[a.title] ?? Array.from({ length: 8 }, (_, i) => `Track ${i + 1}`);
+  const name = a.title === 'OST' ? `${a.title} ${a.sub}` : a.title;
+  const by = ARTIST[a.title] ?? (SONGS[a.title] ? a.title : 'Various artists');
+  return {
+    name,
+    img: a.img ?? '',
+    songs: titles.map((t) => {
+      const h = seed(t + a.title);
+      const secs = 150 + (h % 100);
+      return { t, by, len: `${Math.floor(secs / 60)}:${String(secs % 60).padStart(2, '0')}`, bpm: 92 + ((h >>> 8) % 88), notes: 420 + ((h >>> 4) % 640), walls: (h >>> 12) % 48, bombs: (h >>> 17) % 26 };
+    }),
+  };
+});
+const offset = pages.map((_, i) => pages.slice(0, i).reduce((n, pg) => n + pg.length, 0));
+const modes = [
+  { name: 'Standard', icon: 'M5 19L19 5M5 5l14 14' },
+  { name: 'One Saber', icon: 'M5 19L19 5' },
+  { name: 'No Arrows', icon: 'M12 7.500a4.500 4.500 0 1 0 0 9 4.500 4.500 0 0 0 0-9z' },
+  { name: '360°', text: '360' },
+  { name: '90°', text: '90' },
+];
+const mods = [
+  { name: 'No Fail', x: -0.5, icon: 'M12 19.500s-7-4.300-7-9.300a3.900 3.900 0 0 1 7-2.400 3.900 3.900 0 0 1 7 2.400c0 5-7 9.300-7 9.300z' },
+  { name: 'One Life', x: 0, icon: 'M12 19.500s-7-4.300-7-9.300a3.900 3.900 0 0 1 7-2.400 3.900 3.900 0 0 1 7 2.400c0 5-7 9.300-7 9.300zM12 10v5' },
+  { name: 'No Bombs', x: -0.1, icon: 'M12 5a7 7 0 1 0 0 14 7 7 0 0 0 0-14zM7 7l10 10' },
+  { name: 'No Walls', x: -0.05, icon: 'M6 6h12v12H6zM6 18L18 6' },
+  { name: 'Faster Song', x: 0.08, icon: 'M6 7l5 5-5 5M13 7l5 5-5 5' },
+  { name: 'Ghost Notes', x: 0.11, icon: 'M6.500 19V11a5.500 5.500 0 0 1 11 0v8l-2.200-1.800-1.700 1.800-1.600-1.800-1.600 1.800-1.700-1.800zM10 11v.500M14 11v.500' },
+  { name: 'Disappearing Arrows', x: 0.07, icon: 'M5 12h3M10.500 12h3M16 12h3M15.500 8.500L19 12l-3.500 3.500' },
+];
+
 const challenges = [
   { t: 'Clear 20 songs', note: '(5 remaining)', mins: 6 * 24 * 60 + 5 * 60, xp: '+1.5K XP', done: 15, of: 20 },
   { t: 'Clear any song with no arrows modifier', mins: 85, xp: '+1.5K XP', card: true, done: 0, of: 1 },
@@ -60,13 +116,32 @@ const challenges = [
 const nextChallengeMins = 2 * 60 + 34;
 const packs = ['Any', ...new Set(pages[0].map((a) => (a.sub && a.title === 'OST' ? `${a.title} ${a.sub}` : a.title)))];
 const difficulties = ['Easy', 'Normal', 'Hard', 'Expert', 'Expert+'];
+
+// Music pack passes: a battle pass per pack, six rewards each, at levels 2, 4, … 12.
+// `claimed` is how many rewards are already collected; a reward whose level is reached and not yet
+// collected can be claimed on the bar. The first pass is the one showing.
+const REWARDS = ['Bonus song', 'Saber colours', 'Note trail', 'Avatar jacket', 'Platform skin', 'Title: Legend'];
+const passes = [
+  { name: 'Harmony Highway', pack: 'Linkin Park', img: 'linkin-park.webp', level: 4, xp: 300, max: 1500, claimed: 1 },
+  { name: 'Bass Canyon', pack: 'Skrillex', img: 'skrillex.webp', level: 9, xp: 1200, max: 2000, claimed: 3 },
+  { name: 'Robot Boulevard', pack: 'Daft Punk', img: 'daft-punk.webp', level: 12, xp: 0, max: 0, claimed: 6 },
+  { name: 'Neon Avenue', pack: 'Lady Gaga', img: 'lady-gaga.webp', level: 1, xp: 120, max: 500, claimed: 0 },
+];
+const msLevel = (i: number) => 2 * (i + 1);
+const msState = (ps: (typeof passes)[number], i: number) => (i < ps.claimed ? 'claimed' : ps.level >= msLevel(i) ? 'ready' : 'locked');
+const msNote = (st: string, i: number) => (st === 'claimed' ? 'Claimed' : st === 'ready' ? 'Click to claim' : `Reach level ${msLevel(i)}`);
+// the scale: its first stretch covers levels 1 to 9, its second 9 to 13
+const at = (ps: (typeof passes)[number]) => ps.level + (ps.max ? ps.xp / ps.max : 0);
+const fillA = (ps: (typeof passes)[number]) => Math.min(1, Math.max(0, (at(ps) - 1) / 8));
+const fillB = (ps: (typeof passes)[number]) => Math.min(1, Math.max(0, (at(ps) - 9) / 4));
+const first = passes[0];
 ---
 
-<div class:list={['bsm', cls]} data-bsm role="group" aria-label="Beat Saber main menu, interactive">
+<div class:list={['bsm', cls]} data-bsm data-library={JSON.stringify(library)} data-albums={albumSrc('')} role="group" aria-label="Beat Saber main menu, interactive">
   <div class="bsm-float">
     <div class="bsm-scene" data-scene>
       <!-- challenges -->
-      <section class="bsm-panel left" aria-labelledby="bsm-ch">
+      <section class="bsm-panel left v-main" aria-labelledby="bsm-ch">
         <h3 id="bsm-ch" class="bsm-h">Challenges</h3>
         <ul class="bsm-list" role="list">
           {challenges.map((c) => (
@@ -88,14 +163,14 @@ const difficulties = ['Easy', 'Normal', 'Hard', 'Expert', 'Expert+'];
       </section>
 
       <!-- singleplayer -->
-      <section class="bsm-panel mid" aria-labelledby="bsm-sp">
+      <section class="bsm-panel mid v-main" aria-labelledby="bsm-sp">
         <h3 id="bsm-sp" class="bsm-h">Singleplayer</h3>
         <div class="packs" data-packs>
           <div class="pages" data-pages>
             {pages.map((page, pi) => (
               <div class="page" data-page={pi} aria-hidden={pi === 0 ? undefined : 'true'}>
                 {page.map((a) => (
-                  <button type="button" class:list={['tile', a.tall && 'tall', `look-${a.look}`]} data-tile tabindex={pi === 0 ? undefined : -1} aria-label={[a.title, a.sub].filter(Boolean).join(' ')}>
+                  <button type="button" class:list={['tile', a.tall && 'tall', `look-${a.look}`]} data-tile data-pack={offset[pi] + page.indexOf(a)} tabindex={pi === 0 ? undefined : -1} aria-label={`${[a.title, a.sub].filter(Boolean).join(' ')}: open the songs`}>
                     <span class:list={['art', a.title.length > 9 && 'long']} aria-hidden="true">
                       <span class="art-t">{a.title}</span>
                       {a.sub && <span class="art-s">{a.sub}</span>}
@@ -115,7 +190,7 @@ const difficulties = ['Easy', 'Normal', 'Hard', 'Expert', 'Expert+'];
       </section>
 
       <!-- multiplayer -->
-      <section class="bsm-panel right" aria-labelledby="bsm-mp">
+      <section class="bsm-panel right v-main" aria-labelledby="bsm-mp">
         <h3 id="bsm-mp" class="bsm-h">Multiplayer</h3>
         <div class="mp">
           <button type="button" class="pick" data-cycle={JSON.stringify(packs)} data-i="0">
@@ -139,7 +214,7 @@ const difficulties = ['Easy', 'Normal', 'Hard', 'Expert', 'Expert+'];
       </section>
 
       <!-- the bar below -->
-      <nav class="bar" aria-label="Menu bar">
+      <nav class="bar v-main" aria-label="Menu bar">
         <button type="button" class="bar-btn" data-press>Party</button>
         <button type="button" class="bar-btn" data-press>Campaign</button>
         <button type="button" class="ico" data-press aria-label="Settings">
@@ -155,6 +230,141 @@ const difficulties = ['Easy', 'Normal', 'Hard', 'Expert', 'Expert+'];
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 4h4.5A1.5 1.5 0 0 1 20 5.5v13a1.5 1.5 0 0 1-1.5 1.5H14" /><path d="M4 12h10M10 8l4 4-4 4" /></svg>
         </button>
       </nav>
+
+      <!-- the song screen: a pack's songs, the chosen song, and its high scores. It takes the panels' place when a pack is picked. -->
+      <section class="bsm-panel left v-songs" aria-label="Songs" inert>
+        <div class="s-top">
+          <button type="button" class="s-back glass" data-back aria-label="Back to the music packs">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14.500 5.500L8 12l6.500 6.500" /></svg>
+          </button>
+          <label class="s-search glass">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.500" cy="10.500" r="5.500" /><path d="M15 15l4.500 4.500" /></svg>
+            <input type="search" placeholder="Search" data-search aria-label="Search this pack’s songs" />
+          </label>
+        </div>
+        <p class="s-pack" data-s-pack></p>
+        <div class="s-body">
+          <div class="s-index" data-index></div>
+          <div class="s-list" data-songs role="listbox" aria-label="Songs"></div>
+        </div>
+      </section>
+
+      <section class="bsm-panel mid v-songs" aria-label="Song" inert>
+        <header class="d-head">
+          <h3 class="d-title" data-d-title></h3>
+          <p class="d-by" data-d-by></p>
+          <button type="button" class="d-fav" data-fav aria-pressed="false" aria-label="Favourite">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 19.500s-7-4.300-7-9.300a3.900 3.900 0 0 1 7-2.400 3.900 3.900 0 0 1 7 2.400c0 5-7 9.300-7 9.300z" /></svg>
+          </button>
+        </header>
+        <ul class="d-stats" role="list">
+          <li title="Length"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="7.500" /><path d="M12 8v4.300l2.700 1.600" /></svg><span data-d-len></span></li>
+          <li title="Beats per minute"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 17.500V6.500l9-2v11" /><circle cx="6.800" cy="17.500" r="2.200" /><circle cx="15.800" cy="15.500" r="2.200" /></svg><span data-d-bpm></span></li>
+          <li title="Notes"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="5" width="14" height="14" rx="3" /><path d="M9 14l3-4 3 4" /></svg><span data-d-notes></span></li>
+          <li title="Walls"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4.500h10v15H7zM7 9.500h10M7 14.500h10" /></svg><span data-d-walls></span></li>
+          <li title="Bombs"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="13.500" r="5.500" /><path d="M14.800 9.700l2-2M17.500 5l1.500-1.500M19 7.500h1.500" /></svg><span data-d-bombs></span></li>
+        </ul>
+        <div class="d-modes" role="radiogroup" aria-label="Mode">
+          {modes.map((m, i) => (
+            <button type="button" class="d-mode glass" role="radio" aria-checked={i === 0 ? 'true' : 'false'} data-mode data-tip={m.name} aria-label={m.name}>
+              {m.text ? <span>{m.text}</span> : <svg viewBox="0 0 24 24" aria-hidden="true"><path d={m.icon} /></svg>}
+            </button>
+          ))}
+        </div>
+        <div class="d-diffs" role="radiogroup" aria-label="Difficulty">
+          {difficulties.map((d, i) => (
+            <button type="button" class="seg" role="radio" aria-checked={i === 3 ? 'true' : 'false'} data-diff={i}>{d}</button>
+          ))}
+        </div>
+        <div class="d-mods" role="group" aria-label="Modifiers">
+          {mods.map((m) => (
+            <button type="button" class="d-mod glass" aria-pressed="false" data-mod={m.x} data-tip={`${m.name}${m.x ? ` ${m.x > 0 ? '+' : '−'}${Math.abs(m.x).toFixed(2)}` : ''}`} aria-label={m.name}>
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d={m.icon} /></svg>
+            </button>
+          ))}
+          <p class="d-mult">Score <b data-mult>×1.00</b></p>
+        </div>
+        <div class="d-go">
+          <button type="button" class="d-practice glass" data-press>Practice</button>
+          <button type="button" class="join d-play" data-play><span data-play-t>Play</span></button>
+        </div>
+      </section>
+
+      <section class="bsm-panel right v-songs" aria-labelledby="bsm-hs" inert>
+        <h3 id="bsm-hs" class="bsm-h">High scores</h3>
+        <div class="hs-tabs" role="radiogroup" aria-label="Whose scores">
+          {['Global', 'Friends', 'You'].map((t, i) => (
+            <button type="button" class="seg" role="radio" aria-checked={i === 0 ? 'true' : 'false'} data-scope={i}>{t}</button>
+          ))}
+        </div>
+        <ol class="hs" data-hs role="list"></ol>
+        <p class="hs-you">Your best <b data-you></b><span>Max combo <b data-combo></b></span></p>
+      </section>
+
+      <!-- the music pack pass: a battle pass, with a reward at each milestone -->
+      <section class="pass" data-pass data-passes={JSON.stringify(passes)} aria-label="Music pack pass">
+        <div class="pass-menu" data-pass-menu role="menu" aria-label="Music pack passes" inert>
+          <p class="pm-h">Music pack passes</p>
+          {passes.map((ps, i) => (
+            <button type="button" class="pm" role="menuitemradio" aria-checked={i === 0 ? 'true' : 'false'} data-pass-item={i}>
+              <img src={albumSrc(ps.img)} alt="" loading="lazy" decoding="async" />
+              <span class="pm-text">
+                <span class="pm-name">{ps.name}</span>
+                <span class="pm-pack">{ps.pack} Music Pack</span>
+              </span>
+              <span class="pm-prog">
+                <span class="pm-lv">{ps.claimed === 6 ? 'Complete' : `Level ${ps.level}`}</span>
+                <span class="pm-bar"><i style={`--v:${Math.min(1, (at(ps) - 1) / 11)}`}></i></span>
+                <span class="pm-rw"><span data-pm-rw>{ps.claimed}</span>/6 rewards</span>
+              </span>
+            </button>
+          ))}
+        </div>
+        <button type="button" class="pass-tab" data-pass-tab aria-haspopup="menu" aria-expanded="false">
+          <span class="pass-names">
+            <span class="pass-name" data-pass-name>{first.name}</span>
+            <span class="pass-sub">Rewards <span data-pass-count>{first.claimed}</span>/6</span>
+          </span>
+          <img class="pass-thumb" data-pass-thumb src={albumSrc(first.img)} alt="" loading="lazy" decoding="async" />
+          <svg class="pass-chev" viewBox="0 0 12 12" aria-hidden="true"><path d="M2.5 7.500L6 4l3.500 3.500" /></svg>
+        </button>
+        <div class="pass-seg a">
+          <div class="pass-level">
+            <span class="pass-chip">Level <span data-pass-level>{first.level}</span></span>
+            <span class="pass-xp" data-pass-xp>{first.max ? `${first.xp} / ${first.max} XP` : 'Complete'}</span>
+          </div>
+          <div class="pass-scale" data-scale="a" style={`--fill:${fillA(first)}`}>
+          {[0, 1, 2, 3].map((i) => {
+            const st = msState(first, i);
+            return (
+              <button type="button" class="ms" data-ms={i} data-state={st} aria-label={`Level ${msLevel(i)}: ${REWARDS[i]}`}>
+                <span class="ms-tip">
+                  <span class="ms-lv">Level {msLevel(i)}</span>
+                  <span class="ms-rw">{REWARDS[i]}</span>
+                  <span class="ms-st" data-ms-st>{msNote(st, i)}</span>
+                </span>
+              </button>
+            );
+          })}
+          </div>
+        </div>
+        <div class="pass-seg b">
+          <div class="pass-scale" data-scale="b" style={`--fill:${fillB(first)}`}>
+          {[4, 5].map((i) => {
+            const st = msState(first, i);
+            return (
+              <button type="button" class="ms" data-ms={i} data-state={st} aria-label={`Level ${msLevel(i)}: ${REWARDS[i]}`}>
+                <span class="ms-tip">
+                  <span class="ms-lv">Level {msLevel(i)}</span>
+                  <span class="ms-rw">{REWARDS[i]}</span>
+                  <span class="ms-st" data-ms-st>{msNote(st, i)}</span>
+                </span>
+              </button>
+            );
+          })}
+          </div>
+        </div>
+      </section>
     </div>
   </div>
   <i class="laser" aria-hidden="true" data-laser></i>
@@ -186,17 +396,13 @@ const difficulties = ['Easy', 'Normal', 'Hard', 'Expert', 'Expert+'];
   }
   .bsm-float {
     transform-style: preserve-3d;
-    animation: bsm-float 7s ease-in-out infinite;
-  }
-  @keyframes bsm-float {
-    50% { translate: 0 -8px; }
   }
   .bsm-scene {
     /* 22 + 306 + 72 + 564 + 72 + 306 + 22 = 1364 design pixels across */
     --u: calc(100cqw / 1364);
     display: grid;
     grid-template-columns: minmax(0, 306fr) minmax(0, 564fr) minmax(0, 306fr);
-    grid-template-areas: 'l m r' '. bar .';
+    grid-template-areas: 'l m r' '. bar .' 'pass pass pass';
     column-gap: calc(var(--u) * 72);
     row-gap: calc(var(--u) * 34);
     padding-inline: calc(var(--u) * 22);
@@ -221,6 +427,11 @@ const difficulties = ['Easy', 'Normal', 'Hard', 'Expert', 'Expert+'];
   .bsm-scene button * {
     pointer-events: none;
   }
+  .bsm-scene label,
+  .bsm-scene input,
+  .bsm-scene .s-list {
+    pointer-events: auto;
+  }
 
   /* panels: the sides curve toward the viewer, the way the menu wraps around the player */
   .bsm-panel {
@@ -244,13 +455,15 @@ const difficulties = ['Easy', 'Normal', 'Hard', 'Expert', 'Expert+'];
     transform: rotateY(-16deg);
   }
   .bsm:not(.on) .bsm-panel,
-  .bsm:not(.on) .bar {
+  .bsm:not(.on) .bar,
+  .bsm:not(.on) .pass {
     opacity: 0;
     translate: 0 calc(var(--u) * 30) calc(var(--u) * -260);
   }
   .bsm.on .left { transition-delay: 120ms; }
   .bsm.on .right { transition-delay: 240ms; }
   .bsm.on .bar { transition-delay: 360ms; }
+  .bsm.on .pass { transition-delay: 480ms; }
   .bsm-h {
     margin: 0;
     font-family: inherit; /* the site's heading font would win otherwise */
@@ -277,7 +490,8 @@ const difficulties = ['Easy', 'Normal', 'Hard', 'Expert', 'Expert+'];
   .ch,
   .pick,
   .bar-btn,
-  .ico {
+  .ico,
+  .glass {
     position: relative;
     /* glass: one flat, see-through fill that softens what is behind it, a hairline edge and a lit top lip */
     background: var(--glass);
@@ -293,7 +507,10 @@ const difficulties = ['Easy', 'Normal', 'Hard', 'Expert', 'Expert+'];
   .bar-btn:hover,
   .bar-btn:focus-visible,
   .ico:hover,
-  .ico:focus-visible {
+  .ico:focus-visible,
+  .glass:hover,
+  .glass:focus-visible,
+  .glass:focus-within {
     background-color: var(--glass-h);
     box-shadow: inset 0 0 0 1px var(--line-h), inset 0 1px 0 rgb(255 255 255 / 0.4), 0 0 calc(var(--u) * 28) rgb(70 195 255 / 0.22);
     translate: 0 calc(var(--u) * -3);
@@ -773,6 +990,7 @@ const difficulties = ['Easy', 'Normal', 'Hard', 'Expert', 'Expert+'];
   .bar {
     grid-area: bar;
     display: flex;
+    align-items: center;
     justify-content: center;
     gap: calc(var(--u) * 12);
     transition: translate 1s var(--ease), opacity 700ms ease;
@@ -796,8 +1014,11 @@ const difficulties = ['Easy', 'Normal', 'Hard', 'Expert', 'Expert+'];
   }
   .ico {
     display: grid;
+    flex: none;
     place-items: center;
+    align-self: center; /* a circle: it keeps its own height instead of stretching to the bar's */
     width: calc(var(--u) * 58);
+    height: calc(var(--u) * 58);
     padding: 0;
   }
   .ico svg {
@@ -848,6 +1069,793 @@ const difficulties = ['Easy', 'Normal', 'Hard', 'Expert', 'Expert+'];
     outline-offset: calc(var(--u) * 4);
   }
 
+  /* ---------- the two screens: the packs, and a pack's songs. One leaves into the dark as the other arrives. ---------- */
+  .bsm[data-view='songs'] .v-main,
+  .bsm:not([data-view='songs']) .v-songs {
+    opacity: 0;
+    translate: 0 0 calc(var(--u) * -240);
+    visibility: hidden;
+    transition: translate 500ms var(--ease), opacity 300ms ease, visibility 0s 500ms;
+  }
+
+  .v-songs {
+    grid-template-columns: minmax(0, 1fr); /* long titles must not widen a panel past its column */
+    min-width: 0;
+  }
+
+  /* songs: back, search, an A to Z rail and the list */
+  .s-top {
+    display: flex;
+    align-items: center;
+    gap: calc(var(--u) * 10);
+  }
+  .s-back {
+    display: grid;
+    flex: none;
+    place-items: center;
+    width: calc(var(--u) * 52);
+    height: calc(var(--u) * 52);
+    padding: 0;
+    border-radius: 50%;
+  }
+  .s-back svg,
+  .s-search svg,
+  .d-stats svg,
+  .d-mode svg,
+  .d-mod svg,
+  .d-fav svg {
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.6;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+  .s-back svg {
+    width: calc(var(--u) * 26);
+    height: calc(var(--u) * 26);
+  }
+  .s-search {
+    display: flex;
+    flex: 1;
+    align-items: center;
+    gap: calc(var(--u) * 8);
+    min-width: 0;
+    height: calc(var(--u) * 52);
+    padding: 0 calc(var(--u) * 16);
+    border-radius: 99px;
+    color: var(--mute);
+    cursor: text;
+  }
+  .s-search svg {
+    flex: none;
+    width: calc(var(--u) * 22);
+    height: calc(var(--u) * 22);
+  }
+  .s-search input {
+    flex: 1;
+    min-width: 0;
+    padding: calc(var(--u) * 4) 0 0;
+    border: 0;
+    outline: 0;
+    background: none;
+    color: var(--ink);
+    font: inherit;
+    font-size: calc(var(--u) * 24);
+  }
+  .s-search input::placeholder {
+    color: var(--mute);
+  }
+  .s-search input::-webkit-search-cancel-button {
+    display: none;
+  }
+  .s-pack {
+    margin: calc(var(--u) * -8) 0 calc(var(--u) * -10);
+    color: var(--mute);
+    font-size: calc(var(--u) * 20);
+    text-transform: uppercase;
+  }
+  .s-body {
+    display: grid;
+    grid-template-columns: calc(var(--u) * 22) minmax(0, 1fr);
+    gap: calc(var(--u) * 10);
+    height: calc(var(--u) * 400);
+  }
+  .s-index {
+    display: grid;
+    align-content: space-between;
+    justify-items: center;
+  }
+  .s-index button {
+    padding: 0;
+    background: none;
+    color: var(--mute);
+    font-size: calc(var(--u) * 15);
+    line-height: 1;
+    opacity: 0.3;
+    transition: color 160ms ease, scale 160ms ease;
+  }
+  .s-index button[data-has] {
+    color: var(--ink);
+    opacity: 1;
+  }
+  .s-index button[data-has]:hover {
+    color: var(--cyan);
+    scale: 1.5;
+  }
+  .s-list {
+    display: grid;
+    align-content: start;
+    gap: calc(var(--u) * 4);
+    padding-right: calc(var(--u) * 6);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    scrollbar-width: thin;
+    scrollbar-color: rgb(170 230 255 / 0.3) transparent;
+  }
+  .song {
+    display: grid;
+    grid-template-columns: calc(var(--u) * 46) minmax(0, 1fr) auto;
+    align-items: center;
+    gap: calc(var(--u) * 12);
+    padding: calc(var(--u) * 6) calc(var(--u) * 10) calc(var(--u) * 6) calc(var(--u) * 6);
+    border-radius: calc(var(--u) * 10);
+    background: transparent;
+    box-shadow: inset 0 0 0 1px transparent;
+    text-align: left;
+    transition: background-color 200ms ease, box-shadow 200ms ease;
+  }
+  .song:hover,
+  .song:focus-visible {
+    background: var(--glass-h);
+    box-shadow: inset 0 0 0 1px var(--line-h);
+  }
+  .song[aria-selected='true'] {
+    background: rgb(27 132 242 / 0.3);
+    box-shadow: inset 0 0 0 1px rgb(90 175 255 / 0.9);
+  }
+  .song-th {
+    width: calc(var(--u) * 46);
+    height: calc(var(--u) * 46);
+    border-radius: calc(var(--u) * 7);
+    background: var(--glass-h);
+    object-fit: cover;
+    object-position: 50% 12%;
+  }
+  .song-n {
+    display: grid;
+    gap: calc(var(--u) * 2);
+    min-width: 0;
+    line-height: 1;
+  }
+  .song-t {
+    overflow: hidden;
+    font-size: calc(var(--u) * 24);
+    font-weight: 500;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+  .song-by,
+  .song-bpm {
+    color: var(--mute);
+    font-size: calc(var(--u) * 16);
+  }
+  .song-m {
+    display: grid;
+    gap: calc(var(--u) * 2);
+    justify-items: end;
+    font-size: calc(var(--u) * 21);
+    line-height: 1;
+  }
+  .s-none {
+    padding: calc(var(--u) * 20) 0;
+    color: var(--mute);
+    font-size: calc(var(--u) * 21);
+    text-align: center;
+  }
+
+  /* the chosen song */
+  .v-songs.mid {
+    gap: calc(var(--u) * 20);
+  }
+  .d-head {
+    position: relative;
+    display: grid;
+    gap: calc(var(--u) * 4);
+    padding-inline: calc(var(--u) * 48);
+    text-align: center;
+  }
+  .d-title {
+    margin: 0;
+    font-family: inherit;
+    font-size: calc(var(--u) * 46);
+    font-weight: 600;
+    line-height: 0.95;
+    letter-spacing: 0.01em;
+  }
+  .d-by {
+    color: var(--val);
+    font-size: calc(var(--u) * 24);
+    line-height: 1;
+  }
+  .d-fav {
+    position: absolute;
+    top: 0;
+    right: 0;
+    display: grid;
+    place-items: center;
+    width: calc(var(--u) * 40);
+    height: calc(var(--u) * 40);
+    padding: 0;
+    background: none;
+    color: var(--mute);
+    transition: color 200ms ease, scale 240ms cubic-bezier(0.3, 1.6, 0.5, 1);
+  }
+  .d-fav svg {
+    width: calc(var(--u) * 28);
+    height: calc(var(--u) * 28);
+  }
+  .d-fav:hover {
+    color: #fff;
+    scale: 1.15;
+  }
+  .d-fav[aria-pressed='true'] {
+    color: #ff4f9a;
+  }
+  .d-fav[aria-pressed='true'] svg {
+    fill: currentColor;
+  }
+  .d-stats {
+    display: flex;
+    justify-content: center;
+    gap: calc(var(--u) * 22);
+    margin: 0;
+    padding: 0;
+    color: var(--mute);
+    font-size: calc(var(--u) * 21);
+    list-style: none;
+  }
+  .d-stats li {
+    display: flex;
+    align-items: center;
+    gap: calc(var(--u) * 6);
+  }
+  .d-stats svg {
+    width: calc(var(--u) * 19);
+    height: calc(var(--u) * 19);
+  }
+  .d-modes {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: calc(var(--u) * 10);
+  }
+  .d-mode {
+    display: grid;
+    place-items: center;
+    height: calc(var(--u) * 78);
+    padding: 0;
+    border-radius: calc(var(--u) * 12);
+    color: var(--mute);
+    font-size: calc(var(--u) * 36);
+    font-weight: 600;
+  }
+  .d-mode svg {
+    width: calc(var(--u) * 38);
+    height: calc(var(--u) * 38);
+    stroke-width: 2;
+  }
+  .d-mode[aria-checked='true'],
+  .seg[aria-checked='true'] {
+    background: #1b84f2;
+    box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.3), 0 0 calc(var(--u) * 22) rgb(27 132 242 / 0.55);
+    color: #fff;
+  }
+  .d-diffs,
+  .hs-tabs {
+    display: flex;
+    justify-content: center;
+    gap: calc(var(--u) * 6);
+  }
+  .seg {
+    padding: calc(var(--u) * 7) calc(var(--u) * 14) calc(var(--u) * 4);
+    border-radius: calc(var(--u) * 8);
+    background: rgb(160 225 255 / 0.06);
+    color: var(--mute);
+    font-size: calc(var(--u) * 20);
+    line-height: 1;
+    text-transform: uppercase;
+    transition: background-color 200ms ease, color 200ms ease, box-shadow 200ms ease;
+  }
+  .seg:hover:not([aria-checked='true']) {
+    background: var(--glass-h);
+    color: var(--ink);
+  }
+  .d-mods {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: calc(var(--u) * 8);
+  }
+  .d-mod {
+    display: grid;
+    place-items: center;
+    width: calc(var(--u) * 46);
+    height: calc(var(--u) * 46);
+    padding: 0;
+    border-radius: calc(var(--u) * 10);
+    color: var(--mute);
+  }
+  .d-mod svg {
+    width: calc(var(--u) * 24);
+    height: calc(var(--u) * 24);
+  }
+  .d-mod[aria-pressed='true'] {
+    background: var(--cyan);
+    box-shadow: 0 0 calc(var(--u) * 18) rgb(90 205 255 / 0.6);
+    color: #06202c;
+  }
+  .d-mult {
+    flex-basis: 100%;
+    margin: 0;
+    color: var(--mute);
+    font-size: calc(var(--u) * 19);
+    text-align: center;
+  }
+  .d-mult b {
+    color: var(--cyan);
+    font-weight: 500;
+  }
+  /* a control names itself on hover */
+  .d-mode::before,
+  .d-mod::before {
+    content: attr(data-tip);
+    position: absolute;
+    bottom: calc(100% + var(--u) * 10);
+    left: 50%;
+    z-index: 2;
+    padding: calc(var(--u) * 7) calc(var(--u) * 12) calc(var(--u) * 5);
+    border-radius: calc(var(--u) * 9);
+    background: rgb(8 26 46 / 0.94);
+    box-shadow: inset 0 0 0 1px var(--line);
+    color: var(--ink);
+    font-size: calc(var(--u) * 18);
+    font-weight: 400;
+    line-height: 1;
+    white-space: nowrap;
+    opacity: 0;
+    pointer-events: none;
+    translate: -50% calc(var(--u) * 6);
+    transition: opacity 180ms ease, translate 240ms var(--ease);
+  }
+  .d-mode:hover::before,
+  .d-mode:focus-visible::before,
+  .d-mod:hover::before,
+  .d-mod:focus-visible::before {
+    opacity: 1;
+    translate: -50% 0;
+  }
+  .d-go {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: calc(var(--u) * 14);
+  }
+  .d-practice {
+    overflow: hidden;
+    min-height: calc(var(--u) * 78);
+    border-radius: calc(var(--u) * 12);
+    font-size: calc(var(--u) * 28);
+    font-weight: 500;
+    text-transform: uppercase;
+  }
+  .join.d-play {
+    min-height: calc(var(--u) * 78);
+    border-radius: calc(var(--u) * 12);
+    font-size: calc(var(--u) * 42);
+  }
+  .join.d-play:hover,
+  .join.d-play:focus-visible {
+    translate: 0 calc(var(--u) * -3);
+  }
+  .join.d-play[data-state] {
+    font-size: calc(var(--u) * 28);
+  }
+
+  /* high scores */
+  .hs {
+    display: grid;
+    gap: calc(var(--u) * 1);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .hs li {
+    display: grid;
+    grid-template-columns: calc(var(--u) * 46) minmax(0, 1fr) auto;
+    align-items: baseline;
+    gap: calc(var(--u) * 8);
+    padding: calc(var(--u) * 6) calc(var(--u) * 10) calc(var(--u) * 3);
+    border-radius: calc(var(--u) * 8);
+    font-size: calc(var(--u) * 23);
+    line-height: 1.05;
+    transition: background-color 200ms ease, opacity 300ms ease, translate 400ms var(--ease);
+    transition-delay: 0s, calc(var(--k) * 30ms), calc(var(--k) * 30ms);
+  }
+  .hs.swap li {
+    opacity: 0;
+    translate: calc(var(--u) * 14) 0;
+    transition: none;
+  }
+  .hs li:hover {
+    background: var(--glass-h);
+  }
+  .hs-n {
+    color: var(--mute);
+  }
+  .hs-name {
+    overflow: hidden;
+    color: var(--cyan);
+    font-weight: 500;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+  .hs li:nth-child(-n + 3) .hs-name {
+    color: #fff;
+    text-shadow: 0 0 calc(var(--u) * 12) rgb(90 205 255 / 0.8);
+  }
+  .hs li.me {
+    background: rgb(27 132 242 / 0.25);
+    box-shadow: inset 0 0 0 1px rgb(90 175 255 / 0.7);
+  }
+  .hs-s {
+    font-variant-numeric: tabular-nums;
+  }
+  .hs-you {
+    display: flex;
+    justify-content: space-between;
+    margin: 0;
+    padding-top: calc(var(--u) * 12);
+    border-top: 1px solid var(--line);
+    color: var(--mute);
+    font-size: calc(var(--u) * 19);
+  }
+  .hs-you b {
+    margin-left: calc(var(--u) * 6);
+    color: var(--ink);
+    font-weight: 500;
+  }
+
+  /* ---------- the music pack pass: a blue band under the menu, bent like the panels above it ---------- */
+  .pass {
+    --blue: #1b84f2;
+    --sky: #9be7ff; /* progress: the lit line and the rewards collected */
+    grid-area: pass;
+    position: relative;
+    display: flex;
+    height: calc(var(--u) * 68);
+    margin-top: calc(var(--u) * 14);
+    transform-style: preserve-3d;
+    transition: translate 1s var(--ease), opacity 700ms ease;
+  }
+  .pass-tab,
+  .pass-seg {
+    background: var(--blue);
+    box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.28), 0 0 calc(var(--u) * 30) rgb(27 132 242 / 0.45);
+  }
+  .pass-tab {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: calc(var(--u) * 10);
+    flex: 0 0 calc(var(--u) * 306);
+    margin-right: calc(var(--u) * 12);
+    padding: 0 calc(var(--u) * 34) 0 calc(var(--u) * 20);
+    border-radius: calc(var(--u) * 12);
+    text-align: left;
+    transform-origin: right center;
+    transform: rotateY(16deg);
+    transition: background-color 240ms ease, box-shadow 240ms ease, translate 260ms var(--ease);
+  }
+  .pass-tab:hover,
+  .pass-tab:focus-visible,
+  .pass-tab[aria-expanded='true'] {
+    background: #3a9bff;
+    box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.6), 0 0 calc(var(--u) * 44) rgb(27 132 242 / 0.8);
+    translate: 0 calc(var(--u) * -3);
+  }
+  .pass-names {
+    display: grid;
+    min-width: 0;
+    line-height: 0.95;
+  }
+  .pass-name {
+    overflow: hidden;
+    font-size: calc(var(--u) * 28);
+    font-weight: 600;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+  .pass-sub {
+    justify-self: end;
+    color: rgb(255 255 255 / 0.85);
+    font-size: calc(var(--u) * 21);
+  }
+  .pass-thumb {
+    flex: none;
+    width: calc(var(--u) * 50);
+    height: calc(var(--u) * 50);
+    border-radius: calc(var(--u) * 8);
+    object-fit: cover;
+    object-position: 50% 12%;
+    box-shadow: 0 0 0 1px rgb(255 255 255 / 0.35);
+  }
+  .pass-chev {
+    position: absolute;
+    right: calc(var(--u) * 12);
+    width: calc(var(--u) * 14);
+    height: calc(var(--u) * 14);
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    opacity: 0.8;
+    transition: rotate 300ms var(--ease);
+  }
+  .pass-tab[aria-expanded='true'] .pass-chev {
+    rotate: 180deg;
+  }
+  .pass-seg {
+    display: flex;
+    align-items: center;
+    min-width: 0;
+  }
+  .pass-seg.a {
+    flex: 1;
+    border-radius: calc(var(--u) * 12) 0 0 calc(var(--u) * 12);
+  }
+  .pass-seg.b {
+    flex: 0 0 calc(var(--u) * 306);
+    border-radius: 0 calc(var(--u) * 12) calc(var(--u) * 12) 0;
+    padding-right: calc(var(--u) * 26);
+    transform-origin: left center;
+    transform: rotateY(-16deg);
+  }
+  .pass-level {
+    display: flex;
+    flex: none;
+    align-items: center;
+    gap: calc(var(--u) * 14);
+    padding-inline: calc(var(--u) * 16) calc(var(--u) * 18);
+  }
+  .pass-chip {
+    padding: calc(var(--u) * 5) calc(var(--u) * 16) calc(var(--u) * 3);
+    border-radius: 99px;
+    background: rgb(255 255 255 / 0.24);
+    font-size: calc(var(--u) * 24);
+    font-weight: 600;
+    line-height: 1;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+  .pass-xp {
+    color: rgb(255 255 255 / 0.9);
+    font-size: calc(var(--u) * 22);
+    font-weight: 500;
+    white-space: nowrap;
+  }
+  /* the scale: a line through the milestones, lit as far as the player has come */
+  .pass-scale {
+    position: relative;
+    display: flex;
+    flex: 1;
+    align-items: center;
+    justify-content: space-around;
+    align-self: stretch;
+  }
+  .pass-scale::before,
+  .pass-scale::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 0;
+    height: calc(var(--u) * 3);
+    margin-top: calc(var(--u) * -1.5);
+    border-radius: 2px;
+  }
+  .pass-scale::before {
+    right: 0;
+    background: rgb(255 255 255 / 0.28);
+  }
+  .pass-scale::after {
+    width: calc(var(--fill, 0) * 100%);
+    background: var(--sky);
+    box-shadow: 0 0 calc(var(--u) * 12) var(--sky);
+    transition: width 900ms var(--ease);
+  }
+  .bsm:not(.on) .pass-scale::after {
+    width: 0;
+  }
+  .ms {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    place-items: center;
+    width: calc(var(--u) * 24);
+    height: calc(var(--u) * 24);
+    padding: 0;
+    border-radius: 50%;
+    background: #0f5bb8;
+    box-shadow: 0 0 0 calc(var(--u) * 3) rgb(255 255 255 / 0.45);
+    transition: scale 240ms cubic-bezier(0.3, 1.5, 0.5, 1), background-color 240ms ease, box-shadow 240ms ease;
+  }
+  .ms::before {
+    content: '';
+    position: absolute;
+    inset: calc(var(--u) * -12);
+  }
+  .ms[data-state='claimed'] {
+    background: var(--sky);
+    box-shadow: 0 0 0 calc(var(--u) * 3) rgb(155 231 255 / 0.4), 0 0 calc(var(--u) * 18) calc(var(--u) * 3) var(--sky);
+  }
+  .ms[data-state='ready'] {
+    background: #fff;
+    box-shadow: 0 0 0 calc(var(--u) * 3) #fff, 0 0 calc(var(--u) * 20) #fff;
+    animation: ms-ready 1.5s ease-out infinite;
+  }
+  @keyframes ms-ready {
+    from { box-shadow: 0 0 0 calc(var(--u) * 3) #fff, 0 0 0 0 rgb(255 255 255 / 0.7); }
+    to { box-shadow: 0 0 0 calc(var(--u) * 3) #fff, 0 0 0 calc(var(--u) * 18) rgb(255 255 255 / 0); }
+  }
+  .ms:hover,
+  .ms:focus-visible {
+    scale: 1.3;
+  }
+  .ms.pop {
+    animation: ms-pop 500ms var(--ease);
+  }
+  @keyframes ms-pop {
+    40% { scale: 1.7; }
+  }
+  /* what a milestone gives, shown over it on hover */
+  .ms-tip {
+    position: absolute;
+    bottom: calc(100% + var(--u) * 20);
+    left: 50%;
+    display: grid;
+    gap: calc(var(--u) * 3);
+    padding: calc(var(--u) * 10) calc(var(--u) * 16) calc(var(--u) * 8);
+    border-radius: calc(var(--u) * 12);
+    background: rgb(8 26 46 / 0.94);
+    box-shadow: inset 0 0 0 1px var(--line), 0 calc(var(--u) * 10) calc(var(--u) * 24) rgb(0 0 0 / 0.4);
+    line-height: 1;
+    text-align: center;
+    white-space: nowrap;
+    opacity: 0;
+    translate: -50% calc(var(--u) * 8);
+    transition: opacity 180ms ease, translate 260ms var(--ease);
+  }
+  .ms:hover .ms-tip,
+  .ms:focus-visible .ms-tip {
+    opacity: 1;
+    translate: -50% 0;
+  }
+  .ms-lv {
+    color: var(--mute);
+    font-size: calc(var(--u) * 17);
+    text-transform: uppercase;
+  }
+  .ms-rw {
+    font-size: calc(var(--u) * 24);
+    font-weight: 500;
+  }
+  .ms-st {
+    color: var(--cyan);
+    font-size: calc(var(--u) * 17);
+  }
+
+  /* the list of passes, opened from the tab */
+  .pass-menu {
+    position: absolute;
+    bottom: calc(100% + var(--u) * 16);
+    left: 0;
+    z-index: 3;
+    display: grid;
+    gap: calc(var(--u) * 6);
+    width: calc(var(--u) * 470);
+    padding: calc(var(--u) * 12);
+    border-radius: calc(var(--u) * 18);
+    background: rgb(8 24 42 / 0.9);
+    -webkit-backdrop-filter: blur(14px);
+    backdrop-filter: blur(14px);
+    box-shadow: inset 0 0 0 1px var(--line), 0 calc(var(--u) * 24) calc(var(--u) * 60) rgb(0 0 0 / 0.5);
+    /* in front of the challenges panel, whose near edge leans out toward the viewer */
+    transform: translateZ(calc(var(--u) * 110));
+    transform-origin: 20% 100%;
+    opacity: 0;
+    scale: 0.94;
+    translate: 0 calc(var(--u) * 10);
+    visibility: hidden;
+    transition: opacity 200ms ease, scale 260ms var(--ease), translate 260ms var(--ease), visibility 0s 260ms;
+  }
+  .pass-menu.open {
+    opacity: 1;
+    scale: 1;
+    translate: 0 0;
+    visibility: visible;
+    transition-delay: 0s;
+  }
+  .pm-h {
+    margin: 0;
+    padding: calc(var(--u) * 4) calc(var(--u) * 8) calc(var(--u) * 6);
+    color: var(--mute);
+    font-size: calc(var(--u) * 19);
+    text-transform: uppercase;
+  }
+  .pm {
+    display: grid;
+    grid-template-columns: calc(var(--u) * 54) minmax(0, 1fr) calc(var(--u) * 130);
+    align-items: center;
+    gap: calc(var(--u) * 14);
+    padding: calc(var(--u) * 8);
+    border-radius: calc(var(--u) * 12);
+    background: transparent;
+    box-shadow: inset 0 0 0 1px transparent;
+    text-align: left;
+    transition: background-color 200ms ease, box-shadow 200ms ease;
+  }
+  .pm:hover,
+  .pm:focus-visible {
+    background: var(--glass-h);
+    box-shadow: inset 0 0 0 1px var(--line-h);
+  }
+  .pm[aria-checked='true'] {
+    background: rgb(27 132 242 / 0.3);
+    box-shadow: inset 0 0 0 1px rgb(90 175 255 / 0.9);
+  }
+  .pm img {
+    width: calc(var(--u) * 54);
+    height: calc(var(--u) * 54);
+    border-radius: calc(var(--u) * 9);
+    object-fit: cover;
+    object-position: 50% 12%;
+  }
+  .pm-text,
+  .pm-prog {
+    display: grid;
+    gap: calc(var(--u) * 3);
+    min-width: 0;
+    line-height: 1;
+  }
+  .pm-name {
+    font-size: calc(var(--u) * 26);
+    font-weight: 500;
+  }
+  .pm-pack,
+  .pm-rw {
+    color: var(--mute);
+    font-size: calc(var(--u) * 17);
+  }
+  .pm-lv {
+    color: var(--cyan);
+    font-size: calc(var(--u) * 19);
+    text-transform: uppercase;
+  }
+  .pm-bar {
+    display: block;
+    height: calc(var(--u) * 5);
+    overflow: hidden;
+    border-radius: 3px;
+    background: rgb(255 255 255 / 0.14);
+  }
+  .pm-bar i {
+    display: block;
+    width: calc(var(--v) * 100%);
+    height: 100%;
+    border-radius: inherit;
+    background: var(--val);
+  }
+
   /* the laser dot that follows the pointer over the menu */
   .laser {
     position: absolute;
@@ -873,13 +1881,65 @@ const difficulties = ['Easy', 'Normal', 'Hard', 'Expert', 'Expert+'];
     .bsm-scene {
       --u: calc(100cqw / 608); /* 22 + 564 + 22: the pack wall keeps its square cells */
       grid-template-columns: minmax(0, 1fr);
-      grid-template-areas: 'm' 'r' 'l' 'bar';
+      grid-template-areas: 'm' 'r' 'l' 'bar' 'pass';
       row-gap: calc(var(--u) * 52);
       transform: none;
     }
     .left,
     .right {
       transform: none;
+    }
+    .bsm[data-view='songs'] .v-main,
+    .bsm:not([data-view='songs']) .v-songs {
+      display: none;
+    }
+    .v-songs.left { grid-area: m; }
+    .v-songs.mid { grid-area: r; }
+    .v-songs.right { grid-area: l; }
+    .s-body {
+      height: calc(var(--u) * 340);
+    }
+    .pass {
+      flex-wrap: wrap;
+      row-gap: calc(var(--u) * 12);
+      height: auto;
+    }
+    .pass-tab {
+      flex-basis: 100%;
+      height: calc(var(--u) * 68);
+      margin-right: 0;
+      transform: none;
+    }
+    .pass-seg {
+      height: calc(var(--u) * 68);
+    }
+    .pass-seg.a {
+      flex: 1 1 60%; /* wide enough to wrap under the tab, then it takes what the last stretch leaves */
+    }
+    .pass-seg.b {
+      flex-basis: calc(var(--u) * 150);
+      padding-right: calc(var(--u) * 12);
+      transform: none;
+    }
+    .pass-xp {
+      display: none;
+    }
+    .pass-menu {
+      width: 100%;
+      transform: none;
+    }
+    /* reward notes only exist while they show, so they cannot widen the page; the last ones open leftward */
+    .ms-tip {
+      display: none;
+    }
+    .ms:hover .ms-tip,
+    .ms:focus-visible .ms-tip {
+      display: grid;
+    }
+    .pass-seg.b .ms-tip {
+      left: auto;
+      right: calc(var(--u) * -14);
+      translate: 0 0;
     }
     .bar {
       flex-wrap: wrap;
@@ -895,12 +1955,18 @@ const difficulties = ['Easy', 'Normal', 'Hard', 'Expert', 'Expert+'];
     }
   }
   @media (prefers-reduced-motion: reduce) {
-    .bsm-float,
-    .join[data-state='busy'] {
+    .join[data-state='busy'],
+    .ms[data-state='ready'],
+    .ms.pop {
       animation: none;
     }
     .bsm-panel,
     .bar,
+    .hs li,
+    .song,
+    .pass,
+    .pass-menu,
+    .pass-scale::after,
     .pages,
     .tile,
     .ch-bar i {
@@ -974,12 +2040,156 @@ const difficulties = ['Easy', 'Normal', 'Hard', 'Expert', 'Expert+'];
       goPage(page);
     }, { passive: true });
     dots.forEach((d, i) => d.addEventListener('click', () => { page = i; }));
+    // ---- the song screen: picking a pack opens its songs, the chosen song and its high scores
+    type Song = { t: string; by: string; len: string; bpm: number; notes: number; walls: number; bombs: number };
+    type Pack = { name: string; img: string; songs: Song[] };
+    const library: Pack[] = JSON.parse(menu.dataset.library!);
+    const albumsAt = menu.dataset.albums!;
+    const $ = <T extends HTMLElement = HTMLElement>(sel: string) => menu.querySelector<T>(sel)!;
+    const songList = $('[data-songs]');
+    const indexRail = $('[data-index]');
+    const search = $<HTMLInputElement>('[data-search]');
+    const hs = $('[data-hs]');
+    const screens = { main: [...menu.querySelectorAll<HTMLElement>('.v-main')], songs: [...menu.querySelectorAll<HTMLElement>('.v-songs')] };
+    const NAMES = ['NeonKatana', 'BlockSmasher', 'saber_cat', 'Luxx', 'Riko Vance', 'PixelMonk', 'DJ Vertex', 'ohnoitsmel', 'Quasar', 'tenpercent', 'Mirelle', 'Halcyon', 'wristbreaker', 'Ito'];
+    const FRIENDS = ['Marta', 'Jonas K.', 'Priya', 'Leo', 'Ana'];
+    const DIFF = [0.45, 0.65, 0.85, 1, 1.25]; // how dense each difficulty is, against Expert
+    const rand = (str: string) => {
+      let h = 2166136261;
+      for (const c of str) h = Math.imul(h ^ c.charCodeAt(0), 16777619);
+      return () => { h = Math.imul(h ^ (h >>> 15), 2246822507); h = Math.imul(h ^ (h >>> 13), 3266489909); return ((h ^= h >>> 16) >>> 0) / 4294967296; };
+    };
+    const num = (n: number) => Math.round(n).toLocaleString('en-US');
+    // rows are built here, in the browser: give them this component's style scope so its styles reach them
+    const cid = [...menu.attributes].find((a) => a.name.startsWith('data-astro-cid-'))?.name;
+    const scoped = (root: HTMLElement) => { if (cid) root.querySelectorAll('*').forEach((el) => el.setAttribute(cid, '')); };
+    let pack: Pack | null = null, song: Song | null = null, diff = 3, scope = 0, lastTile: HTMLElement | null = null;
+
+    const drawScores = () => {
+      if (!song) return;
+      const notes = Math.round(song.notes * DIFF[diff]);
+      const top = notes * 920; // every note cut cleanly at the full combo
+      const r = rand(song.t + diff + scope);
+      const mine = top * (0.84 + r() * 0.06);
+      const rows = scope === 0
+        ? NAMES.slice().sort(() => r() - 0.5).slice(0, 10).map((n, i) => ({ n, s: top * (0.992 - i * 0.006 - r() * 0.004), me: false }))
+        : scope === 1
+          ? [...FRIENDS.map((n) => ({ n, s: top * (0.8 + r() * 0.14), me: false })), { n: 'You', s: mine, me: true }].sort((a, b) => b.s - a.s)
+          : [0, 1, 2].map((i) => ({ n: ['Today', 'Last week', 'First try'][i], s: mine * (1 - i * 0.07), me: i === 0 }));
+      hs.classList.add('swap');
+      hs.innerHTML = rows.map((x, i) => `<li class="${x.me ? 'me' : ''}" style="--k:${i}"><span class="hs-n">#${i + 1}</span><span class="hs-name"></span><span class="hs-s">${num(x.s)}</span></li>`).join('');
+      hs.querySelectorAll('.hs-name').forEach((el, i) => { el.textContent = rows[i].n; });
+      scoped(hs);
+      void hs.offsetWidth;
+      hs.classList.remove('swap');
+      $('[data-you]').textContent = num(mine);
+      $('[data-combo]').textContent = num(notes * (0.55 + r() * 0.4));
+      $('[data-d-notes]').textContent = num(notes);
+    };
+    const pickSong = (sg: Song) => {
+      song = sg;
+      $('[data-d-title]').textContent = sg.t;
+      $('[data-d-by]').textContent = sg.by;
+      $('[data-d-len]').textContent = sg.len;
+      $('[data-d-bpm]').textContent = String(sg.bpm);
+      $('[data-d-walls]').textContent = String(sg.walls);
+      $('[data-d-bombs]').textContent = String(sg.bombs);
+      $('[data-fav]').setAttribute('aria-pressed', 'false');
+      songList.querySelectorAll<HTMLElement>('.song').forEach((b) => b.setAttribute('aria-selected', String(b.dataset.t === sg.t)));
+      drawScores();
+    };
+    const drawSongs = () => {
+      if (!pack) return;
+      const q = search.value.trim().toLowerCase();
+      const shown = pack.songs.filter((x) => !q || x.t.toLowerCase().includes(q));
+      songList.textContent = '';
+      for (const sg of shown) {
+        const b = document.createElement('button');
+        b.type = 'button';
+        b.className = 'song';
+        b.setAttribute('role', 'option');
+        b.dataset.t = sg.t;
+        b.setAttribute('aria-selected', String(sg === song));
+        const th = pack.img ? Object.assign(document.createElement('img'), { src: albumsAt + pack.img, alt: '', className: 'song-th' }) : Object.assign(document.createElement('span'), { className: 'song-th' });
+        const n = document.createElement('span'); n.className = 'song-n';
+        const t = document.createElement('span'); t.className = 'song-t'; t.textContent = sg.t;
+        const by = document.createElement('span'); by.className = 'song-by'; by.textContent = sg.by;
+        n.append(t, by);
+        const m = document.createElement('span'); m.className = 'song-m';
+        const len = document.createElement('span'); len.textContent = sg.len;
+        const bpm = document.createElement('span'); bpm.className = 'song-bpm'; bpm.textContent = `${sg.bpm} bpm`;
+        m.append(len, bpm);
+        b.append(th, n, m);
+        b.addEventListener('click', () => pickSong(sg));
+        songList.append(b);
+      }
+      if (!shown.length) songList.innerHTML = '<p class="s-none">No songs match.</p>';
+      scoped(songList);
+      // the rail lights the letters this list has
+      const letter = (x: Song) => { const c = x.t.replace(/^[^a-z0-9]+/i, '')[0]?.toUpperCase() ?? '#'; return /[A-Z]/.test(c) ? c : '#'; };
+      const has = new Set(shown.map(letter));
+      indexRail.querySelectorAll<HTMLElement>('button').forEach((b) => b.toggleAttribute('data-has', has.has(b.textContent!)));
+    };
+    for (const c of '#ABCDEFGHIJKLMNOPRSTUVWY') {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.tabIndex = -1;
+      b.textContent = c;
+      b.addEventListener('click', () => {
+        const first = [...songList.querySelectorAll<HTMLElement>('.song')].find((x) => { const k = x.dataset.t!.replace(/^[^a-z0-9]+/i, '')[0]?.toUpperCase(); return c === '#' ? !/[A-Z]/.test(k ?? '') : k === c; });
+        first?.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+        first?.focus({ preventScroll: true });
+      });
+      indexRail.append(b);
+    }
+    scoped(indexRail);
+    const setView = (v: 'main' | 'songs') => {
+      menu.dataset.view = v;
+      screens.main.forEach((el) => el.toggleAttribute('inert', v !== 'main'));
+      screens.songs.forEach((el) => el.toggleAttribute('inert', v !== 'songs'));
+    };
+    const openPack = (i: number, from: HTMLElement) => {
+      pack = library[i];
+      lastTile = from;
+      search.value = '';
+      song = pack.songs[0];
+      $('[data-s-pack]').textContent = `${pack.name} · ${pack.songs.length} songs`;
+      drawSongs();
+      pickSong(song);
+      songList.scrollTop = 0;
+      setView('songs');
+      $('[data-back]').focus({ preventScroll: true });
+    };
     const tiles = [...menu.querySelectorAll<HTMLButtonElement>('[data-tile]')];
-    tiles.forEach((t) => t.addEventListener('click', () => {
-      const on = t.getAttribute('aria-pressed') !== 'true';
-      tiles.forEach((x) => x.removeAttribute('aria-pressed'));
-      if (on) t.setAttribute('aria-pressed', 'true');
+    tiles.forEach((t) => t.addEventListener('click', () => openPack(Number(t.dataset.pack), t)));
+    const back = () => { setView('main'); lastTile?.focus({ preventScroll: true }); };
+    $('[data-back]').addEventListener('click', back);
+    menu.addEventListener('keydown', (e) => { if (e.key === 'Escape' && menu.dataset.view === 'songs' && !list.classList.contains('open')) back(); });
+    search.addEventListener('input', drawSongs);
+    $('[data-fav]').addEventListener('click', (e) => { const b = e.currentTarget as HTMLElement; b.setAttribute('aria-pressed', String(b.getAttribute('aria-pressed') !== 'true')); });
+    const radios = (sel: string, on: (i: number) => void) => {
+      const all = [...menu.querySelectorAll<HTMLElement>(sel)];
+      all.forEach((b, i) => b.addEventListener('click', () => { all.forEach((x) => x.setAttribute('aria-checked', String(x === b))); on(i); }));
+    };
+    radios('[data-mode]', () => {});
+    radios('[data-diff]', (i) => { diff = i; drawScores(); });
+    radios('[data-scope]', (i) => { scope = i; drawScores(); });
+    const modBtns = [...menu.querySelectorAll<HTMLElement>('[data-mod]')];
+    modBtns.forEach((b) => b.addEventListener('click', () => {
+      b.setAttribute('aria-pressed', String(b.getAttribute('aria-pressed') !== 'true'));
+      const x = modBtns.reduce((n, m) => n + (m.getAttribute('aria-pressed') === 'true' ? Number(m.dataset.mod) : 0), 1);
+      $('[data-mult]').textContent = `×${x.toFixed(2)}`;
     }));
+    const playBtn = $('[data-play]'), playT = $('[data-play-t]');
+    let starting = false;
+    playBtn.addEventListener('click', () => {
+      if (starting) return;
+      starting = true;
+      playBtn.dataset.state = 'busy';
+      const steps = ['Get ready', '3', '2', '1', 'Go!'];
+      steps.forEach((txt, i) => setTimeout(() => { playT.textContent = txt; if (i === steps.length - 1) playBtn.dataset.state = 'found'; }, i * 650));
+      setTimeout(() => { playBtn.removeAttribute('data-state'); playT.textContent = 'Play'; starting = false; }, steps.length * 650 + 700);
+    });
 
     // the multiplayer pickers cycle through their values
     menu.querySelectorAll<HTMLButtonElement>('[data-cycle]').forEach((b) => {
@@ -1013,8 +2223,73 @@ const difficulties = ['Easy', 'Normal', 'Hard', 'Expert', 'Expert+'];
       }, 2200);
     });
 
+    // the music pack pass: the tab opens the list of passes; picking one puts it on the bar;
+    // a milestone that has been reached can be claimed
+    const pass = menu.querySelector<HTMLElement>('[data-pass]')!;
+    type Pass = { name: string; pack: string; img: string; level: number; xp: number; max: number; claimed: number };
+    const passes: Pass[] = JSON.parse(pass.dataset.passes!);
+    const tab = pass.querySelector<HTMLButtonElement>('[data-pass-tab]')!;
+    const list = pass.querySelector<HTMLElement>('[data-pass-menu]')!;
+    const items = [...pass.querySelectorAll<HTMLButtonElement>('[data-pass-item]')];
+    const stones = [...pass.querySelectorAll<HTMLButtonElement>('[data-ms]')];
+    const thumb = pass.querySelector<HTMLImageElement>('[data-pass-thumb]')!;
+    const albums = thumb.src.slice(0, thumb.src.lastIndexOf('/') + 1);
+    const q = (sel: string) => pass.querySelector<HTMLElement>(sel)!;
+    let cur = 0;
+    const show = (i: number) => {
+      cur = i;
+      const ps = passes[i];
+      const at = ps.level + (ps.max ? ps.xp / ps.max : 0);
+      q('[data-pass-name]').textContent = ps.name;
+      q('[data-pass-count]').textContent = String(ps.claimed);
+      q('[data-pass-level]').textContent = String(ps.level);
+      q('[data-pass-xp]').textContent = ps.max ? `${ps.xp} / ${ps.max} XP` : 'Complete';
+      thumb.src = albums + ps.img;
+      q('[data-scale="a"]').style.setProperty('--fill', String(Math.min(1, Math.max(0, (at - 1) / 8))));
+      q('[data-scale="b"]').style.setProperty('--fill', String(Math.min(1, Math.max(0, (at - 9) / 4))));
+      stones.forEach((st, k) => {
+        const lv = 2 * (k + 1);
+        const state = k < ps.claimed ? 'claimed' : ps.level >= lv ? 'ready' : 'locked';
+        st.dataset.state = state;
+        st.querySelector('[data-ms-st]')!.textContent = state === 'claimed' ? 'Claimed' : state === 'ready' ? 'Click to claim' : `Reach level ${lv}`;
+      });
+      items.forEach((it, k) => {
+        it.setAttribute('aria-checked', String(k === i));
+        it.querySelector('[data-pm-rw]')!.textContent = String(passes[k].claimed);
+      });
+    };
+    const openList = (on: boolean) => {
+      list.classList.toggle('open', on);
+      list.toggleAttribute('inert', !on);
+      tab.setAttribute('aria-expanded', String(on));
+      if (on) items[cur].focus({ preventScroll: true });
+    };
+    tab.addEventListener('click', () => openList(!list.classList.contains('open')));
+    items.forEach((it, i) => it.addEventListener('click', () => { show(i); openList(false); tab.focus({ preventScroll: true }); }));
+    document.addEventListener('pointerdown', (e) => {
+      if (list.classList.contains('open') && !list.contains(e.target as Node) && !tab.contains(e.target as Node)) openList(false);
+    });
+    pass.addEventListener('keydown', (e) => {
+      if (!list.classList.contains('open')) return;
+      if (e.key === 'Escape') { openList(false); tab.focus({ preventScroll: true }); }
+      if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+        e.preventDefault();
+        const k = items.indexOf(document.activeElement as HTMLButtonElement);
+        items[(k + (e.key === 'ArrowDown' ? 1 : -1) + items.length) % items.length].focus({ preventScroll: true });
+      }
+    });
+    stones.forEach((st) => st.addEventListener('click', () => {
+      if (st.dataset.state !== 'ready') return;
+      // rewards are claimed in order: this one and any reached before it
+      passes[cur].claimed = Number(st.dataset.ms) + 1;
+      show(cur);
+      st.classList.remove('pop');
+      void st.offsetWidth;
+      st.classList.add('pop');
+    }));
+
     // a press on everything else
-    menu.querySelectorAll<HTMLElement>('[data-press], [data-join], [data-cycle]').forEach((b) => {
+    menu.querySelectorAll<HTMLElement>('[data-press], [data-join], [data-cycle], [data-pass-tab], [data-play], [data-mode], [data-back]').forEach((b) => {
       b.addEventListener('pointerdown', () => b.classList.add('pressed'));
       const up = () => b.classList.remove('pressed');
       b.addEventListener('pointerup', up);
