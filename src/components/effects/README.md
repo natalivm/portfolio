@@ -4,7 +4,7 @@ Reusable visual effects. Each one stands on its own; drop it in where it is want
 
 | Effect | File | Used on |
 | --- | --- | --- |
-| Border beam: light on the inside edge of a card, button or input. `orbit` (default): two soft beams running round the edge. `sweep`, for long thin shapes like a search field: one flare passing along the bottom edge, then resting. Variants `colorful`, `mono`, `ocean`, `sunset`, and `saber` (red and blue, for Beat Saber). | `BorderBeam.astro` | Not yet; kept for Beat Saber |
+| Border beam: light on the inside edge of a card, button or input. `orbit` (default): two soft beams running round the edge. `sweep`, for long thin shapes like a search field: one flare passing along the bottom edge, then resting. Variants `colorful`, `mono`, `ocean`, `sunset`, and `saber` (red and blue, for Beat Saber). | `BorderBeam.astro` | The Join button in the Beat Saber menu |
 | Distortion wave: a screen transition for a popup. The view is drawn toward the pressed button, then a soft dome rises from it with a wide pastel band and a dark, dusty inside; the new view arrives blurred, comes into focus, and colour lingers on the edges (WebGL). Tuned to the payment popup recording. | `distortion-wave.ts` | Not yet; kept for a popup |
 
 ```astro
@@ -52,6 +52,7 @@ These live with the page they were made for. Lift them out here when a second pa
 | --- | --- |
 | Plasma reveal: an energy ring, a burst, then violet smoke that clears to show the page (WebGL) | `pages/work/[slug].astro`, Beat Saber |
 | Neon sign: tube lettering that switches on with a stutter, with a flickering letter | `BeatSaberLogo.astro`, `pages/index.astro` |
+| Floating game menu: the Beat Saber main menu hanging in the space, side panels curved toward the viewer, leaning with the pointer, with a laser dot; every control works | `BeatSaberMenu.astro`, Beat Saber |
 | Space field: drifting specks and cubes on the ground, with a pointer parallax | `SpaceField.astro` |
 | Spell: a wand stroke that calls items into place with sparks | `cases/SortJourney.astro`, the albums |
 | Spring wobble and ripple on hover | `cases/SortJourney.astro`, the albums |

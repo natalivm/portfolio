@@ -89,13 +89,6 @@ const themes = [
   { h: 'Stay connected to what matters', items: ['Phone expenses', 'Internet at home', 'Entertainment subscriptions'], note: 'Everyday digital costs, close to home for mobile-first players.' },
 ];
 
-const changes = [
-  { h: 'Wallet on top', t: 'Coins, the time until they convert and Cash out move above the banner, on a calm grey bar.' },
-  { h: 'Event banner', t: 'A white timer that counts to the second, no menu button, and carousel dots, so the banner reads as one of several.' },
-  { h: 'Double coins', t: 'The daily streak row goes. One line of copy, one progress pill and a pile of coins stay.' },
-  { h: 'Invite friends', t: 'The offer becomes the headline, with five avatar slots and an Invite button to show progress.' },
-  { h: 'Story card', t: '“Make room for more fun”, the fox’s movie night from the new campaign, replaces “Shortcut to big money!”.' },
-];
 ---
 
 <article class="wrap case bp">
@@ -526,22 +519,6 @@ const changes = [
     </p>
   </section>
 
-  <!-- chapter 5: the result -->
-  <section class="sec">
-    <div class="sec-head">
-      <h2>What changed on Home</h2>
-      <div><p>Five changes, in the order the film above makes them.</p></div>
-    </div>
-    <ol class="changes" role="list">
-      {changes.map((c, i) => (
-        <li>
-          <span class="n" aria-hidden="true">{String(i + 1).padStart(2, '0')}</span>
-          <h3>{c.h}</h3>
-          <p>{c.t}</p>
-        </li>
-      ))}
-    </ol>
-  </section>
 </article>
 
 <script>
@@ -1502,31 +1479,8 @@ const changes = [
     font-size: 1.0625rem;
   }
 
-  /* ---------- the result ---------- */
-  .changes {
-    display: grid;
-    grid-template-columns: repeat(5, minmax(0, 1fr));
-    gap: 24px clamp(16px, 2vw, 28px);
-  }
-  .changes li {
-    display: grid;
-    align-content: start;
-    gap: 8px;
-    padding-top: 16px;
-    border-top: 2px solid var(--ink);
-  }
-  .n {
-    color: var(--accent);
-    font: 600 0.8125rem/1 var(--font-ui);
-    letter-spacing: 0.06em;
-  }
-  .changes p {
-    color: var(--ink-2);
-  }
-
   @media (max-width: 1000px) {
     .bench,
-    .changes,
     .principles,
     .cues,
     .themes,
@@ -1563,7 +1517,6 @@ const changes = [
     .bench-notes,
     .wash,
     .themes,
-    .changes,
     .principles,
     .cues,
     .journey,

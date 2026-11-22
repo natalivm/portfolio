@@ -11,6 +11,7 @@ import BestPlay from '../../components/cases/BestPlay.astro';
 import HomeRevampFilm from '../../components/cases/HomeRevampFilm.astro';
 import BeatSaberLogo from '../../components/BeatSaberLogo.astro';
 import SpaceField from '../../components/SpaceField.astro';
+import BeatSaberMenu from '../../components/BeatSaberMenu.astro';
 import { caseStudies, related, slugify, type Project } from '../../data/projects';
 
 export function getStaticPaths() {
@@ -50,6 +51,9 @@ const space = p.theme === 'space';
       <div class="wrap stage" style="view-transition-name: hero-still">
         <BeatSaberLogo class="stage-logo" />
         <button class="reveal-btn" type="button" data-reveal>Reveal</button>
+      </div>
+      <div class="wrap menu-stage">
+        <BeatSaberMenu />
       </div>
       <canvas class="reveal-fx" aria-hidden="true"></canvas>
     </>
@@ -435,6 +439,10 @@ const space = p.theme === 'space';
   }
   @keyframes reveal-pulse {
     50% { box-shadow: 0 0 30px rgb(60 190 255 / 0.8), inset 0 0 18px rgb(60 190 255 / 0.45); }
+  }
+  /* the game's main menu, hanging in the space under the logo */
+  .menu-stage {
+    margin-top: clamp(28px, 5vw, 64px);
   }
   /* the plasma the button sets off, drawn over the whole window while the page comes in under it */
   .reveal-fx {
