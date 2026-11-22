@@ -1263,9 +1263,33 @@ const first = passes[0];
     transition: translate 500ms var(--ease), opacity 300ms ease, visibility 0s 500ms;
   }
 
+  /* The song screen's three sections are the same size: 392 wide (the sides reach 86 into the
+     middle column, which gives it up) and one height, each with its last row on the bottom line. */
   .v-songs {
-    grid-template-columns: minmax(0, 1fr); /* long titles must not widen a panel past its column */
-    min-width: 0;
+    --grow: calc(var(--u) * 86);
+    display: flex;
+    flex-direction: column;
+    gap: calc(var(--u) * 20);
+    min-width: 0; /* long titles must not widen a panel past its column */
+    height: calc(var(--u) * 512);
+  }
+  .v-songs.left {
+    margin-right: calc(var(--grow) * -1);
+  }
+  .v-songs.mid {
+    margin-inline: var(--grow);
+  }
+  .v-songs.right {
+    margin-left: calc(var(--grow) * -1);
+  }
+  .v-songs .s-body {
+    flex: 1;
+    height: auto;
+    min-height: 0;
+  }
+  .v-songs .d-go,
+  .v-songs .hs-you {
+    margin-top: auto;
   }
 
   /* songs: back, search, an A to Z rail and the list */
@@ -1334,7 +1358,7 @@ const first = passes[0];
     display: none;
   }
   .s-pack {
-    margin: calc(var(--u) * -8) 0 calc(var(--u) * -10);
+    margin: calc(var(--u) * -6) 0 calc(var(--u) * -8);
     color: var(--mute);
     font-size: calc(var(--u) * 20);
     text-transform: uppercase;
@@ -1446,16 +1470,20 @@ const first = passes[0];
     position: relative;
     display: grid;
     gap: calc(var(--u) * 4);
-    padding-inline: calc(var(--u) * 48);
+    padding-inline: calc(var(--u) * 40);
     text-align: center;
   }
   .d-title {
     margin: 0;
     font-family: inherit;
-    font-size: calc(var(--u) * 46);
+    display: -webkit-box;
+    overflow: hidden;
+    font-size: calc(var(--u) * 42);
     font-weight: 600;
     line-height: 0.95;
     letter-spacing: 0.01em;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
   }
   .d-by {
     color: var(--val);
@@ -1492,11 +1520,11 @@ const first = passes[0];
   .d-stats {
     display: flex;
     justify-content: center;
-    gap: calc(var(--u) * 22);
+    gap: calc(var(--u) * 15);
     margin: 0;
     padding: 0;
     color: var(--mute);
-    font-size: calc(var(--u) * 21);
+    font-size: calc(var(--u) * 20);
     list-style: none;
   }
   .d-stats li {
@@ -1511,21 +1539,21 @@ const first = passes[0];
   .d-modes {
     display: grid;
     grid-template-columns: repeat(5, minmax(0, 1fr));
-    gap: calc(var(--u) * 10);
+    gap: calc(var(--u) * 8);
   }
   .d-mode {
     display: grid;
     place-items: center;
-    height: calc(var(--u) * 78);
+    height: calc(var(--u) * 72);
     padding: 0;
     border-radius: calc(var(--u) * 12);
     color: var(--mute);
-    font-size: calc(var(--u) * 36);
+    font-size: calc(var(--u) * 32);
     font-weight: 600;
   }
   .d-mode svg {
-    width: calc(var(--u) * 38);
-    height: calc(var(--u) * 38);
+    width: calc(var(--u) * 34);
+    height: calc(var(--u) * 34);
     stroke-width: 2;
   }
   .d-mode[aria-checked='true'],
@@ -1538,7 +1566,12 @@ const first = passes[0];
   .hs-tabs {
     display: flex;
     justify-content: center;
-    gap: calc(var(--u) * 6);
+    gap: calc(var(--u) * 5);
+  }
+  .d-diffs .seg {
+    flex: 1;
+    padding-inline: 0;
+    font-size: calc(var(--u) * 18);
   }
   .seg {
     padding: calc(var(--u) * 7) calc(var(--u) * 14) calc(var(--u) * 4);
@@ -1559,13 +1592,13 @@ const first = passes[0];
     flex-wrap: wrap;
     align-items: center;
     justify-content: center;
-    gap: calc(var(--u) * 8);
+    gap: calc(var(--u) * 7);
   }
   .d-mod {
     display: grid;
     place-items: center;
-    width: calc(var(--u) * 46);
-    height: calc(var(--u) * 46);
+    width: calc(var(--u) * 44);
+    height: calc(var(--u) * 44);
     padding: 0;
     border-radius: calc(var(--u) * 10);
     color: var(--mute);
