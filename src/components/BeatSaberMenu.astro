@@ -402,7 +402,7 @@ const first = passes[0];
     --u: calc(100cqw / 1364);
     display: grid;
     grid-template-columns: minmax(0, 306fr) minmax(0, 564fr) minmax(0, 306fr);
-    grid-template-areas: 'l m r' '. bar .' 'pass pass pass';
+    grid-template-areas: 'l m r' 'bar bar bar' 'pass pass pass'; /* the bar is centred under the whole menu, and may run wider than the pack wall */
     column-gap: calc(var(--u) * 72);
     row-gap: calc(var(--u) * 34);
     padding-inline: calc(var(--u) * 22);
@@ -1004,6 +1004,7 @@ const first = passes[0];
   .bar-btn {
     display: grid;
     place-items: center;
+    flex: none;
     min-width: calc(var(--u) * 170);
     padding: 0 calc(var(--u) * 28);
     font-size: calc(var(--u) * 28);
